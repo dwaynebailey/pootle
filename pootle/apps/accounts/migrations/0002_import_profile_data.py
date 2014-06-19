@@ -8,6 +8,10 @@ from django.db import connection, models
 AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 
 class Migration(SchemaMigration):
+    depends_on = (
+        ("pootle_language", "0001_initial"),
+    )
+
     def forwards(self, orm):
         # Adding field 'User._unit_rows'
         db.add_column(u'accounts_user', '_unit_rows',
