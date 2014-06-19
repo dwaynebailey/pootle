@@ -11,7 +11,6 @@ AUTH_USER_MODEL = getattr(settings, "AUTH_USER_MODEL", "auth.User")
 class Migration(SchemaMigration):
     depends_on = (
         ("pootle_app", "0002_add_m2ms"),
-        ("pootle_profile", "0001_initial"),
         ("pootle_project", "0001_initial"),
         ("pootle_language", "0001_initial"),
     )
