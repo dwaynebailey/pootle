@@ -270,13 +270,6 @@ def create_default_projects():
         'code': u"tutorial",
         'source_language': en,
         'fullname': u"Tutorial",
-        'description': ('<div dir="ltr" lang="en">Tutorial project where '
-                        'users can play with Pootle and learn more about '
-                        'translation and localisation.<br />For more help on '
-                        'localisation, visit the <a href="http://'
-                        'docs.translatehouse.org/projects/localization-guide/'
-                        'en/latest/guide/start.html">localisation guide</a>.'
-                        '</div>'),
         'checkstyle': "standard",
         'localfiletype': "po",
         'treestyle': "auto",
