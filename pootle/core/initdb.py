@@ -65,7 +65,7 @@ def create_essential_users():
     # users; thus we use the nobody user.
     criteria = {
         'username': u"nobody",
-        'first_name': u"any anonymous user",
+        'full_name': u"any anonymous user",
         'is_active': True,
     }
     nobody, created = User.objects.get_or_create(**criteria)
@@ -82,7 +82,7 @@ def create_essential_users():
     # groups to do better permissions handling.
     criteria = {
         'username': u"default",
-        'first_name': u"any authenticated user",
+        'full_name': u"any authenticated user",
         'is_active': True,
     }
     default, created = User.objects.get_or_create(**criteria)
@@ -94,7 +94,7 @@ def create_essential_users():
     # associate updates done by bulk commands as update_stores.
     criteria = {
         'username': u"system",
-        'first_name': u"system user",
+        'full_name': u"system user",
         'is_active': True,
     }
     system, created = User.objects.get_or_create(**criteria)
@@ -321,7 +321,7 @@ def create_default_admin():
 
     criteria = {
         'username': u"admin",
-        'first_name': u"Administrator",
+        'full_name': u"Administrator",
         'is_active': True,
         'is_superuser': True,
         'is_staff': True,
