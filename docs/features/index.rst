@@ -28,6 +28,7 @@ Online translation editor
    alternative_source_language
    characters
    checks
+   screenshots
    translation_memory
    machine_translation
    searching
