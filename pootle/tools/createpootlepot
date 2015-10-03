@@ -39,11 +39,24 @@ django-admin.py makemessages -v $VERBOSITY $ignore --ignore static/js -e py,txt,
 # JavaScript extraction
 
 # makemessages is rubbish at this so use xgettext directly
+
+# Do some prep work for ECMAScript 6 templates i.e. backtick strings
+# We extract those into a fake .js file to allow them to be extracted.
+for backtickjsfile in $(find static/js -type f -name "*.js" | egrep -v "(node_modules|\.bundle\.js|\.backtick\.js)" | xargs egrep -l "gettext\(\`")
+do
+    fakefile=$(dirname $backtickjsfile)/$(basename $backtickjsfile .js).backtick.js
+    sed -n '/gettext(\`/s/.*gettext(\`\([^\`]*\).*/gettext("\1")/p' $backtickjsfile > $fakefile
+done
+
 # Until xgettext properly supports JavaScript extraction we use Python, but
 # first we extract using JavaScript just to get the ones that do actually work.
-find static/js -name "*.js" |  egrep -v "(node_modules|\.bundle\.js)" | xargs xgettext --output=$DJANGO_JS_POT --language=JavaScript --from-code=utf-8
+cat /dev/null > $DJANGO_JS_POT
+find static/js -name "*.js" |  egrep -v "(node_modules|\.bundle\.js)" | xargs xgettext --join-existing --output=$DJANGO_JS_POT --language=JavaScript --from-code=utf-8
 sed -i"" -e "s/charset=CHARSET/charset=UTF-8/" $DJANGO_JS_POT
 find static/js -name "*.js" |  egrep -v "(node_modules|\.bundle\.js)" | xargs xgettext --join-existing --output=$DJANGO_JS_POT --language=Python --from-code=utf-8
+
+# Remove our fake backtick files
+find static/js -name "*.backtick.js" | xargs rm
 
 # For .jsx we use Python so that variables are at least marked.
 xgettext --join-existing --output=$DJANGO_JS_POT --language=Python --from-code=utf-8 $(find static/js -name "*.jsx")
