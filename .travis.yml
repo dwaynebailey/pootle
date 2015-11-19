@@ -41,7 +41,7 @@ script:
   # FIXME reenable migration testing
   #- tests/version-migration/migrate.sh
   - make pep8
-  - py.test --cov=. -vv
+  - py.test -n 4 --cov=. -vv
 notifications:
   email:
     on_failure: always

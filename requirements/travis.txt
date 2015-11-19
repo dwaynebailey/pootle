@@ -3,5 +3,6 @@
 
 coveralls
 MySQL-python
-psycopg2
 pep8
+psycopg2
+pytest-xdist
