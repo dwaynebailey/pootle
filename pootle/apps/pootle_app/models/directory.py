@@ -102,7 +102,8 @@ class Directory(models.Model, CachedTreeItem):
             return self.translationproject
 
         aux_dir = self
-        while not aux_dir.is_translationproject() and aux_dir.parent is not None:
+        while (not aux_dir.is_translationproject() and
+               aux_dir.parent is not None):
             aux_dir = aux_dir.parent
 
         return aux_dir.translationproject

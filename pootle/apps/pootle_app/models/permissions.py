@@ -59,7 +59,8 @@ def get_permissions_by_username(username, directory):
 
         if (len(path_parts) > 1 and path_parts[0] != 'projects' and
             (permissionset is None or
-            len(filter(None, permissionset.directory.pootle_path.split('/'))) < 2)):
+            len(filter(None, permissionset.directory
+                                          .pootle_path.split('/'))) < 2)):
             # Active permission at language level or higher, check project
             # level permission
             try:

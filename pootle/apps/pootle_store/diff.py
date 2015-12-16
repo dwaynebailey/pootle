@@ -70,7 +70,8 @@ class StoreDiff(object):
         unit_fields = ("unitid", "state", "id", "index", "revision",
                        "source_f", "target_f", "developer_comment",
                        "translator_comment", "locations", "context")
-        for unit in self.db_store.unit_set.values(*unit_fields).order_by("index"):
+        for unit in self.db_store.unit_set.values(*unit_fields) \
+                                          .order_by("index"):
             db_units[unit["unitid"]] = unit
         return db_units
 

@@ -109,7 +109,8 @@ class VirtualFolder(models.Model):
         elif "{PROJ}" in self.location:
             try:
                 projects = Project.objects.filter(
-                    translationproject__language__code=self.location.split("/")[1]
+                    translationproject__language__code=self.location
+                                                           .split("/")[1]
                 ).iterator()
             except Exception:
                 projects = Project.objects.iterator()
