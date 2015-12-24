@@ -3,9 +3,9 @@
 <html lang="{{ LANGUAGE_CODE }}" dir="{% locale_dir %}">
 <head>
   <meta charset="utf-8">
-  <title>{% trans "Export View" %} | 
-    {% if project %}{{ project.name }}{% else %}{% trans "All Projects" %}{% endif %} | 
-    {% if language %}{{ language.name }}{% else %}{% trans "All Languages" %}{% endif %} | 
+  <title>{% trans "Export View" %} |
+    {% if project %}{{ project.name }}{% else %}{% trans "All Projects" %}{% endif %} |
+    {% if language %}{{ language.name }}{% else %}{% trans "All Languages" %}{% endif %} |
     {{ settings.POOTLE_TITLE }}</title>
   <style type="text/css">
     html {
@@ -95,8 +95,8 @@
 <body>
   <table dir="{% locale_dir %}">
     <caption>
-      {% if project %}{{ project.name }}{% else %}{% trans "All Projects" %}{% endif %} / 
-      {% if language %}{{ language.name }}{% else %}{% trans "All Languages" %}{% endif %} / 
+      {% if project %}{{ project.name }}{% else %}{% trans "All Projects" %}{% endif %} /
+      {% if language %}{{ language.name }}{% else %}{% trans "All Languages" %}{% endif %} /
       {% if filter_name %}{{ filter_name }}{% endif %}
       {% if filter_extra %}<span>({{ filter_extra|join:', ' }})</span>{% endif %}
     </caption>
