@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # These are additional strings that we need for a fully localised Pootle. They
 # come from Django and other dependencies and are not included in our POT file
 # otherwise. This file itself is not used for a running Pootle.

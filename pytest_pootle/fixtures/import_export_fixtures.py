@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+#
 # Copyright (C) Pootle contributors.
 #
 # This file is a part of the Pootle project. It is distributed under the GPL3
