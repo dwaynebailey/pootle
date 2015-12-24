@@ -11,4 +11,4 @@
     -   id: debug-statements
     -   id: end-of-file-fixer
         exclude: pootle/static/js/vendor|pootle/templates/contact_form/report_form_body.txt
-    #-   id: fix-encoding-pragma
+    -   id: fix-encoding-pragma
