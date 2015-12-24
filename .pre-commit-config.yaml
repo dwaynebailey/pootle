@@ -5,7 +5,7 @@
         exclude: pootle/static/js/vendor
     -   id: check-ast
     -   id: check-json
-    #-   id: check-merge-conflict
+    -   id: check-merge-conflict
     #-   id: check-xml
     #-   id: check-yaml
     #-   id: debug-statements
