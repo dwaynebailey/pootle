@@ -6,6 +6,7 @@ env:
   - TOXENV=py27-django17-mysql
   - TOXENV=py27-django17-postgres
   # Meta
+  - TOXENV=deploy
   - TOXENV=sdist
   - TOXENV=eslint
   - TOXENV=docs
