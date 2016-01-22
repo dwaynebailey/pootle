@@ -45,6 +45,9 @@ notifications:
   webhooks:
     urls:
       - https://webhooks.gitter.im/e/a6e983c90a9617548a6d
+      # trigger Buildtime Trend Service to parse Travis CI log
+      # Unfortunately we can't setup triggers for different webhooks :(
+      - https://buildtimetrend.herokuapp.com/travis
     on_success: change
     on_failure: always
     on_start: never
