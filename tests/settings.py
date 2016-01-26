@@ -19,6 +19,10 @@ ROOT_DIR = os.path.dirname(os.path.abspath(os.path.dirname(__file__)))
 POOTLE_TRANSLATION_DIRECTORY = os.path.join(ROOT_DIR, 'tests', 'data', 'po')
 
 
+# Ensure that we don't need to collectstatic or webpack any static files
+ASSETS_DEBUG = True
+
+
 # Dummy caching
 CACHES = {
     'default': {
