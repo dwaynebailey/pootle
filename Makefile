@@ -17,10 +17,12 @@ all: help
 build: docs mo assets
 	python setup.py sdist ${FORMATS} ${TAIL}
 
-assets:
+npm-files:
 	cd ${JS_DIR} && \
 	npm install && \
 	cd ${CWD}
+
+assets: npm-files
 	python manage.py webpack
 	mkdir -p ${ASSETS_DIR}
 	python manage.py collectstatic --noinput --clear -i node_modules ${TAIL}
