@@ -25,8 +25,8 @@ before_install:
   # Error as early as possible if we can't compile
   - python -m compileall -q -f -x ".*[.]tox.*" .
 install:
-  - pip install --upgrade pip # FIXME remove once Travis support pip7 by default
-  - pip install --upgrade tox
+  # FIXME remove pip --upgrade once Travis support pip7 by default
+  - pip install --upgrade pip tox
 script:
   - tox -e $TOXENV
 notifications:
