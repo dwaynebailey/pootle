@@ -1,10 +1,14 @@
-.. _first_project:
+.. _project_setup:
 
-Your First Project
-==================
+Create a Project
+================
 
-Congratulations to your excellent choice of Pootle to manage your translations.
-We hope you'll enjoy your swift transcendance into i10n with the Pootle crew.
+Assumptions
+-----------
+
+- We're setting up a project which consists of PO files and you have them on
+  hand.
+- The files are using the GNU layout, more about that later.
 
 Now that you have the server set up, it's time to create some messages to go with
 your very special software. Most likely you have already a set of default messages
@@ -19,9 +23,9 @@ You can either choose to create the relevant folders yourself and have Pootle pi
 the project up, or you can use add the *Template* language to your project. But
 first! – let's add a new project.
 
-In the top-right menu of the interface, you should see your newly created administrator
-user (it's only a congruent-character if you're on a small screen). From the fold-out
-drop down menu, choose *Admin* (in red) to get to the administration interface.
+In the top-right menu of the interface, you should see your newly created
+administrator user. From the fold-out drop down menu, choose *Admin* (in red)
+to get to the administration interface.
 
 Under the *Projects* tab, you'll find a button called *New Project* to the top right,
 just below the main menu that has your user-name. Click the button.
