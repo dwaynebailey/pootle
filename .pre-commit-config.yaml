@@ -15,3 +15,9 @@
     -   id: flake8
         args: ['--config=setup.cfg', '--ignore=E129,E226,E402,W503,I,N,E731']
         exclude: __pycache__|migrations|conf.py|_build|.tox|pootle/static|pootle/translations|pootle/locale|pootle/assets|templates
+- repo: /Users/dwayne/dev/pre-commit-hooks
+  sha: 'feature/sphinx-hook'
+  hooks:
+    - id: sphinx-docs
+      args: ['-bhtml', '-d docs/_build/doctrees', '-W', '-q', '-j 4', 'docs', 'docs/_build/html']
+      exclude: README.rst|CONTRIBUTING.rst
