@@ -7,10 +7,12 @@
 # AUTHORS file for copyright and authorship information.
 
 from django.db import models
+from django.utils.encoding import python_2_unicode_compatible
 
 from .abstracts import AbstractFileExtension, AbstractFormat
 
 
+@python_2_unicode_compatible
 class FileExtension(AbstractFileExtension):
 
     class Meta(AbstractFileExtension.Meta):
