@@ -85,7 +85,7 @@ def get_lang_from_http_header(request, supported):
     return None
 
 
-def get_language_from_request(request, check_path=False):
+def get_language_from_request(request):
     """Try to get the user's preferred language by first checking the
     cookie and then by checking the HTTP language headers.
 
