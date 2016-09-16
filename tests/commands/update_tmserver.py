@@ -25,7 +25,7 @@ def test_update_tmserver_nosetting(capfd, po_directory, tp0):
 
 @pytest.mark.cmd
 @pytest.mark.django_db
-def __test_update_tmserver_noargs(capfd, tp0, settings):
+def test_update_tmserver_noargs(capfd, tp0, settings):
     """Load TM from the database"""
 
     from pootle_store.models import Unit
@@ -33,7 +33,8 @@ def __test_update_tmserver_noargs(capfd, tp0, settings):
     units_qs = (
         Unit.objects
             .exclude(target_f__isnull=True)
-            .exclude(target_f__exact=''))
+            .exclude(target_f__exact='')
+            .exclude(store__translation_project__project__disabled=True))
 
     settings.POOTLE_TM_SERVER = {
         'local': {
