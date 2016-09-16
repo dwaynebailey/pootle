@@ -23,6 +23,7 @@ def test_update_tmserver_nosetting():
 
 
 @pytest.mark.cmd
+@pytest.mark.xfail(reason="Elasticsarch can be unreliable/unavailable")
 @pytest.mark.django_db
 def test_update_tmserver_noargs(capfd, tp0, settings):
     """Load TM from the database"""
