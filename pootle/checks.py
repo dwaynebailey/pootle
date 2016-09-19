@@ -407,7 +407,6 @@ def check_db_transaction_hooks(app_configs=None, **kwargs):
 
 @checks.register()
 def check_db_encoding(app_configs=None, **kwargs):
-    from django.conf import settings
     from django.db import connection, connections
 
     problem = True
@@ -435,6 +434,7 @@ def check_db_encoding(app_configs=None, **kwargs):
         return not problem, None
 
     errors = []
+    print connection.vendor
     if connection.vendor == 'sqlite':
         result, reason = _check_encoding_sqlite()
     elif connection.vendor == 'mysql':
