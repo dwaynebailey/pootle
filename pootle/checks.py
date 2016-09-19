@@ -424,8 +424,9 @@ def check_db_encoding(app_configs=None, **kwargs):
     def _check_encoding_mysql():
         with connection.cursor() as cursor:
             cursor.execute('SHOW VARIABLES LIKE "character\_set\_database";')
-            encoding = cursor.fetchone()[0]
-            print "ENCODING: %s" % encoding
+            row = cursor.fetchone()
+            print "ENCODING: %s" % row
+            encoding = row[1]
         if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
             return problem, encoding
         return not problem, None
