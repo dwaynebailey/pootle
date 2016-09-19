@@ -408,7 +408,7 @@ def check_db_transaction_hooks(app_configs=None, **kwargs):
 @checks.register()
 def check_db_encoding(app_configs=None, **kwargs):
     from django.conf import settings
-    from django.db import connection
+    from django.db import connection, connections
 
     problem = True
 
@@ -435,15 +435,15 @@ def check_db_encoding(app_configs=None, **kwargs):
         return not problem, None
 
     errors = []
-    database_engine = settings.DATABASES['default']['ENGINE']
-    print database_engine
-    print  settings.DATABASES['default']['NAME']
-    if 'sqlite' in database_engine:
+    if connection.vendor == 'sqlite':
         result, reason = _check_encoding_sqlite()
-    elif 'mysql' in database_engine:
+    elif connection.vendor == 'mysql':
         result, reason = _check_encoding_mysql()
-    elif 'postgresql_psycopg2' in database_engine:
+    elif connection.vendor == 'postgres':
         result, reason = _check_encoding_postgresql()
+    else:
+        print "Not found %s" % connection.vendor
+        print connections.databases["default"]["NAME"]
     if result == problem:
         errors.append(checks.Critical(
             _("Database encoding is not 'UTF-8' (or related), translations "
