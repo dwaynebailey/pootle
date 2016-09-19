@@ -436,7 +436,7 @@ def check_db_encoding(app_configs=None, **kwargs):
     errors = []
     print connection.vendor
     if connection.vendor == 'sqlite':
-        result, reason = _check_encoding_sqlite()
+        result, reason = _check_encoding_mysql()
     elif connection.vendor == 'mysql':
         result, reason = _check_encoding_mysql()
     elif connection.vendor == 'postgres':
