@@ -416,6 +416,7 @@ def check_db_encoding(app_configs=None, **kwargs):
         with connection.cursor() as cursor:
             cursor.execute("PRAGMA encoding")
             encoding = cursor.fetchone()[0]
+            print "ENCODING: %s" % encoding
         if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
             return problem, encoding
         return not problem, None
@@ -424,6 +425,7 @@ def check_db_encoding(app_configs=None, **kwargs):
         with connection.cursor() as cursor:
             cursor.execute('SHOW VARIABLES LIKE "character\_set\_database";')
             encoding = cursor.fetchone()[0]
+            print "ENCODING: %s" % encoding
         if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
             return problem, encoding
         return not problem, None
