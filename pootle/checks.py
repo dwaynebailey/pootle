@@ -416,7 +416,7 @@ def check_db_encoding(app_configs=None, **kwargs):
         with connection.cursor() as cursor:
             cursor.execute("PRAGMA encoding")
             encoding = cursor.fetchone()[0]
-            print "ENCODING: %s" % encoding
+            print "ENCODING (sqlite): %s" % encoding
         if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
             return problem, encoding
         return not problem, None
@@ -425,7 +425,7 @@ def check_db_encoding(app_configs=None, **kwargs):
         with connection.cursor() as cursor:
             cursor.execute('SHOW VARIABLES LIKE "character\_set\_database";')
             row = cursor.fetchone()
-            print "ENCODING: %s" % row
+            print "ENCODING (mysql): %s" % row
             encoding = row[1]
         if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
             return problem, encoding
@@ -436,6 +436,8 @@ def check_db_encoding(app_configs=None, **kwargs):
 
     errors = []
     database_engine = settings.DATABASES['default']['ENGINE']
+    print database_engine
+    print  settings.DATABASES['default']['NAME']
     if 'sqlite' in database_engine:
         result, reason = _check_encoding_sqlite()
     elif 'mysql' in database_engine:
