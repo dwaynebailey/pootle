@@ -406,6 +406,52 @@ def check_db_transaction_hooks(app_configs=None, **kwargs):
 
 
 @checks.register()
+def check_db_encoding(app_configs=None, **kwargs):
+    from django.conf import settings
+    from django.db import connection
+
+    problem = True
+
+    def _check_encoding_sqlite():
+        with connection.cursor() as cursor:
+            cursor.execute("PRAGMA encoding")
+            encoding = cursor.fetchone()[0]
+        if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
+            return problem, encoding
+        return not problem, None
+
+    def _check_encoding_mysql():
+        with connection.cursor() as cursor:
+            cursor.execute('SHOW VARIABLES LIKE "character\_set\_database";')
+            encoding = cursor.fetchone()[0]
+        if encoding not in ['UTF-8', 'UTF-16', 'UTF-16le', 'UTF-16be']:
+            return problem, encoding
+        return not problem, None
+
+    def _check_encoding_postgresql():
+        return not problem, None
+
+    errors = []
+    database_engine = settings.DATABASES['default']['ENGINE']
+    if 'sqlite' in database_engine:
+        result, reason = _check_encoding_sqlite()
+    elif 'mysql' in database_engine:
+        result, reason = _check_encoding_mysql()
+    elif 'postgresql_psycopg2' in database_engine:
+        result, reason = _check_encoding_postgresql()
+    if result == problem:
+        errors.append(checks.Critical(
+            _("Database encoding is not 'UTF-8' (or related), translations "
+              "that stored using the current '%s' encoding will be "
+              "lost.", reason),
+            hint=_("Ensure your database is created or configured to store "
+                   "UTF-8."),
+            id="pootle.C013",
+        ))
+    return errors
+
+
+@checks.register()
 def check_email_server_is_alive(app_configs=None, **kwargs):
     from django.conf import settings
 
