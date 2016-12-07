@@ -55,18 +55,18 @@ the `LICENSE`_ file for details.
    :alt: Join the chat at https://gitter.im/translate/pootle
    :target: https://gitter.im/translate/pootle
 
-.. |build| image:: https://img.shields.io/travis/translate/pootle/master.svg?style=flat-square
+.. |build| image:: https://img.shields.io/travis/translate/pootle/2.8.0b5.svg?style=flat-square
     :alt: Build Status
     :target: https://travis-ci.org/translate/pootle/branches
 
-.. |health| image:: https://landscape.io/github/translate/pootle/master/landscape.svg?style=flat-square
-    :target: https://landscape.io/github/translate/pootle/master
+.. |health| image:: https://landscape.io/github/translate/pootle/feature/dienamic_readme/landscape.svg?style=flat-square
+    :target: https://landscape.io/github/translate/pootle/feature/dienamic_readme
     :alt: Code Health
 
-.. |coverage| image:: https://img.shields.io/coveralls/translate/pootle/master.svg?style=flat-square
-   :target: https://coveralls.io/github/translate/pootle?branch=master
+.. |coverage| image:: https://img.shields.io/coveralls/translate/pootle/2.8.0b5.svg?style=flat-square
+   :target: https://coveralls.io/github/translate/pootle?branch=2.8.0b5
    :alt: Test Coverage
 
-.. |requirements| image:: https://img.shields.io/requires/github/translate/pootle/master.svg?style=flat-square
-   :target: https://requires.io/github/translate/pootle/requirements/?branch=master
+.. |requirements| image:: https://requires.io/github/translate/pootle/requirements.svg?tag=2.8.0b5
+   :target: https://requires.io/github/translate/pootle/requirements/?tag=2.8.0b5
    :alt: Requirements
