@@ -1,3 +1,3 @@
 version: 1.0
 requirements:
-  - setup.py
+  - requirements/base.txt
