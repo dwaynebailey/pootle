@@ -1,3 +1,4 @@
 version: 1.0
 requirements:
-  - ./setup.py
+    - path: setup.py
+      parser: python/setup.py
