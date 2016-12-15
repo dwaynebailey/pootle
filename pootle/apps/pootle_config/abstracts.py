@@ -29,7 +29,7 @@ class AbstractConfig(models.Model):
         on_delete=models.CASCADE)
     object_pk = models.CharField(
         'object ID',
-        max_length=255,
+        max_length=191,
         blank=True,
         null=True)
     content_object = GenericForeignKey(
@@ -37,7 +37,7 @@ class AbstractConfig(models.Model):
         fk_field="object_pk")
     key = models.CharField(
         'Configuration key',
-        max_length=255,
+        max_length=191,
         blank=False,
         null=False,
         db_index=True)

@@ -951,7 +951,7 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
     Name = "Model Store"
     is_dir = False
 
-    file = TranslationStoreField(max_length=255, storage=fs, db_index=True,
+    file = TranslationStoreField(max_length=191, storage=fs, db_index=True,
                                  null=False, editable=False)
 
     parent = models.ForeignKey(
@@ -970,11 +970,11 @@ class Store(models.Model, CachedTreeItem, base.TranslationStore):
 
     # any changes to the `pootle_path` field may require updating the schema
     # see migration 0007_case_sensitive_schema.py
-    pootle_path = models.CharField(max_length=255, null=False, unique=True,
+    pootle_path = models.CharField(max_length=191, null=False, unique=True,
                                    db_index=True, verbose_name=_("Path"))
 
     tp_path = models.CharField(
-        max_length=255,
+        max_length=191,
         null=True,
         blank=True,
         db_index=True,

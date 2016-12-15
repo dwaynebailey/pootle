@@ -22,7 +22,7 @@ class AbstractRevision(models.Model):
         on_delete=models.CASCADE)
     object_id = models.CharField(
         'object ID',
-        max_length=255,
+        max_length=191,
         blank=True,
         null=True)
     content_object = GenericForeignKey(
@@ -30,7 +30,7 @@ class AbstractRevision(models.Model):
         fk_field="object_id")
     key = models.CharField(
         'Revision key',
-        max_length=255,
+        max_length=191,
         blank=True,
         null=True,
         db_index=True)

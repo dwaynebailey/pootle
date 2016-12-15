@@ -38,7 +38,7 @@ class AbstractFormat(models.Model):
         db_index=True)
     title = models.CharField(
         _('Format title'),
-        max_length=255,
+        max_length=191,
         db_index=True)
     enabled = models.BooleanField(
         verbose_name=_('Enabled'), default=True)

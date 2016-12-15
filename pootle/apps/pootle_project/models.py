@@ -197,7 +197,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
                        '(_) character.')
     # any changes to the `code` field may require updating the schema
     # see migration 0003_case_sensitive_schema.py
-    code = models.CharField(max_length=255, null=False, unique=True,
+    code = models.CharField(max_length=191, null=False, unique=True,
                             db_index=True, verbose_name=_('Code'), blank=False,
                             validators=[validate_not_reserved],
                             help_text=code_help_text)

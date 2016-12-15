@@ -54,7 +54,7 @@ class Directory(models.Model, CachedTreeItem):
                                on_delete=models.CASCADE)
     # any changes to the `pootle_path` field may require updating the schema
     # see migration 0005_case_sensitive_schema.py
-    pootle_path = models.CharField(max_length=255, null=False, db_index=True,
+    pootle_path = models.CharField(max_length=191, null=False, db_index=True,
                                    unique=True, default='/')
     tp = models.ForeignKey(
         'pootle_translationproject.TranslationProject',
@@ -64,7 +64,7 @@ class Directory(models.Model, CachedTreeItem):
         blank=True,
         db_index=True)
     tp_path = models.CharField(
-        max_length=255,
+        max_length=191,
         null=True,
         blank=True,
         db_index=True)

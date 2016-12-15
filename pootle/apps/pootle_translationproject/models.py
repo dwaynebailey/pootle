@@ -165,7 +165,7 @@ class TranslationProject(models.Model, CachedTreeItem):
     real_path = models.FilePathField(editable=False, null=True, blank=True)
     directory = models.OneToOneField(
         Directory, db_index=True, editable=False, on_delete=models.CASCADE)
-    pootle_path = models.CharField(max_length=255, null=False, unique=True,
+    pootle_path = models.CharField(max_length=191, null=False, unique=True,
                                    db_index=True, editable=False)
     creation_time = models.DateTimeField(auto_now_add=True, db_index=True,
                                          editable=False, null=True)
