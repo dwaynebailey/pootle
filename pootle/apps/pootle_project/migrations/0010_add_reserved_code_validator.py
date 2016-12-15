@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='project',
             name='code',
-            field=models.CharField(max_length=255, validators=[pootle_project.models.validate_not_reserved], help_text='A short code for the project. This should only contain ASCII characters, numbers, and the underscore (_) character.', unique=True, verbose_name='Code', db_index=True),
+            field=models.CharField(max_length=191, validators=[pootle_project.models.validate_not_reserved], help_text='A short code for the project. This should only contain ASCII characters, numbers, and the underscore (_) character.', unique=True, verbose_name='Code', db_index=True),
         ),
     ]

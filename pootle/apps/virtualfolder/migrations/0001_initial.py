@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=70, verbose_name='Name')),
-                ('location', models.CharField(help_text='Root path where this virtual folder is applied.', max_length=255, verbose_name='Location')),
+                ('location', models.CharField(help_text='Root path where this virtual folder is applied.', max_length=191, verbose_name='Location')),
                 ('filter_rules', models.TextField(help_text='Filtering rules that tell which stores this virtual folder comprises.', verbose_name='Filter')),
                 ('priority', models.FloatField(default=1, help_text='Number specifying importance. Greater priority means it is more important.', verbose_name='Priority')),
                 ('is_public', models.BooleanField(default=True, help_text='Whether this virtual folder is public or not.', verbose_name='Is public?')),
@@ -38,7 +38,7 @@ class Migration(migrations.Migration):
             name='VirtualFolderTreeItem',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('pootle_path', models.CharField(unique=True, max_length=255, editable=False, db_index=True)),
+                ('pootle_path', models.CharField(unique=True, max_length=191, editable=False, db_index=True)),
                 ('directory', models.ForeignKey(related_name='vf_treeitems', to='pootle_app.Directory', on_delete=models.CASCADE)),
                 ('parent', models.ForeignKey(related_name='child_vf_treeitems', to='virtualfolder.VirtualFolderTreeItem', null=True, on_delete=models.CASCADE)),
                 ('stores', models.ManyToManyField(related_name='parent_vf_treeitems', to=b'pootle_store.Store', db_index=True)),

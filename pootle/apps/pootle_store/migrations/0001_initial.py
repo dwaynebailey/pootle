@@ -24,8 +24,8 @@ class Migration(migrations.Migration):
             name='Store',
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
-                ('file', pootle_store.fields.TranslationStoreField(storage=pootle.core.storage.PootleFileSystemStorage(), upload_to=b'', max_length=255, editable=False, db_index=True)),
-                ('pootle_path', models.CharField(unique=True, max_length=255, verbose_name='Path', db_index=True)),
+                ('file', pootle_store.fields.TranslationStoreField(storage=pootle.core.storage.PootleFileSystemStorage(), upload_to=b'', max_length=191, editable=False, db_index=True)),
+                ('pootle_path', models.CharField(unique=True, max_length=191, verbose_name='Path', db_index=True)),
                 ('name', models.CharField(max_length=128, editable=False)),
                 ('file_mtime', models.DateTimeField(default=datetime.datetime(1, 1, 1, 0, 0, tzinfo=utc))),
                 ('state', models.IntegerField(default=0, editable=False, db_index=True)),

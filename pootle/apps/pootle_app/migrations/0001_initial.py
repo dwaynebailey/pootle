@@ -19,7 +19,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(verbose_name='ID', serialize=False, auto_created=True, primary_key=True)),
                 ('name', models.CharField(max_length=255)),
-                ('pootle_path', models.CharField(unique=True, max_length=255, db_index=True)),
+                ('pootle_path', models.CharField(unique=True, max_length=191, db_index=True)),
                 ('obsolete', models.BooleanField(default=False)),
                 ('parent', models.ForeignKey(related_name='child_dirs', to='pootle_app.Directory', null=True, on_delete=models.CASCADE)),
             ],
