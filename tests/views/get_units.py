@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 import json
-from urlparse import parse_qs
+from urllib.parse import parse_qs
 
 import pytest
 

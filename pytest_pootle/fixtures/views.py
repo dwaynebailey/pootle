@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 import functools
-import urllib
+import urllib.parse
 from collections import OrderedDict
 from datetime import datetime, timedelta
 
@@ -260,7 +260,7 @@ def get_units_views(request, client, request_users):
     if "uids" in params and callable(params["uids"]):
         params["uids"] = ",".join(str(uid) for uid in params["uids"]())
 
-    url_params = urllib.urlencode(params, True)
+    url_params = urllib.parse.urlencode(params, True)
     response = client.get(
         "%s?%s"
         % (reverse("pootle-xhr-units"),
@@ -454,7 +454,7 @@ def get_vfolder_units_views(request, client, request_users):
         client.login(
             username=user.username,
             password=request_users["password"])
-    url_params = urllib.urlencode(params, True)
+    url_params = urllib.parse.urlencode(params, True)
     response = client.get(
         "%s?%s"
         % (reverse("vfolder-pootle-xhr-units",

@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 import re
-import urlparse
+import urllib.parse
 from collections import OrderedDict
 
 from django import forms
@@ -137,7 +137,7 @@ class UserForm(forms.ModelForm):
     def clean_linkedin(self):
         url = self.cleaned_data['linkedin']
         if url != '':
-            parsed = urlparse.urlparse(url)
+            parsed = urllib.parse.urlparse(url)
             if 'linkedin.com' not in parsed.netloc or parsed.path == '/':
                 raise forms.ValidationError(
                     _('Please enter a valid LinkedIn user profile URL.')
