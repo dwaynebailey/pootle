@@ -100,7 +100,7 @@ class FSItemState(ItemState):
     @cached_property
     def store_fs(self):
         store_fs = self.kwargs.get("store_fs")
-        if isinstance(store_fs, (int, long)):
+        if isinstance(store_fs, (int, int)):
             return StoreFS.objects.filter(pk=store_fs).first()
         return store_fs
 
