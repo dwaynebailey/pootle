@@ -9,6 +9,7 @@
 import logging
 import re
 from collections import OrderedDict
+from functools import reduce
 
 from translate.filters import checks
 from translate.filters.decorators import Category, cosmetic, critical
