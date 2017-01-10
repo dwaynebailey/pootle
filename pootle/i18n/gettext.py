@@ -48,9 +48,9 @@ def ngettext(singular, plural, number, variables=None):
 
 
 gettext_lazy = lazy(gettext, str)
-ugettext_lazy = lazy(ugettext, unicode)
+ugettext_lazy = lazy(ugettext, str)
 ngettext_lazy = lazy(ngettext, str)
-ungettext_lazy = lazy(ungettext, unicode)
+ungettext_lazy = lazy(ungettext, str)
 
 
 def tr_lang(language_name):
