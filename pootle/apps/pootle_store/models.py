@@ -76,7 +76,7 @@ class QualityCheck(AbstractQualityCheck):
         abstract = False
         db_table = "pootle_store_qualitycheck"
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     @property
@@ -137,8 +137,8 @@ class Suggestion(AbstractSuggestion):
 
     # # # # # # # # # # # # # #  Methods # # # # # # # # # # # # # # # # # # #
 
-    def __unicode__(self):
-        return unicode(self.target)
+    def __str__(self):
+        return self.target
 
     def _set_hash(self):
         string = self.translator_comment_f

@@ -32,7 +32,7 @@ class Stem(AbstractStem):
     class Meta(AbstractStem.Meta):
         db_table = "pootle_word_stem"
 
-    def __unicode__(self):
+    def __str__(self):
         return (
             "\"%s\", units: %s"
             % (self.root,

@@ -409,7 +409,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
     # # # # # # # # # # # # # #  Methods # # # # # # # # # # # # # # # # # # #
 
-    def __unicode__(self):
+    def __str__(self):
         return self.fullname
 
     def save(self, *args, **kwargs):

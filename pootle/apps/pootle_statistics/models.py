@@ -188,7 +188,7 @@ class Submission(models.Model):
         db_index=True,
         blank=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s (%s)" % (self.creation_time.strftime("%Y-%m-%d %H:%M"),
                              unicode(self.submitter))
 

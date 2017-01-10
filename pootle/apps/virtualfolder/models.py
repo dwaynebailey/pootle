@@ -77,7 +77,7 @@ class VirtualFolder(models.Model):
     def path_matcher(self):
         return path_matcher.get(self.__class__)(self)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.name
 
     def save(self, *args, **kwargs):

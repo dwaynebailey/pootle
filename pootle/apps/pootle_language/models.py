@@ -166,7 +166,7 @@ class Language(models.Model, TreeItem):
             except cls.DoesNotExist:
                 return None
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s - %s" % (self.name, self.code)
 
     def __init__(self, *args, **kwargs):

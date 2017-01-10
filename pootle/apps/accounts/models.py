@@ -137,7 +137,7 @@ class User(AbstractBaseUser):
         except UnicodeEncodeError:
             return None
 
-    def __unicode__(self):
+    def __str__(self):
         return self.username
 
     def save(self, *args, **kwargs):

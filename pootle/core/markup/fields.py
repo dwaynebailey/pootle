@@ -57,7 +57,7 @@ class Markup(object):
 
         return rendered
 
-    def __unicode__(self):
+    def __str__(self):
         try:
             return mark_safe(clean_html(self.rendered))
         except ParserError:
