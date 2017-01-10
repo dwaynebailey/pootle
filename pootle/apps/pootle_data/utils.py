@@ -432,12 +432,15 @@ class RelatedStoresDataTool(DataTool):
                 agg[k] += child[k]
             if child.get("last_created_unit"):
                 last_created = child["last_created_unit"]
-                if last_created["creation_time"] > last_created_unit_time:
+                if (last_created_unit_time is None
+                    or last_created["creation_time"] > last_created_unit_time):
                     latest["last_created_unit"] = last_created
                     last_created_unit_time = last_created["creation_time"]
-            if child["last_submission__pk"] > last_submission_pk:
-                latest['last_submission'] = child["last_submission"]
-                last_submission_pk = child["last_submission__pk"]
+            if (last_submission_pk is None
+                or child["last_submission__pk"] > last_submission_pk):
+                if child.get("last_submission"):
+                    latest['last_submission'] = child["last_submission"]
+                    last_submission_pk = child["last_submission__pk"]
             del child["last_submission__pk"]
         stats.update(agg)
         stats.update(latest)
