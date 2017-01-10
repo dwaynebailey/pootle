@@ -180,7 +180,7 @@ mustache_like_placeholder_pairs_regex = re.compile("(%s)" % fmt, re.U)
 
 # date_format
 df_blocks = "|".join(
-    map(lambda x: '%s+' % x, 'GyYMwWDdFEuaHkKhmsSzZX')) + "|\'[\w]+\'"
+    ['%s+' % x for x in 'GyYMwWDdFEuaHkKhmsSzZX']) + "|\'[\w]+\'"
 df_glued_blocks = "X+|Z+|\'[\w]*\'"
 df_delimiter = "[^\w']+|\'[\w]*\'"
 date_format_regex = re.compile(
