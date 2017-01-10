@@ -6,9 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
-import locale
 from collections import OrderedDict
-from functools import cmp_to_key
 
 from django.conf import settings
 from django.core.cache import cache
@@ -68,8 +66,7 @@ class LiveLanguageManager(models.Manager):
             qs = self.get_all_queryset() if show_all else self.get_queryset()
             languages = OrderedDict(
                 sorted([(lang[0], tr_lang(lang[1]))
-                        for lang in qs.values_list('code', 'fullname')],
-                       key=cmp_to_key(locale.strcoll)),
+                        for lang in qs.values_list('code', 'fullname')]),
             )
             cache.set(key, languages, settings.POOTLE_CACHE_TIMEOUT)
 
