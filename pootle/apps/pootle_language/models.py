@@ -8,6 +8,7 @@
 
 import locale
 from collections import OrderedDict
+from functools import cmp_to_key
 
 from django.conf import settings
 from django.core.cache import cache
@@ -68,8 +69,7 @@ class LiveLanguageManager(models.Manager):
             languages = OrderedDict(
                 sorted([(lang[0], tr_lang(lang[1]))
                         for lang in qs.values_list('code', 'fullname')],
-                       cmp=locale.strcoll,
-                       key=lambda x: x[1])
+                       key=cmp_to_key(locale.strcoll)),
             )
             cache.set(key, languages, settings.POOTLE_CACHE_TIMEOUT)
 
