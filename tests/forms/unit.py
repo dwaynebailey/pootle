@@ -148,14 +148,14 @@ def test_multistringwidget_decompress_multistrings(value):
 
 
 @pytest.mark.parametrize('value', [
-    [u'foo\\bar'],
-    [u"\t foo\\bar\n"],
-    [u'foö\r\nbär'],
-    [u'foö\\r\\nbär'],
-    [u'foö\r\n\\r\\nbär', u'bär\r\n\\r\\nbäz'],
-    [u'nfoö\nbär'],
-    [u'nfoö\\nbär'],
-    [u'foö\n\\nbär', u'bär\n\\nbäz'],
+    ['foo\\bar'],
+    ["\t foo\\bar\n"],
+    ['foö\r\nbär'],
+    ['foö\\r\\nbär'],
+    ['foö\r\n\\r\\nbär', 'bär\r\n\\r\\nbäz'],
+    ['nfoö\nbär'],
+    ['nfoö\\nbär'],
+    ['foö\n\\nbär', 'bär\n\\nbäz'],
 ])
 def test_form_multistringformfield(value):
     """Tests `MultiStringFormField`'s value compression in a form."""

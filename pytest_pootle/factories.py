@@ -92,7 +92,7 @@ class LanguageDBFactory(factory.django.DjangoModelFactory):
     def specialchars(self):
         from pootle_language.models import Language
 
-        return "" if (Language.objects.count() - 1) % 2 == 0 else u"ñ\u200c€"
+        return "" if (Language.objects.count() - 1) % 2 == 0 else "ñ\u200c€"
 
 
 class ProjectDBFactory(factory.django.DjangoModelFactory):

@@ -90,8 +90,8 @@ class InitDB(object):
         # example is in the permission system: we need a way to store rights
         # for anonymous users; thus we use the nobody user.
         criteria = {
-            'username': u"nobody",
-            'full_name': u"any anonymous user",
+            'username': "nobody",
+            'full_name': "any anonymous user",
             'is_active': True,
         }
         self._create_pootle_user(**criteria)
@@ -104,8 +104,8 @@ class InitDB(object):
         # In a future version of Pootle we should think about using Django's
         # groups to do better permissions handling.
         criteria = {
-            'username': u"default",
-            'full_name': u"any authenticated user",
+            'username': "default",
+            'full_name': "any authenticated user",
             'is_active': True,
         }
         self._create_pootle_user(**criteria)
@@ -198,7 +198,7 @@ class InitDB(object):
         """Create the English Language item."""
         criteria = {
             'code': "en",
-            'fullname': u"English",
+            'fullname': "English",
             'nplurals': 2,
             'pluralequation': "(n != 1)",
         }
@@ -228,7 +228,7 @@ class InitDB(object):
         """
         criteria = {
             'code': "terminology",
-            'fullname': u"Terminology",
+            'fullname': "Terminology",
             'source_language': self.require_english(),
             'checkstyle': "terminology",
         }
@@ -246,9 +246,9 @@ class InitDB(object):
         po = Format.objects.get(name="po")
 
         criteria = {
-            'code': u"tutorial",
+            'code': "tutorial",
             'source_language': en,
-            'fullname': u"Tutorial",
+            'fullname': "Tutorial",
             'checkstyle': "standard",
             'treestyle': "auto",
         }

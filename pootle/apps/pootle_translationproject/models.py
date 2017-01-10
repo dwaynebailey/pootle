@@ -38,9 +38,9 @@ def create_or_resurrect_translation_project(language, project):
         if tp.directory.obsolete:
             tp.directory.obsolete = False
             tp.directory.save()
-            logging.info(u"Resurrected %s", tp)
+            logging.info("Resurrected %s", tp)
         else:
-            logging.info(u"Created %s", tp)
+            logging.info("Created %s", tp)
 
 
 def create_translation_project(language, project):
@@ -63,7 +63,7 @@ def scan_translation_projects(languages=None, projects=None):
 
     for project in project_query.iterator():
         if does_not_exist(project.get_real_path()):
-            logging.info(u"Disabling %s", project)
+            logging.info("Disabling %s", project)
             project.disabled = True
             project.save()
         else:
@@ -166,7 +166,7 @@ class TranslationProject(models.Model, CachedTreeItem):
 
     @cached_property
     def code(self):
-        return u'-'.join([self.language.code, self.project.code])
+        return '-'.join([self.language.code, self.project.code])
 
     @cached_property
     def data_tool(self):
@@ -263,7 +263,7 @@ class TranslationProject(models.Model, CachedTreeItem):
             args=split_pootle_path(self.pootle_path)[:-1])
 
     def get_translate_url(self, **kwargs):
-        return u''.join(
+        return ''.join(
             [reverse("pootle-tp-translate",
                      args=split_pootle_path(self.pootle_path)[:-1]),
              get_editor_filter(**kwargs)])
@@ -273,7 +273,7 @@ class TranslationProject(models.Model, CachedTreeItem):
         return StaticPage.get_announcement_for(self.pootle_path, user)
 
     def filtererrorhandler(self, functionname, str1, str2, e):
-        logging.error(u"Error in filter %s: %r, %r, %s", functionname, str1,
+        logging.error("Error in filter %s: %r, %r, %s", functionname, str1,
                       str2, e)
         return False
 
@@ -319,7 +319,7 @@ class TranslationProject(models.Model, CachedTreeItem):
         """Update all stores to reflect state on disk."""
         changed = False
 
-        logging.info(u"Scanning for new files in %s", self)
+        logging.info("Scanning for new files in %s", self)
         # Create new, make obsolete in-DB stores to reflect state on disk
         self.scan_files()
 
@@ -331,8 +331,8 @@ class TranslationProject(models.Model, CachedTreeItem):
             disk_mtime = store.get_file_mtime()
             if not force and disk_mtime == store.file_mtime:
                 # The file on disk wasn't changed since the last sync
-                logging.debug(u"File didn't change since last sync, "
-                              u"skipping %s", store.pootle_path)
+                logging.debug("File didn't change since last sync, "
+                              "skipping %s", store.pootle_path)
                 continue
 
             changed = (

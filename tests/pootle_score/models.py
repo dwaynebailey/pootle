@@ -33,7 +33,7 @@ def test_user_tp_score_repr(tp0, member):
            score.translated,
            score.reviewed))
     assert str(score) == score_info
-    assert repr(score) == u"<UserTPScore: %s>" % score_info
+    assert repr(score) == "<UserTPScore: %s>" % score_info
 
 
 @pytest.mark.django_db

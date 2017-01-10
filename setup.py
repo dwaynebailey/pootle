@@ -233,7 +233,7 @@ class BuildChecksTemplatesCommand(Command):
             """
             # Provide a header with an anchor to refer to.
             description = ('\n<h3 id="%s">%s</h3>\n\n' %
-                           (name, unicode(check_names[name])))
+                           (name, str(check_names[name])))
 
             # Clean the leading whitespace on each docstring line so it gets
             # properly rendered.
@@ -263,7 +263,7 @@ class BuildChecksTemplatesCommand(Command):
         filename = os.path.join(templates_dir, "help/_ttk_quality_checks.html")
 
         with codecs.open(filename, "w", "utf-8") as f:
-            f.write(u"\n".join(docs))
+            f.write("\n".join(docs))
 
         print("Checks templates written to %r" % (filename))
 

@@ -164,15 +164,15 @@ def test_matcher_make_pootle_path(settings):
     assert (
         matcher.make_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.make_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="sub/dir/")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.make_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="/sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
 
 
 @pytest.mark.django_db
@@ -197,30 +197,30 @@ def test_matcher_match_pootle_path(settings):
     assert (
         matcher.match_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="sub/dir/")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             language_code="foo", filename="bar", ext="baz", dir_path="/sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             pootle_path_match="/foo*",
             language_code="foo", filename="bar", ext="baz", dir_path="/sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             pootle_path_match="*sub/dir/*",
             language_code="foo", filename="bar", ext="baz", dir_path="/sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             pootle_path_match="*/bar.baz",
             language_code="foo", filename="bar", ext="baz", dir_path="/sub/dir")
-        == u'/foo/%s/sub/dir/bar.baz' % project.code)
+        == '/foo/%s/sub/dir/bar.baz' % project.code)
     assert (
         matcher.match_pootle_path(
             pootle_path_match="/foo",

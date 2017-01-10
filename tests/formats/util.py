@@ -22,15 +22,15 @@ def test_format_util(project0):
     filetype_tool = project0.filetype_tool
     assert list(filetype_tool.filetypes.all()) == list(project0.filetypes.all())
 
-    assert filetype_tool.filetype_extensions == [u"po"]
-    assert filetype_tool.template_extensions == [u"pot"]
-    assert filetype_tool.valid_extensions == [u"po", u"pot"]
+    assert filetype_tool.filetype_extensions == ["po"]
+    assert filetype_tool.template_extensions == ["pot"]
+    assert filetype_tool.valid_extensions == ["po", "pot"]
 
     xliff = Format.objects.get(name="xliff")
     project0.filetypes.add(xliff)
-    assert filetype_tool.filetype_extensions == [u"po", u"xliff"]
-    assert filetype_tool.template_extensions == [u"pot", u"xliff"]
-    assert filetype_tool.valid_extensions == [u"po", u"xliff", u"pot"]
+    assert filetype_tool.filetype_extensions == ["po", "xliff"]
+    assert filetype_tool.template_extensions == ["pot", "xliff"]
+    assert filetype_tool.valid_extensions == ["po", "xliff", "pot"]
 
 
 @pytest.mark.django_db

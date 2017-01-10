@@ -110,4 +110,4 @@ def test_view_fs_project_admin_post_lang_mapper(client, admin, project0, languag
     assert len(response.context["lang_mapping_formset"].forms) == 2
     assert (
         project0.config["pootle.core.lang_mapping"]
-        == OrderedDict([(u'FOO', u'language0')]))
+        == OrderedDict([('FOO', 'language0')]))

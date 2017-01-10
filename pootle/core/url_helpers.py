@@ -19,8 +19,8 @@ def split_pootle_path(pootle_path):
     :return: A tuple containing each part of a pootle_path`::
         (language code, project code, directory path, filename)
     """
-    slash_count = pootle_path.count(u'/')
-    parts = pootle_path.split(u'/', 3)[1:]
+    slash_count = pootle_path.count('/')
+    parts = pootle_path.split('/', 3)[1:]
 
     language_code = None
     project_code = None
@@ -42,7 +42,7 @@ def split_pootle_path(pootle_path):
 
     dir_path, filename = os.path.split(ctx)
     if dir_path:
-        dir_path = u'/'.join([dir_path, ''])  # Add trailing slash
+        dir_path = '/'.join([dir_path, ''])  # Add trailing slash
 
     return (language_code, project_code, dir_path, filename)
 
@@ -53,7 +53,7 @@ def to_tp_relative_path(pootle_path):
     If `pootle_path` is `/af/project/dir1/dir2/file.po`, this will
     return `dir1/dir2/file.po`.
     """
-    return u'/'.join(pootle_path.split(u'/')[3:])
+    return '/'.join(pootle_path.split('/')[3:])
 
 
 def get_path_sortkey(path):
@@ -62,7 +62,7 @@ def get_path_sortkey(path):
         return path
 
     head = os.path.split(path)[0]
-    return u'~'.join([head, path])
+    return '~'.join([head, path])
 
 
 def get_path_parts(path):
@@ -71,12 +71,12 @@ def get_path_parts(path):
         return []
 
     parent = os.path.split(path)[0]
-    parent_parts = parent.split(u'/')
+    parent_parts = parent.split('/')
 
-    if len(parent_parts) == 1 and parent_parts[0] == u'':
+    if len(parent_parts) == 1 and parent_parts[0] == '':
         parts = []
     else:
-        parts = [u'/'.join(parent_parts[:parent_parts.index(part) + 1] + [''])
+        parts = ['/'.join(parent_parts[:parent_parts.index(part) + 1] + [''])
                  for part in parent_parts]
 
     # If present, don't forget to include the filename
@@ -84,7 +84,7 @@ def get_path_parts(path):
         parts.append(path)
 
     # Everything has a root
-    parts.insert(0, u'')
+    parts.insert(0, '')
 
     return parts
 

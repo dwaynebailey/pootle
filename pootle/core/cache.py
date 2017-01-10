@@ -33,7 +33,7 @@ def make_method_key(model, method, key):
                 else model.__class__.__name__)
 
     key = make_key(**key) if isinstance(key, dict) else key
-    return u':'.join([prefix, name, method, key])
+    return ':'.join([prefix, name, method, key])
 
 
 def make_key(*args, **kwargs):

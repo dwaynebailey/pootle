@@ -111,21 +111,21 @@ def init_command(parser, settings_template, args):
     parser.add_argument("--db",
                         default="sqlite",
                         choices=['sqlite', 'mysql', 'postgresql'],
-                        help=(u"Use the specified database backend (default: "
-                              u"%(default)s)."))
+                        help=("Use the specified database backend (default: "
+                              "%(default)s)."))
     parser.add_argument("--db-name", default="",
-                        help=(u"Database name (default: 'pootledb') or path "
-                              u"to database file if using sqlite (default: "
-                              u"'%s/dbs/pootle.db')" % src_dir))
+                        help=("Database name (default: 'pootledb') or path "
+                              "to database file if using sqlite (default: "
+                              "'%s/dbs/pootle.db')" % src_dir))
     parser.add_argument("--db-user", default="",
-                        help=(u"Name of the database user. Not used with "
-                              u"sqlite."))
+                        help=("Name of the database user. Not used with "
+                              "sqlite."))
     parser.add_argument("--db-host", default="",
-                        help=(u"Database host. Defaults to localhost. Not "
-                              u"used with sqlite."))
+                        help=("Database host. Defaults to localhost. Not "
+                              "used with sqlite."))
     parser.add_argument("--db-port", default="",
-                        help=(u"Database port. Defaults to backend default. "
-                              u"Not used with sqlite."))
+                        help=("Database port. Defaults to backend default. "
+                              "Not used with sqlite."))
 
     args, remainder_ = parser.parse_known_args(args)
     config_path = os.path.expanduser(args.config)
@@ -200,9 +200,9 @@ def configure_app(project, config_path, django_settings_module, runner_name):
 
     if not (os.path.exists(config_path) or
             os.environ.get(settings_envvar, None)):
-        print(u"Configuration file does not exist at %r or "
-              u"%r environment variable has not been set.\n"
-              u"Use '%s init' to initialize the configuration file." %
+        print("Configuration file does not exist at %r or "
+              "%r environment variable has not been set.\n"
+              "Use '%s init' to initialize the configuration file." %
               (config_path, settings_envvar, runner_name))
         sys.exit(2)
 
@@ -236,19 +236,19 @@ def run_app(project, default_settings_path, settings_template,
     parser.add_argument(
         "--config",
         default=default_settings_path,
-        help=u"Use the specified configuration file.",
+        help="Use the specified configuration file.",
     )
     parser.add_argument(
         "--noinput",
         action="store_true",
         default=False,
-        help=u"Never prompt for input",
+        help="Never prompt for input",
     )
     parser.add_argument(
         "--no-rq",
         action="store_true",
         default=False,
-        help=(u"Run all jobs in a single process, without "
+        help=("Run all jobs in a single process, without "
               "using rq workers"),
     )
 

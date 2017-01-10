@@ -179,7 +179,7 @@ def test_formset_fs_project_lang_mapper(project0, language0, language1):
         == dict(remove=False, pootle_code=language0, fs_code="FOO"))
     assert (
         formset.cleaned_mapping
-        == OrderedDict([(u'FOO', u'language0')]))
+        == OrderedDict([('FOO', 'language0')]))
     orig_revision = revision.get(
         formset.project.__class__)(
             formset.project).get(key="pootle.fs.sync")
@@ -191,13 +191,13 @@ def test_formset_fs_project_lang_mapper(project0, language0, language1):
                 formset.project).get(key="pootle.fs.sync"))
     assert (
         project0.config["pootle.core.lang_mapping"]
-        == OrderedDict([(u'FOO', u'language0')]))
+        == OrderedDict([('FOO', 'language0')]))
 
     # add another mapping
     formset = LangMappingFormSet(project=project0)
     data = _get_management_data(formset)
     assert data['form-INITIAL_FORMS'] == 1
-    assert formset.initial == [{'fs_code': u'FOO', 'pootle_code': u'language0'}]
+    assert formset.initial == [{'fs_code': 'FOO', 'pootle_code': 'language0'}]
     data["form-0-pootle_code"] = language0.code
     data["form-0-fs_code"] = "FOO"
     data["form-1-pootle_code"] = language1.code
@@ -220,7 +220,7 @@ def test_formset_fs_project_lang_mapper(project0, language0, language1):
     formset.save()
     assert (
         project0.config["pootle.core.lang_mapping"]
-        == OrderedDict([(u'FOO', u'language0'), (u'BAR', 'language1')]))
+        == OrderedDict([('FOO', 'language0'), ('BAR', 'language1')]))
 
     # update the first
     formset = LangMappingFormSet(project=project0)
@@ -240,7 +240,7 @@ def test_formset_fs_project_lang_mapper(project0, language0, language1):
     formset.save()
     assert (
         project0.config["pootle.core.lang_mapping"]
-        == OrderedDict([(u'FOO', languageX.code), (u'BAR', 'language1')]))
+        == OrderedDict([('FOO', languageX.code), ('BAR', 'language1')]))
 
     # remove the second
     formset = LangMappingFormSet(project=project0)
@@ -261,7 +261,7 @@ def test_formset_fs_project_lang_mapper(project0, language0, language1):
     formset.save()
     assert (
         project0.config["pootle.core.lang_mapping"]
-        == OrderedDict([(u'FOO', languageX.code)]))
+        == OrderedDict([('FOO', languageX.code)]))
 
 
 @pytest.mark.django_db

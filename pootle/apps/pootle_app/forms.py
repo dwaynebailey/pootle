@@ -44,7 +44,7 @@ class LanguageForm(forms.ModelForm):
     def clean_specialchars(self):
         """Ensures inputted characters are unique."""
         chars = self.cleaned_data['specialchars']
-        return u''.join(
+        return ''.join(
             list(OrderedDict((char, None) for char in list(chars)).keys())
         )
 

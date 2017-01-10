@@ -105,7 +105,7 @@ class Command(BaseCommand):
                             continue
                 except FilterFailure as e:
                     filterresult = False
-                    filtermessage = unicode(e)
+                    filtermessage = str(e)
 
                 message = "%s - %s" % (filterresult, check)
                 if filtermessage:

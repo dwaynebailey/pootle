@@ -134,9 +134,9 @@ class FrozenUnit(object):
 
 class SuggestionsReview(object):
     accept_email_template = 'editor/email/suggestions_accepted_with_comment.txt'
-    accept_email_subject = _(u"Suggestion accepted with comment")
+    accept_email_subject = _("Suggestion accepted with comment")
     reject_email_template = 'editor/email/suggestions_rejected_with_comment.txt'
-    reject_email_subject = _(u"Suggestion rejected with comment")
+    reject_email_subject = _("Suggestion rejected with comment")
 
     def __init__(self, suggestions=None, reviewer=None, review_type=None):
         self.suggestions = suggestions

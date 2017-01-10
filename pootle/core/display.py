@@ -46,7 +46,7 @@ class SectionDisplay(object):
 
     def __iter__(self):
         failed = False
-        if isinstance(self.data, (str, unicode)):
+        if isinstance(self.data, (str, str)):
             failed = True
         try:
             iterable = iter(self.data)

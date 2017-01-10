@@ -73,11 +73,11 @@ def test_convert(project0_nongnu, store0):
 @pytest.mark.django_db
 def test_update_target(project0_nongnu, store0):
     """Tests that target changes are properly sync'ed to disk."""
-    db_unit = _update_translation(store0, 0, {'target': u'samaka'})
+    db_unit = _update_translation(store0, 0, {'target': 'samaka'})
     store0.sync()
     store_unit = store0.file.store.findid(db_unit.getid())
 
-    assert db_unit.target == u'samaka'
+    assert db_unit.target == 'samaka'
     assert db_unit.target == store_unit.target
 
     po_file = factory.getobject(store0.file.path)
@@ -87,11 +87,11 @@ def test_update_target(project0_nongnu, store0):
 @pytest.mark.django_db
 def test_empty_plural_target(af_tutorial_po):
     """Tests empty plural targets are not deleted."""
-    db_unit = _update_translation(af_tutorial_po, 2, {'target': [u'samaka']})
+    db_unit = _update_translation(af_tutorial_po, 2, {'target': ['samaka']})
     store_unit = af_tutorial_po.file.store.findid(db_unit.getid())
     assert len(store_unit.target.strings) == 2
 
-    db_unit = _update_translation(af_tutorial_po, 2, {'target': u''})
+    db_unit = _update_translation(af_tutorial_po, 2, {'target': ''})
     assert len(store_unit.target.strings) == 2
 
 
@@ -100,10 +100,10 @@ def test_update_plural_target(af_tutorial_po):
     """Tests plural translations are stored and sync'ed."""
     db_unit = _update_translation(
         af_tutorial_po, 2,
-        {'target': [u'samaka', u'samak']})
+        {'target': ['samaka', 'samak']})
     store_unit = af_tutorial_po.file.store.findid(db_unit.getid())
 
-    assert db_unit.target.strings == [u'samaka', u'samak']
+    assert db_unit.target.strings == ['samaka', 'samak']
     assert db_unit.target.strings == store_unit.target.strings
 
     po_file = factory.getobject(af_tutorial_po.file.path)
@@ -111,7 +111,7 @@ def test_update_plural_target(af_tutorial_po):
         db_unit.target.strings
         == po_file.units[db_unit.index].target.strings)
 
-    assert db_unit.target == u'samaka'
+    assert db_unit.target == 'samaka'
     assert db_unit.target == store_unit.target
     assert db_unit.target == po_file.units[db_unit.index].target
 
@@ -121,10 +121,10 @@ def test_update_plural_target_dict(af_tutorial_po):
     """Tests plural translations are stored and sync'ed (dict version)."""
     db_unit = _update_translation(
         af_tutorial_po, 2,
-        {'target': {0: u'samaka', 1: u'samak'}})
+        {'target': {0: 'samaka', 1: 'samak'}})
     store_unit = af_tutorial_po.file.store.findid(db_unit.getid())
 
-    assert db_unit.target.strings == [u'samaka', u'samak']
+    assert db_unit.target.strings == ['samaka', 'samak']
     assert db_unit.target.strings == store_unit.target.strings
 
     po_file = factory.getobject(af_tutorial_po.file.path)
@@ -132,7 +132,7 @@ def test_update_plural_target_dict(af_tutorial_po):
         db_unit.target.strings
         == po_file.findid(db_unit.getid()).target.strings)
 
-    assert db_unit.target == u'samaka'
+    assert db_unit.target == 'samaka'
     assert db_unit.target == store_unit.target
     assert db_unit.target == po_file.findid(db_unit.getid()).target
 
@@ -142,7 +142,7 @@ def test_update_fuzzy(project0_nongnu, store0):
     """Tests fuzzy state changes are stored and sync'ed."""
     db_unit = _update_translation(
         store0, 0,
-        {'target': u'samaka', 'fuzzy': True})
+        {'target': 'samaka', 'fuzzy': True})
     store_unit = store0.file.store.findid(db_unit.getid())
 
     assert db_unit.isfuzzy()
@@ -166,11 +166,11 @@ def test_update_comment(project0_nongnu, store0):
     """Tests translator comments are stored and sync'ed."""
     db_unit = _update_translation(
         store0, 0,
-        {'translator_comment': u'7amada'})
+        {'translator_comment': '7amada'})
     store0.sync()
     store_unit = store0.file.store.findid(db_unit.getid())
 
-    assert db_unit.getnotes(origin='translator') == u'7amada'
+    assert db_unit.getnotes(origin='translator') == '7amada'
     assert (
         db_unit.getnotes(origin='translator')
         == store_unit.getnotes(origin='translator'))
@@ -305,7 +305,7 @@ def test_accept_suggestion_update_wordcount(it_tutorial_po, system):
 def test_unit_repr():
     unit = Unit.objects.first()
     assert str(unit) == str(unit.convert())
-    assert unicode(unit) == unicode(unit.source)
+    assert str(unit) == str(unit.source)
 
 
 @pytest.mark.django_db

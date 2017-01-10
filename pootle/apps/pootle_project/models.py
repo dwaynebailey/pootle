@@ -169,7 +169,7 @@ class ProjectURLMixin(object):
             pattern_name = 'pootle-projects-translate'
             pattern_args = []
 
-        return u''.join([
+        return ''.join([
             reverse(pattern_name, args=pattern_args),
             get_editor_filter(**kwargs),
         ])
@@ -283,7 +283,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
         if user_projects is not None:
             return user_projects
 
-        logging.debug(u'Cache miss for %s', key)
+        logging.debug('Cache miss for %s', key)
 
         # FIXME: use `cls.objects.cached_dict().keys()`
         ALL_PROJECTS = cls.objects.values_list('code', flat=True)

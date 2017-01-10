@@ -76,8 +76,8 @@ def cssid(value):
 
     Used to create valid CSS identifiers from tree item codes.
     """
-    return value.replace(u'.', u'-').replace(u'@', u'-') \
-                .replace(u'+', u'-').replace(u' ', u'-')
+    return value.replace('.', '-').replace('@', '-') \
+                .replace('+', '-').replace(' ', '-')
 
 
 @register.filter

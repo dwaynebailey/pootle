@@ -53,7 +53,7 @@ class Command(PootleCommand):
             translation_project.directory.makeobsolete()
         else:
             # Skip if project directory ceased to exist on disk.
-            logging.warning(u"Missing project directory for %s. Skipping %s.",
+            logging.warning("Missing project directory for %s. Skipping %s.",
                             translation_project.project, translation_project)
 
         return False
@@ -64,7 +64,7 @@ class Command(PootleCommand):
         disk_mtime = store.get_file_mtime()
         if not options["force"] and disk_mtime == store.file_mtime:
             # The file on disk wasn't changed since the last sync
-            logging.debug(u"File didn't change since last sync, "
+            logging.debug("File didn't change since last sync, "
                           "skipping %s", store.pootle_path)
             return
 

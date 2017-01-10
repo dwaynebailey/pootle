@@ -158,7 +158,7 @@ class StoreSyncer(object):
         """export to fileclass"""
         fileclass = fileclass or self.file_class
         logging.debug(
-            u"Converting %s to %s",
+            "Converting %s to %s",
             self.store.pootle_path,
             fileclass)
         output = fileclass()
@@ -231,7 +231,7 @@ class StoreSyncer(object):
 
     def sync(self, disk_store, last_revision,
              update_structure=False, conservative=True):
-        logging.info(u"Syncing %s", self.store.pootle_path)
+        logging.info("Syncing %s", self.store.pootle_path)
         old_ids = set(disk_store.getids())
         new_ids = set(self.dbid_index.keys())
         file_changed = False

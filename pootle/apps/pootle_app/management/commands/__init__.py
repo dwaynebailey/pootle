@@ -53,13 +53,13 @@ class PootleCommand(BaseCommand):
             "--noinput",
             action="store_true",
             default=False,
-            help=u"Never prompt for input",
+            help="Never prompt for input",
         )
         parser.add_argument(
             "--no-rq",
             action="store_true",
             default=False,
-            help=(u"Run all jobs in a single process, without "
+            help=("Run all jobs in a single process, without "
                   "using rq workers"),
         )
 
@@ -70,16 +70,16 @@ class PootleCommand(BaseCommand):
 
     def do_translation_project(self, tp, **options):
         if hasattr(self, "handle_translation_project"):
-            logging.info(u"Running %s over %s", self.name, tp)
+            logging.info("Running %s over %s", self.name, tp)
             if not self.handle_translation_project(tp, **options):
                 return
         if hasattr(self, "handle_all_stores"):
-            logging.info(u"Running %s over %s's files", self.name, tp)
+            logging.info("Running %s over %s's files", self.name, tp)
             self.handle_all_stores(tp, **options)
         elif hasattr(self, "handle_store"):
             store_query = tp.stores.live()
             for store in store_query.iterator():
-                logging.info(u"Running %s over %s",
+                logging.info("Running %s over %s",
                              self.name, store.pootle_path)
                 self.handle_store(store, **options)
 

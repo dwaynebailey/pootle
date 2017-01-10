@@ -174,7 +174,7 @@ class Command(BaseCommand):
         self.stdout.write("Config '%s' appended" % k)
 
     def repr_value(self, value):
-        if not isinstance(value, (str, unicode)):
+        if not isinstance(value, (str, str)):
             value_class = type(value).__name__
             return (
                 "%s(%s)"

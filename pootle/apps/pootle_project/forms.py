@@ -29,7 +29,7 @@ def update_translation_project(tp, initialize_from_templates, response_url):
     """Wraps translation project initializing to allow it to be running
     as RQ job.
     """
-    script_name = (u'/'
+    script_name = ('/'
                    if settings.FORCE_SCRIPT_NAME is None
                    else force_text(settings.FORCE_SCRIPT_NAME))
     set_script_prefix(script_name)

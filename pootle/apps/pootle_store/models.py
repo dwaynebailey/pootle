@@ -337,13 +337,13 @@ class Unit(AbstractUnit):
         return (
             "%s%s"
             % (self.store.get_translate_url(),
-               '#unit=%s' % unicode(self.id)))
+               '#unit=%s' % str(self.id)))
 
     def get_search_locations_url(self):
         (proj_code, dir_path,
          filename) = split_pootle_path(self.store.pootle_path)[1:]
 
-        return u''.join([
+        return ''.join([
             reverse('pootle-project-translate',
                     args=[proj_code, dir_path, filename]),
             get_editor_filter(search=self.locations, sfields='locations'),
@@ -393,7 +393,7 @@ class Unit(AbstractUnit):
                 target_plurals = len(target.strings)
                 strings = target.strings
                 if target_plurals < nplurals:
-                    strings.extend([u'']*(nplurals - target_plurals))
+                    strings.extend(['']*(nplurals - target_plurals))
                 if unit.target.strings != strings:
                     unit.target = strings
                     changed = True
@@ -502,7 +502,7 @@ class Unit(AbstractUnit):
 
         # this is problematic - it compares getid, but then sets getid *or* source
         if self.unitid != unit.getid():
-            self.unitid = unicode(unit.getid()) or unicode(unit.source)
+            self.unitid = str(unit.getid()) or str(unit.source)
             self.unitid_hash = md5(self.unitid.encode("utf-8")).hexdigest()
             changed = True
 
@@ -936,7 +936,7 @@ class Store(AbstractStore):
             args=split_pootle_path(self.pootle_path))
 
     def get_translate_url(self, **kwargs):
-        return u''.join(
+        return ''.join(
             [reverse("pootle-tp-store-translate",
                      args=split_pootle_path(self.pootle_path)),
              get_editor_filter(**kwargs)])

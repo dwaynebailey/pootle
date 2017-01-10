@@ -118,7 +118,7 @@ def _calculate_timeline(request, unit):
             elif item['quality_check__name']:
                 check_name = item['quality_check__name']
                 check_url = (
-                    u''.join(
+                    ''.join(
                         [reverse('pootle-checks-descriptions'),
                          '#', check_name]))
                 entry.update({

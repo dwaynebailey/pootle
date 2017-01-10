@@ -38,7 +38,7 @@ def test_clean_specialchars_whitespace(specialchars):
 @pytest.mark.parametrize('specialchars, count_char', [
     (' abcde     ', ' '),
     (' aaaaaaaaaa', 'a'),
-    ('āéĩøøøøøøü', u'ø'),
+    ('āéĩøøøøøøü', 'ø'),
 ])
 @pytest.mark.django_db
 def test_clean_specialchars_unique(specialchars, count_char):

@@ -63,10 +63,10 @@ class UnitResult(UnitProxy):
     @property
     def translate_url(self):
         return (
-            u'%s%s'
+            '%s%s'
             % (reverse("pootle-tp-store-translate",
                        args=split_pootle_path(self.pootle_path)),
-               '#unit=%s' % unicode(self.id)))
+               '#unit=%s' % str(self.id)))
 
 
 class StoreResults(object):

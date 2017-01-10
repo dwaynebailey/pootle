@@ -59,7 +59,7 @@ class PageModelMixin(object):
         form = super(PageModelMixin, self).get_form(form_class)
 
         if self.page_type == ANN_TYPE:
-            form.fields['virtual_path'].help_text = u'/pages/' + ANN_VPATH
+            form.fields['virtual_path'].help_text = '/pages/' + ANN_VPATH
 
         return form
 
@@ -132,8 +132,8 @@ class PageCreateView(SuperuserRequiredMixin, AdminCtxMixin, PageModelMixin,
         if self.page_type == ANN_TYPE:
             del form.fields['url']
             # Translators: 'projects' must not be translated.
-            msg = _(u'projects/<project_code> or <language_code> or '
-                    u'<language_code>/<project_code>')
+            msg = _('projects/<project_code> or <language_code> or '
+                    '<language_code>/<project_code>')
             form.fields['virtual_path'].widget.attrs['placeholder'] = msg
             form.fields['virtual_path'].widget.attrs['size'] = 100
 

@@ -45,7 +45,7 @@ def test_max_revision(revision, project0_nongnu, store0):
 def test_revision_incr(store0):
     """Tests revision is incremented when units change."""
     previous_revision = Revision.get()
-    db_unit = _update_translation(store0, 0, {'target': [u'Fleisch']},
+    db_unit = _update_translation(store0, 0, {'target': ['Fleisch']},
                                   sync=False)
 
     assert db_unit.revision != previous_revision
@@ -54,7 +54,7 @@ def test_revision_incr(store0):
 
     previous_revision = Revision.get()
 
-    db_unit = _update_translation(store0, 0, {'target': u'Lachs'},
+    db_unit = _update_translation(store0, 0, {'target': 'Lachs'},
                                   sync=False)
 
     assert db_unit.revision != previous_revision

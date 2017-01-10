@@ -24,7 +24,7 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
 
     email_subject = forms.CharField(
         max_length=100,
-        label=_(u'Summary'),
+        label=_('Summary'),
         widget=forms.TextInput(
             attrs={'placeholder': _('Please enter your message summary')}
         ),
@@ -33,15 +33,15 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
     def __init__(self, *args, **kwargs):
         super(ContactForm, self).__init__(*args, **kwargs)
 
-        self.fields['name'].label = _(u'Name')
+        self.fields['name'].label = _('Name')
         name_placeholder = _('Please enter your name')
         self.fields['name'].widget.attrs['placeholder'] = name_placeholder
 
-        self.fields['email'].label = _(u'Email address')
+        self.fields['email'].label = _('Email address')
         email_placeholder = _('Please enter your email address')
         self.fields['email'].widget.attrs['placeholder'] = email_placeholder
 
-        self.fields['body'].label = _(u'Message')
+        self.fields['body'].label = _('Message')
         body_placeholder = _('Please enter your message')
         self.fields['body'].widget.attrs['placeholder'] = body_placeholder
 
@@ -87,7 +87,7 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
         return dict(self.cleaned_data)
 
     def from_email(self):
-        return u'%s <%s>' % (
+        return '%s <%s>' % (
             self.cleaned_data['name'],
             settings.DEFAULT_FROM_EMAIL,
         )
@@ -97,7 +97,7 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
 
     def save(self, fail_silently=False):
         """Build and send the email message."""
-        reply_to = u'%s <%s>' % (
+        reply_to = '%s <%s>' % (
             self.cleaned_data['name'],
             self.cleaned_data['email'],
         )

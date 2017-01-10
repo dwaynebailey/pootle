@@ -386,7 +386,7 @@ CHARACTERS_NAMES = OrderedDict(
     )
 )
 
-CHARACTERS = u"".join([chr(index) for index in list(CHARACTERS_NAMES.keys())])
+CHARACTERS = "".join([chr(index) for index in list(CHARACTERS_NAMES.keys())])
 
 
 class UnitEditJSON(PootleUnitJSON):
@@ -397,7 +397,7 @@ class UnitEditJSON(PootleUnitJSON):
             # Inject some extra special characters for RTL languages.
             language_specialchars = CHARACTERS
             # Do not repeat special chars.
-            language_specialchars += u"".join(
+            language_specialchars += "".join(
                 [c for c in self.language.specialchars if c not in CHARACTERS])
         else:
             language_specialchars = self.language.specialchars

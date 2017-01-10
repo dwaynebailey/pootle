@@ -20,8 +20,8 @@ from pootle.i18n.gettext import ugettext_lazy as _
 from .managers import PageManager
 
 
-ANN_TYPE = u'announcements'
-ANN_VPATH = ANN_TYPE + u'/'
+ANN_TYPE = 'announcements'
+ANN_VPATH = ANN_TYPE + '/'
 
 
 class AbstractPage(models.Model):
@@ -100,7 +100,7 @@ class AbstractPage(models.Model):
                                   ~Q(pk=self.pk),).exists() for p in
                  AbstractPage.__subclasses__()]
         if True in pages:
-            raise ValidationError(_(u'Virtual path already in use.'))
+            raise ValidationError(_('Virtual path already in use.'))
 
     def has_changes(self):
         old_page = self.__class__.objects.get(pk=self.pk)
@@ -154,7 +154,7 @@ class Agreement(models.Model):
         unique_together = ('user', 'document',)
 
     def __str__(self):
-        return u'%s (%s@%s)' % (self.document, self.user, self.agreed_on)
+        return '%s (%s@%s)' % (self.document, self.user, self.agreed_on)
 
     def save(self, **kwargs):
         # When updating always explicitly renew agreement date

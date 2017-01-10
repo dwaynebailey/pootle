@@ -58,7 +58,7 @@ class TimelineEntry(object):
         entry = self.entry_dict
         check_name = self.submission.qc_name
         check_url = (
-            u''.join(
+            ''.join(
                 [reverse('pootle-checks-descriptions'),
                  '#', check_name]))
         entry.update(

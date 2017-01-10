@@ -17,5 +17,5 @@ def rewrite_links(input_html, callback, **kwargs):
     This is needed as a workaround for #3889, and it simply wraps the input
     text within `<div>...</div>` tags.
     """
-    return lxml_rewrite_links(u'<div>%s</div>' % input_html,
+    return lxml_rewrite_links('<div>%s</div>' % input_html,
                               callback, **kwargs)

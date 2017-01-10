@@ -22,7 +22,7 @@ class DisplayUser(object):
     @property
     def author_link(self):
         return format_html(
-            u'<a href="{}">{}</a>',
+            '<a href="{}">{}</a>',
             self.get_absolute_url(),
             self.display_name)
 

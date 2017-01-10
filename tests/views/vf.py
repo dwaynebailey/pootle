@@ -104,7 +104,7 @@ def test_view_vf_tp_translate_reverse():
             project_code="PROJ_CODE"))
     assert (
         tp_translate_view
-        == u'/++vfolder/VF_NAME/LANG_CODE/PROJ_CODE/translate/')
+        == '/++vfolder/VF_NAME/LANG_CODE/PROJ_CODE/translate/')
     tp_translate_subdir_view = reverse(
         "pootle-vfolder-tp-translate",
         kwargs=dict(
@@ -114,7 +114,7 @@ def test_view_vf_tp_translate_reverse():
             dir_path="SOME/SUBDIR/"))
     assert (
         tp_translate_subdir_view
-        == u'/++vfolder/VF_NAME/LANG_CODE/PROJ_CODE/translate/SOME/SUBDIR/')
+        == '/++vfolder/VF_NAME/LANG_CODE/PROJ_CODE/translate/SOME/SUBDIR/')
 
 
 @pytest.mark.django_db

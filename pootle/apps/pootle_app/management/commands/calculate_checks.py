@@ -31,7 +31,7 @@ class Command(PootleCommand):
         )
 
     def handle_all_stores(self, translation_project, **options):
-        self.stdout.write(u"Running %s for %s" %
+        self.stdout.write("Running %s for %s" %
                           (self.name, translation_project))
         QualityCheckUpdater(
             options['check_names'],
@@ -39,7 +39,7 @@ class Command(PootleCommand):
 
     def handle_all(self, **options):
         if not self.projects and not self.languages:
-            self.stdout.write(u"Running %s (noargs)" % self.name)
+            self.stdout.write("Running %s (noargs)" % self.name)
             QualityCheckUpdater(options['check_names']).update()
         else:
             super(Command, self).handle_all(**options)

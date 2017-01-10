@@ -43,7 +43,7 @@ class TextStemmer(object):
         self.context = context
 
     def split(self, words):
-        return re.split(u"[^\w'-]+", words)
+        return re.split("[^\w'-]+", words)
 
     @property
     def stopwords(self):

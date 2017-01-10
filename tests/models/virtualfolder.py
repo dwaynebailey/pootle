@@ -36,7 +36,7 @@ def test_vfolder_priority_not_greater_than_zero(tp0):
     with pytest.raises(ValidationError) as excinfo:
         VirtualFolder.objects.create(**vfolder_item)
 
-    assert u'Priority must be greater than zero.' in str(excinfo.value)
+    assert 'Priority must be greater than zero.' in str(excinfo.value)
 
     # Test zero priority.
     vfolder_item['priority'] = 1
@@ -46,7 +46,7 @@ def test_vfolder_priority_not_greater_than_zero(tp0):
     with pytest.raises(ValidationError) as excinfo:
         vfolder.save()
 
-    assert u'Priority must be greater than zero.' in str(excinfo.value)
+    assert 'Priority must be greater than zero.' in str(excinfo.value)
 
 
 @pytest.mark.django_db
@@ -63,14 +63,14 @@ def test_vfolder_with_no_filter_rules():
     }
     with pytest.raises(ValidationError) as excinfo:
         VirtualFolder.objects.create(**vfolder_item)
-    assert u'Some filtering rule must be specified.' in str(excinfo.value)
+    assert 'Some filtering rule must be specified.' in str(excinfo.value)
 
     vfolder_item["filter_rules"] = "FOO"
     vf = VirtualFolder.objects.create(**vfolder_item)
     vf.filter_rules = ""
     with pytest.raises(ValidationError) as excinfo:
         vf.save()
-    assert u'Some filtering rule must be specified.' in str(excinfo.value)
+    assert 'Some filtering rule must be specified.' in str(excinfo.value)
 
 
 @pytest.mark.django_db

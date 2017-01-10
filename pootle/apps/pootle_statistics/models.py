@@ -179,8 +179,8 @@ class Submission(models.Model):
     # in the case where they store values for a unit's source or target. In
     # such cases, the strings might not be usable as is. Use the two helper
     # functions in pootle_store.fields to convert to and from this format.
-    old_value = models.TextField(blank=True, default=u"")
-    new_value = models.TextField(blank=True, default=u"")
+    old_value = models.TextField(blank=True, default="")
+    new_value = models.TextField(blank=True, default="")
 
     # Unit revision when submission was created if applicable
     revision = models.IntegerField(
@@ -189,8 +189,8 @@ class Submission(models.Model):
         blank=True)
 
     def __str__(self):
-        return u"%s (%s)" % (self.creation_time.strftime("%Y-%m-%d %H:%M"),
-                             unicode(self.submitter))
+        return "%s (%s)" % (self.creation_time.strftime("%Y-%m-%d %H:%M"),
+                            str(self.submitter))
 
     def needs_scorelog(self):
         """Returns ``True`` if the submission needs to log its score."""

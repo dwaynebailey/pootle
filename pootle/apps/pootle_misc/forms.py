@@ -20,7 +20,7 @@ class GroupedModelChoiceIterator(ModelChoiceIterator):
 
     def __iter__(self):
         if self.field.empty_label is not None:
-            yield (u'', self.field.empty_label)
+            yield ('', self.field.empty_label)
 
         for title, queryset in self.choice_groups:
             if title is not None:

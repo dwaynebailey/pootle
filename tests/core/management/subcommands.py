@@ -34,7 +34,7 @@ def test_command_with_subcommands_instance(capsys, command_caller):
     assert not foo_command.subcommands
     command_caller(foo_command)
     out, err = capsys.readouterr()
-    assert out == u'Did a foo\n'
+    assert out == 'Did a foo\n'
 
 
 def test_command_with_subcommands_help(capsys, command_calls):
@@ -48,7 +48,7 @@ def test_command_with_subcommands_help(capsys, command_calls):
     exited = command_calls(foo_command, "--help")
     assert exited
     out, err = capsys.readouterr()
-    assert u'Do a foo' in out
+    assert 'Do a foo' in out
     assert "subcommands" not in out.lower()
 
 
@@ -73,8 +73,8 @@ def test_command_with_subcommands_sub(capsys, command_calls):
     out, err = capsys.readouterr()
     assert (
         out
-        == (u'Do a foo with subcommands\nAvailable subcommands'
-            u'\n=====================\n\nbar\n'))
+        == ('Do a foo with subcommands\nAvailable subcommands'
+            '\n=====================\n\nbar\n'))
     exited = command_calls(foo_command, "--help")
     assert exited
     out, err = capsys.readouterr()
@@ -234,7 +234,7 @@ def test_command_with_subcommands_bad_commanderror(capsys):
     with pytest.raises(SystemExit):
         foo_command.run_from_argv(["", "foo"])
     out, err = capsys.readouterr()
-    assert err == u'CommandError: BAD COMMAND\n'
+    assert err == 'CommandError: BAD COMMAND\n'
 
 
 @pytest.mark.django_db
@@ -260,4 +260,4 @@ def test_command_with_subcommands_bad_sub_args(capsys, argv_caller):
     argv_caller(FooCommand(), "bar")
     out, err = capsys.readouterr()
     assert out == ""
-    assert err == u'CommandError: Error: too few arguments\n'
+    assert err == 'CommandError: Error: too few arguments\n'

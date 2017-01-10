@@ -27,7 +27,7 @@ class Command(BaseCommand):
         # need to be aware of that and they are cached. Ideally Django should
         # take care of setting this up, but it doesn't yet (fixed in Django
         # 1.10): https://code.djangoproject.com/ticket/16734
-        script_name = (u'/'
+        script_name = ('/'
                        if settings.FORCE_SCRIPT_NAME is None
                        else force_text(settings.FORCE_SCRIPT_NAME))
         set_script_prefix(script_name)

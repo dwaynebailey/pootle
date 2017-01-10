@@ -93,7 +93,7 @@ def _test_admin_view(response, project):
             form_set_as_table(
                 response.context["formset"],
                 lambda tp: (
-                    u'<a href="%s">%s</a>'
+                    '<a href="%s">%s</a>'
                     % (reverse('pootle-tp-admin-permissions',
                                args=split_pootle_path(tp.pootle_path)[:2]),
                        tp.language)),
@@ -273,7 +273,7 @@ def test_admin_view_projects(client, request_users, english):
         assert response.status_code == 403
         return
     languages = Language.objects.exclude(code='templates')
-    language_choices = [(lang.id, unicode(lang)) for lang in languages]
+    language_choices = [(lang.id, str(lang)) for lang in languages]
     filetypes = []
     for info in list(formats.get().values()):
         filetypes.append(

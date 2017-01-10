@@ -18,7 +18,7 @@ class CommaSeparatedCheckboxSelectMultiple(forms.CheckboxSelectMultiple):
     def value_from_datadict(self, data, files, name):
         # Accept `sfields` to be a comma-separated string of fields (#46)
         if "," in data.get(name, ""):
-            return data.get(name).split(u',')
+            return data.get(name).split(',')
         if isinstance(data, MultiValueDict):
             return data.getlist(name)
         return data.get(name, None)

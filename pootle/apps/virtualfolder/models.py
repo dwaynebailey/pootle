@@ -90,6 +90,6 @@ class VirtualFolder(models.Model):
     def clean_fields(self):
         """Validate virtual folder fields."""
         if self.priority <= 0:
-            raise ValidationError(u'Priority must be greater than zero.')
+            raise ValidationError('Priority must be greater than zero.')
         if not self.filter_rules:
-            raise ValidationError(u'Some filtering rule must be specified.')
+            raise ValidationError('Some filtering rule must be specified.')

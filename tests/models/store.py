@@ -770,7 +770,7 @@ def test_store_file_diff(store_diff_tests):
 def test_store_repr():
     store = Store.objects.first()
     assert str(store) == str(store.syncer.convert(store.syncer.file_class))
-    assert repr(store) == u"<Store: %s>" % store.pootle_path
+    assert repr(store) == "<Store: %s>" % store.pootle_path
 
 
 @pytest.mark.django_db

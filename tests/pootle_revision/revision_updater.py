@@ -63,20 +63,20 @@ def test_revision_unit_updater_parent_paths():
          "/foo/bar/baz/some/other/baz.po"])
     assert (
         sorted(paths)
-        == [u"/foo/",
-            u"/foo/bar/",
-            u"/foo/bar/baz/",
-            u"/foo/bar/baz/some/",
-            u"/foo/bar/baz/some/other/",
-            u"/foo/bar/path/",
-            u"/foo/bar2/",
-            u"/foo/bar2/path/",
-            u"/foo2/",
-            u"/foo2/bar/",
-            u"/foo2/bar/path/",
-            u"/projects/",
-            u"/projects/bar/",
-            u"/projects/bar2/"])
+        == ["/foo/",
+            "/foo/bar/",
+            "/foo/bar/baz/",
+            "/foo/bar/baz/some/",
+            "/foo/bar/baz/some/other/",
+            "/foo/bar/path/",
+            "/foo/bar2/",
+            "/foo/bar2/path/",
+            "/foo2/",
+            "/foo2/bar/",
+            "/foo2/bar/path/",
+            "/projects/",
+            "/projects/bar/",
+            "/projects/bar2/"])
 
 
 @pytest.mark.django_db

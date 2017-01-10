@@ -56,8 +56,8 @@ class TableSelectMultiple(SelectMultiple):
                 check_test=lambda value: value in str_values)
             option_value = force_text(option_value)
             rendered_cb = cb.render(name, option_value)
-            output.append(u'<tr>')
-            output.append(u'<td class="row-select">%s</td>' % rendered_cb)
+            output.append('<tr>')
+            output.append('<td class="row-select">%s</td>' % rendered_cb)
             for attr in self.item_attrs:
                 css_name = attr
                 if callable(attr):
@@ -75,6 +75,6 @@ class TableSelectMultiple(SelectMultiple):
                 css = (
                     ' class="field-%s"'
                     % css_name.lower().replace("_", "-").replace(" ", "-"))
-                output.append(u'<td%s>%s</td>' % (css, content))
-            output.append(u'</tr>')
-        return mark_safe(u'\n'.join(output))
+                output.append('<td%s>%s</td>' % (css, content))
+            output.append('</tr>')
+        return mark_safe('\n'.join(output))

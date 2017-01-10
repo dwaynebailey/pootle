@@ -34,7 +34,7 @@ def test__clean_zero():
 @pytest.mark.parametrize('language, expected', [
     ('en-gb', '1,000.5'),  # Normal
     ('gl', '1.000,5'),  # Galician (inverted wrt en-us)
-    ('af-za', u'1\u00a0000,5'),  # Major difference
+    ('af-za', '1\u00a0000,5'),  # Major difference
     ('son', '1,000.5'),  # Missing
 ])
 def test_number(language, expected):
@@ -45,7 +45,7 @@ def test_number(language, expected):
 @pytest.mark.parametrize('language, expected', [
     ('en-gb', '1,000%'),  # Normal
     ('gl', '1.000%'),  # Galician (inverted wrt en-us)
-    ('af-za', u'1\u00a0000%'),  # Major difference
+    ('af-za', '1\u00a0000%'),  # Major difference
     ('son', '1,000%'),  # Missing
 ])
 def test_percent(language, expected):
@@ -56,7 +56,7 @@ def test_percent(language, expected):
 @pytest.mark.parametrize('language, expected', [
     ('en-gb', '1,000.5%'),  # Normal
     ('gl', '1.000,5%'),  # Galician (inverted wrt en-us)
-    ('af-za', u'1\u00a0000,5%'),  # Major difference
+    ('af-za', '1\u00a0000,5%'),  # Major difference
     ('son', '1,000.5%'),  # Missing
 ])
 def test_percent_format(language, expected):

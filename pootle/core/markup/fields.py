@@ -50,7 +50,7 @@ class Markup(object):
         rendered = cache.get(self.cache_key)
 
         if not rendered:
-            logger.debug(u'Caching rendered output of %r', self.cache_key)
+            logger.debug('Caching rendered output of %r', self.cache_key)
             rendered = apply_markup_filter(self.raw)
             cache.set(self.cache_key, rendered,
                       settings.POOTLE_CACHE_TIMEOUT)
@@ -61,7 +61,7 @@ class Markup(object):
         try:
             return mark_safe(clean_html(self.rendered))
         except ParserError:
-            return u''
+            return ''
 
     def __bool__(self):
         return self.raw.strip() != '' and self.raw is not None

@@ -127,7 +127,7 @@ class Command(PootleCommand):
         else:
             last_updated_id = None
 
-        out = u"%s  %s,%s,%s,%s,%s,%s,%s" % \
+        out = "%s  %s,%s,%s,%s,%s,%s,%s" % \
               (key, res[key]['total'], res[key]['translated'],
                res[key]['fuzzy'], res[key]['suggestions'],
                res[key]['critical'],
@@ -170,16 +170,16 @@ class Command(PootleCommand):
         def get_param(param):
             p = getattr(item, param)
             res = p() if callable(p) else p
-            res = u"%s" % res
+            res = "%s" % res
             res = res.replace('\n', '\\n')
             return (param, res)
 
-        return u"%d:%s\t%s" % \
+        return "%d:%s\t%s" % \
             (
                 item.id,
                 item._meta.object_name,
                 "\t".join(
-                    u"%s=%s" % (k, v)
+                    "%s=%s" % (k, v)
                     for k, v in map(get_param, DUMPED[item._meta.object_name])
                 )
             )

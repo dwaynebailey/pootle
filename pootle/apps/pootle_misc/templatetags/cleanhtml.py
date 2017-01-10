@@ -60,10 +60,10 @@ def url_trim(html):
         new_link_text = trim_url(el.text_content())
         el.text = new_link_text
 
-    return mark_safe(tostring(fragment, encoding=unicode))
+    return mark_safe(tostring(fragment, encoding=str))
 
 
-LANGUAGE_LINK_RE = re.compile(ur'/xx/', re.IGNORECASE)
+LANGUAGE_LINK_RE = re.compile(r'/xx/', re.IGNORECASE)
 
 
 @register.filter
@@ -72,7 +72,7 @@ def rewrite_language_links(html, language_code):
     if language_code:
         html = rewrite_links(
             html,
-            lambda lnk: LANGUAGE_LINK_RE.sub(u'/' + language_code + u'/', lnk)
+            lambda lnk: LANGUAGE_LINK_RE.sub('/' + language_code + '/', lnk)
         )
 
     return mark_safe(html)

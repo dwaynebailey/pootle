@@ -22,7 +22,7 @@ def stem_terminology_words(apps, schema_editor):
     units = units.values_list("id", "source_f")
     site_stopwords = stopwords.get().words
     stems = {}
-    delimiters = re.compile(u"[\W]+", re.U)
+    delimiters = re.compile("[\W]+", re.U)
     for unit, source in units:
         source_words = set(
             s.strip().lower()

@@ -68,7 +68,7 @@ class ActionDisplay(object):
             source=self.formatted_source)
         if self.check_name:
             params["check"] = format_html(
-                u"<a href='{}'>{}</a>",
+                "<a href='{}'>{}</a>",
                 self.checks_url,
                 self.check_display_name)
         return params
@@ -76,14 +76,14 @@ class ActionDisplay(object):
     @property
     def formatted_user(self):
         return format_html(
-            u"<a href='{}' class='user-name'>{}</a>",
+            "<a href='{}' class='user-name'>{}</a>",
             self.profile_url,
             self.display_name)
 
     @property
     def formatted_source(self):
         return format_html(
-            u"<a href='{}'>{}</a>",
+            "<a href='{}'>{}</a>",
             self.unit_url,
             self.unit_source)
 

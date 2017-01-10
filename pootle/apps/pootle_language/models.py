@@ -167,13 +167,13 @@ class Language(models.Model, TreeItem):
                 return None
 
     def __str__(self):
-        return u"%s - %s" % (self.name, self.code)
+        return "%s - %s" % (self.name, self.code)
 
     def __init__(self, *args, **kwargs):
         super(Language, self).__init__(*args, **kwargs)
 
     def __repr__(self):
-        return u'<%s: %s>' % (self.__class__.__name__, self.fullname)
+        return '<%s: %s>' % (self.__class__.__name__, self.fullname)
 
     def save(self, *args, **kwargs):
         # create corresponding directory object
@@ -199,7 +199,7 @@ class Language(models.Model, TreeItem):
         return reverse('pootle-language-browse', args=[self.code])
 
     def get_translate_url(self, **kwargs):
-        return u''.join([
+        return ''.join([
             reverse('pootle-language-translate', args=[self.code]),
             get_editor_filter(**kwargs),
         ])

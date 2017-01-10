@@ -108,7 +108,7 @@ class Command(BaseCommand):
             except VirtualFolder.DoesNotExist:
                 # If the virtual folder doesn't exist yet then create it.
                 try:
-                    self.stdout.write(u'Adding new virtual folder %s...' %
+                    self.stdout.write('Adding new virtual folder %s...' %
                                       vfolder_item['name'])
                     vfolder_item['all_projects'] = not projects
                     vfolder_item['all_languages'] = not languages
@@ -187,7 +187,7 @@ class Command(BaseCommand):
 
                 if changed:
                     try:
-                        self.stdout.write(u'Updating virtual folder %s...' %
+                        self.stdout.write('Updating virtual folder %s...' %
                                           vfolder_item['name'])
                         vfolder.save()
                     except ValidationError as e:

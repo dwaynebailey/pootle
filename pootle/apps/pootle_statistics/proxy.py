@@ -148,14 +148,14 @@ class SubmissionProxy(object):
     def unit_translate_url(self):
         if not self.unit:
             return
-        store_url = u''.join(
+        store_url = ''.join(
             [reverse("pootle-tp-store-translate",
                      args=split_pootle_path(self.unit_pootle_path)),
              get_editor_filter()])
         return (
             "%s%s"
             % (store_url,
-               '#unit=%s' % unicode(self.unit)))
+               '#unit=%s' % str(self.unit)))
 
     @property
     def unit_info(self):

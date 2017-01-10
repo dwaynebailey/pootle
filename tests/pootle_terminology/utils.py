@@ -32,7 +32,7 @@ def test_unit_terminology_instance(terminology_units, terminology0):
     assert term.text == unit.source_f
     assert (
         term.split(term.text)
-        == re.split(u"[^\w'-]+", term.text))
+        == re.split("[^\w'-]+", term.text))
     assert (
         term.tokens
         == [t.lower()
@@ -57,7 +57,7 @@ def test_unit_terminology_instance(terminology_units, terminology0):
     term.stem()
     assert (
         sorted(term.existing_stems)
-        == [u'hatstand', u'umbrella'])
+        == ['hatstand', 'umbrella'])
     unit.source_f = old_source
     unit.save()
     term.stem()
@@ -85,7 +85,7 @@ def test_terminology_matcher(store0, terminology0):
     assert matcher.text == unit.source_f
     assert (
         matcher.split(matcher.text)
-        == re.split(u"[\W]+", matcher.text))
+        == re.split("[\W]+", matcher.text))
     assert (
         matcher.tokens
         == [t.lower()

@@ -14,7 +14,7 @@ import pytest
 JSON_OBJECTS = (
     3,
     "four",
-    u"five ☠ ",
+    "five ☠ ",
     "six \n seven ",
     [9, 10],
     (11, 12, 13),

@@ -34,7 +34,7 @@ def rewrite_internal_link(link):
     from staticpages.models import AbstractPage
 
     virtual_path = link[2:]
-    url = u'#'
+    url = '#'
 
     for page_model in AbstractPage.__subclasses__():
         try:
@@ -56,10 +56,10 @@ def get_markup_filter_display_name():
     """Returns a nice version for the current markup filter's name."""
     name = get_markup_filter_name()
     return {
-        'textile': u'Textile',
-        'markdown': u'Markdown',
-        'restructuredtext': u'reStructuredText',
-    }.get(name, u'HTML')
+        'textile': 'Textile',
+        'markdown': 'Markdown',
+        'restructuredtext': 'reStructuredText',
+    }.get(name, 'HTML')
 
 
 def get_markup_filter():
@@ -137,10 +137,10 @@ def apply_markup_filter(text):
             # See ALLOWED_TAGS in
             # https://github.com/mozilla/bleach/blob/master/bleach/__init__.py
             tags = bleach.ALLOWED_TAGS + [
-                u'h1', u'h2', u'h3', u'h4', u'h5',
-                u'p', u'pre',
-                u'img',
-                u'hr',
+                'h1', 'h2', 'h3', 'h4', 'h5',
+                'p', 'pre',
+                'img',
+                'hr',
             ]
 
             tags_provided = ('clean' in markup_kwargs

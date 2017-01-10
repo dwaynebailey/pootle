@@ -161,7 +161,7 @@ class Directory(models.Model, CachedTreeItem):
             pattern_name = 'pootle-projects-translate'
             pattern_args = []
 
-        return u''.join([
+        return ''.join([
             reverse(pattern_name, args=pattern_args),
             get_editor_filter(**kwargs),
         ])

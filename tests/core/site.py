@@ -20,25 +20,25 @@ def test_site(settings):
     pootle_site = site.get()
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'https://example.com/foo')
+        == 'https://example.com/foo')
     assert not pootle_site.use_insecure_http
     settings.USE_INSECURE_HTTP = True
     assert pootle_site.use_insecure_http
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'http://example.com/foo')
+        == 'http://example.com/foo')
     contrib_site = Site.objects.get_current()
     contrib_site.domain = "foo.com"
     contrib_site.save()
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'http://foo.com/foo')
+        == 'http://foo.com/foo')
     assert pootle_site.use_http_port == 80
     settings.USE_HTTP_PORT = 8008
     assert pootle_site.use_http_port == 8008
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'http://foo.com:8008/foo')
+        == 'http://foo.com:8008/foo')
 
 
 @pytest.mark.django_db
@@ -53,7 +53,7 @@ def test_site_canonical(settings):
     assert pootle_site.domain == "foo.com"
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'http://foo.com/foo')
+        == 'http://foo.com/foo')
 
     settings.POOTLE_CANONICAL_URL = "http://foo.com/bar"
     pootle_site = site.get()
@@ -64,7 +64,7 @@ def test_site_canonical(settings):
     assert pootle_site.domain == "foo.com"
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'http://foo.com/bar/foo')
+        == 'http://foo.com/bar/foo')
 
     settings.POOTLE_CANONICAL_URL = "https://foo.com/bar"
     pootle_site = site.get()
@@ -75,7 +75,7 @@ def test_site_canonical(settings):
     assert pootle_site.domain == "foo.com"
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'https://foo.com/bar/foo')
+        == 'https://foo.com/bar/foo')
 
     settings.POOTLE_CANONICAL_URL = "https://foo.com:8008/bar"
     pootle_site = site.get()
@@ -86,4 +86,4 @@ def test_site_canonical(settings):
     assert pootle_site.domain == "foo.com"
     assert (
         pootle_site.build_absolute_uri("/foo")
-        == u'https://foo.com:8008/bar/foo')
+        == 'https://foo.com:8008/bar/foo')

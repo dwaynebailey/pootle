@@ -52,7 +52,7 @@ def _test_config_create(create_func):
     # Create a site config
     create_func(key="foo")
     _test_config_ob(
-        key=u"foo",
+        key="foo",
         value="",
         content_object=None,
         content_type=None,
@@ -68,8 +68,8 @@ def _test_config_create(create_func):
         value="bar",
         content_type=project_ct)
     _test_config_ob(
-        key=u"foo",
-        value=u"bar",
+        key="foo",
+        value="bar",
         content_object=None,
         content_type=project_ct,
         object_pk=None)
@@ -80,8 +80,8 @@ def _test_config_create(create_func):
         value="bar",
         content_object=project)
     _test_config_ob(
-        key=u"foo",
-        value=u"bar",
+        key="foo",
+        value="bar",
         content_object=project,
         content_type=project_ct,
         object_pk=project_pk)
@@ -126,13 +126,13 @@ def test_config_set(no_config_env):
     # set site-wide config
     Config.objects.set_config("foo")
     _test_config_ob(
-        key=u"foo",
+        key="foo",
         value="",
         content_type=None,
         object_pk=None)
     Config.objects.set_config("foo", "bar")
     _test_config_ob(
-        key=u"foo",
+        key="foo",
         value="bar",
         content_type=None,
         object_pk=None)
@@ -305,24 +305,24 @@ def test_config_getter_list(no_config_env):
 
     # if we pass a list as key we get a k, v list mapping
     assert config.get(key=["foo"]) == [
-        (u'foo', [u'bar0']), (u'foo', [u'bar0'])]
+        ('foo', ['bar0']), ('foo', ['bar0'])]
     assert config.get(key=[]) == [
-        (u'foo', [u'bar0']), (u'foo', [u'bar0'])]
+        ('foo', ['bar0']), ('foo', ['bar0'])]
 
     config.get().set_config("foo2", ["bar1"])
 
     # this still works
     assert config.get(key=["foo"]) == [
-        (u'foo', [u'bar0']), (u'foo', [u'bar0'])]
+        ('foo', ['bar0']), ('foo', ['bar0'])]
 
     # this still works
-    assert config.get(key=["foo2"]) == [(u'foo2', [u'bar1'])]
+    assert config.get(key=["foo2"]) == [('foo2', ['bar1'])]
 
     # both keys are returned for key=[]
     assert config.get(key=[]) == [
-        (u'foo', [u'bar0']),
-        (u'foo', [u'bar0']),
-        (u'foo2', [u'bar1'])]
+        ('foo', ['bar0']),
+        ('foo', ['bar0']),
+        ('foo2', ['bar1'])]
 
     assert config.get(Project, key=[]) == []
 
@@ -334,31 +334,31 @@ def test_config_getter_list(no_config_env):
 
     # if we pass a list as key we get a k, v list mapping
     assert config.get(Project, key=["foo"]) == [
-        (u'foo', [u'bar2']), (u'foo', [u'bar2'])]
+        ('foo', ['bar2']), ('foo', ['bar2'])]
     assert config.get(Project, key=[]) == [
-        (u'foo', [u'bar2']), (u'foo', [u'bar2'])]
+        ('foo', ['bar2']), ('foo', ['bar2'])]
 
     config.get(Project).set_config("foo2", ["bar3"])
 
     # this still works
     assert config.get(Project, key=["foo"]) == [
-        (u'foo', [u'bar2']), (u'foo', [u'bar2'])]
+        ('foo', ['bar2']), ('foo', ['bar2'])]
 
     # this still works
     assert config.get(
-        Project, key=["foo2"]) == [(u'foo2', [u'bar3'])]
+        Project, key=["foo2"]) == [('foo2', ['bar3'])]
 
     # both keys are returned for key=[]
     assert config.get(Project, key=[]) == [
-        (u'foo', [u'bar2']),
-        (u'foo', [u'bar2']),
-        (u'foo2', [u'bar3'])]
+        ('foo', ['bar2']),
+        ('foo', ['bar2']),
+        ('foo2', ['bar3'])]
 
     # site config still works
     assert config.get(key=[]) == [
-        (u'foo', [u'bar0']),
-        (u'foo', [u'bar0']),
-        (u'foo2', [u'bar1'])]
+        ('foo', ['bar0']),
+        ('foo', ['bar0']),
+        ('foo2', ['bar1'])]
 
     project = Project.objects.get(code="project0")
     assert config.get(
@@ -376,39 +376,39 @@ def test_config_getter_list(no_config_env):
 
     # if we pass a list as key we get a k, v list mapping
     assert config.get(Project, instance=project, key=["foo"]) == [
-        (u'foo', [u'bar3']), (u'foo', [u'bar3'])]
+        ('foo', ['bar3']), ('foo', ['bar3'])]
     assert config.get(Project, instance=project, key=[]) == [
-        (u'foo', [u'bar3']), (u'foo', [u'bar3'])]
+        ('foo', ['bar3']), ('foo', ['bar3'])]
 
     config.get(Project, instance=project).set_config("foo2", ["bar4"])
 
     # this still works
     assert config.get(Project, instance=project, key=["foo"]) == [
-        (u'foo', [u'bar3']), (u'foo', [u'bar3'])]
+        ('foo', ['bar3']), ('foo', ['bar3'])]
 
     # this still works
     assert config.get(
         Project,
         instance=project,
-        key=["foo2"]) == [(u'foo2', [u'bar4'])]
+        key=["foo2"]) == [('foo2', ['bar4'])]
 
     # both keys are returned for key=[]
     assert config.get(Project, instance=project, key=[]) == [
-        (u'foo', [u'bar3']),
-        (u'foo', [u'bar3']),
-        (u'foo2', [u'bar4'])]
+        ('foo', ['bar3']),
+        ('foo', ['bar3']),
+        ('foo2', ['bar4'])]
 
     # model config still works
     assert config.get(Project, key=[]) == [
-        (u'foo', [u'bar2']),
-        (u'foo', [u'bar2']),
-        (u'foo2', [u'bar3'])]
+        ('foo', ['bar2']),
+        ('foo', ['bar2']),
+        ('foo2', ['bar3'])]
 
     # site config still works
     assert config.get(key=[]) == [
-        (u'foo', [u'bar0']),
-        (u'foo', [u'bar0']),
-        (u'foo2', [u'bar1'])]
+        ('foo', ['bar0']),
+        ('foo', ['bar0']),
+        ('foo2', ['bar1'])]
 
 
 @pytest.mark.django_db
@@ -430,7 +430,7 @@ def test_config_set_json(no_config_env, json_objects):
     # set site-wide config
     Config.objects.set_config("foo", json_objects)
     _test_config_ob(
-        key=u"foo",
+        key="foo",
         value=json_objects,
         content_type=None,
         object_pk=None)

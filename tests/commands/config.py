@@ -18,7 +18,7 @@ from pootle_project.models import Project
 
 
 def _repr_value(value):
-    if not isinstance(value, (str, unicode)):
+    if not isinstance(value, (str, str)):
         value_class = type(value).__name__
         return (
             "%s(%s)"
@@ -423,14 +423,14 @@ def test_cmd_config_append(capfd):
     call_command("config", "-a", "foo", "bar")
 
     assert config.get().list_config("foo") == [
-        (u'foo', u'bar'), (u'foo', u'bar')]
+        ('foo', 'bar'), ('foo', 'bar')]
 
     # and another with different v
     call_command("config", "-a", "foo", "bar2")
     assert config.get().list_config("foo") == [
-        (u'foo', u'bar'),
-        (u'foo', u'bar'),
-        (u'foo', u'bar2')]
+        ('foo', 'bar'),
+        ('foo', 'bar'),
+        ('foo', 'bar2')]
 
     # and another with different k
     call_command("config", "-a", "foo2", "bar3")
@@ -465,7 +465,7 @@ def test_cmd_config_append_model(capfd):
         "pootle_project.project",
         "-a", "foo", "bar")
     assert config.get(Project).list_config("foo") == [
-        (u'foo', u'bar'), (u'foo', u'bar')]
+        ('foo', 'bar'), ('foo', 'bar')]
 
     # and another with different v
     call_command(
@@ -473,9 +473,9 @@ def test_cmd_config_append_model(capfd):
         "pootle_project.project",
         "-a", "foo", "bar2")
     assert config.get(Project).list_config("foo") == [
-        (u'foo', u'bar'),
-        (u'foo', u'bar'),
-        (u'foo', u'bar2')]
+        ('foo', 'bar'),
+        ('foo', 'bar'),
+        ('foo', 'bar2')]
 
     # and another with different k
     call_command(
@@ -520,7 +520,7 @@ def test_cmd_config_append_instance(capfd):
         str(project.pk),
         "-a", "foo", "bar")
     assert config.get(Project, instance=project).list_config("foo") == [
-        (u'foo', u'bar'), (u'foo', u'bar')]
+        ('foo', 'bar'), ('foo', 'bar')]
 
     # and another with different v
     call_command(
@@ -529,9 +529,9 @@ def test_cmd_config_append_instance(capfd):
         str(project.pk),
         "-a", "foo", "bar2")
     assert config.get(Project, instance=project).list_config("foo") == [
-        (u'foo', u'bar'),
-        (u'foo', u'bar'),
-        (u'foo', u'bar2')]
+        ('foo', 'bar'),
+        ('foo', 'bar'),
+        ('foo', 'bar2')]
 
     # and another with different k
     call_command(
