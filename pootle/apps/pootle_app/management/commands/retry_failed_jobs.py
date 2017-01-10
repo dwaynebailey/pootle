@@ -14,7 +14,7 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'pootle.settings'
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.urls import set_script_prefix
-from django.utils.encoding import force_unicode
+from django.utils.encoding import force_text
 
 from django_rq.queues import get_failed_queue
 
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         # 1.10): https://code.djangoproject.com/ticket/16734
         script_name = (u'/'
                        if settings.FORCE_SCRIPT_NAME is None
-                       else force_unicode(settings.FORCE_SCRIPT_NAME))
+                       else force_text(settings.FORCE_SCRIPT_NAME))
         set_script_prefix(script_name)
 
         failed_queue = get_failed_queue()
