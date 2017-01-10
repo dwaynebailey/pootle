@@ -18,7 +18,7 @@ from pootle.core.exceptions import Http400
 from pootle.core.http import JsonResponse
 from pootle.core.url_helpers import get_path_parts, split_pootle_path
 from pootle.i18n.gettext import ugettext as _
-from pootle_misc.util import ajax_required
+from pootle_misc.util import ajax_required, cmp
 from pootle_store.forms import UnitSearchForm
 from pootle_store.unit.results import GroupedResults
 from pootle_translationproject.views import TPTranslateView

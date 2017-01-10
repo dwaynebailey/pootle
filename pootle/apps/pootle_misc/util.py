@@ -105,3 +105,7 @@ def cmp_by_last_activity(x, y):
 
 def key_by_last_activity(x, y):
     return cmp_to_key(cmp_by_last_activity(x, y))
+
+
+def cmp(a, b):
+    return (a > b) - (a < b)
