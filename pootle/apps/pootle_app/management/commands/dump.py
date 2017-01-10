@@ -9,7 +9,6 @@
 
 import os
 import sys
-reload(sys)
 sys.setdefaultencoding('utf-8')
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'pootle.settings'
