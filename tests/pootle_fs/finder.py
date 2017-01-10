@@ -72,7 +72,7 @@ def test_finder_match_stores():
         kwargs["filename"] = os.path.splitext(kwargs["filename"])[0]
         del kwargs["project_code"]
         expected = TRANSLATION_PATH
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             expected = expected.replace("<%s>" % k, v)
         # clean up if no dir_path
         expected = expected.replace("//", "/")
@@ -80,7 +80,7 @@ def test_finder_match_stores():
             "<ext>", str(store.filetype.extension))
         assert finder.reverse_match(**kwargs) == expected
         matched = finder.match(expected)
-        for k, v in kwargs.items():
+        for k, v in list(kwargs.items()):
             assert matched[1][k] == v.strip("/")
 
 

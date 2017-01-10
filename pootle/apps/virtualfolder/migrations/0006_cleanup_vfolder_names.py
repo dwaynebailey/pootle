@@ -27,7 +27,7 @@ def rename_vf(vfolder):
 def cleanup_vfolder_names(app, schema):
     VirtualFolder = app.get_model("virtualfolder.VirtualFolder")
     names = Counter(VirtualFolder.objects.values_list("name", flat=True))
-    for name, count in names.items():
+    for name, count in list(names.items()):
         if count < 2:
             continue
         for vf in VirtualFolder.objects.filter(name=name):

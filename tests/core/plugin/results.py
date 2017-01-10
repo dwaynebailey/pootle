@@ -29,12 +29,12 @@ def test_gathered_dict():
     gd = GatheredDict(provider_test)
     [gd.add_result(None, dict((member, )))
      for member in members]
-    assert gd.keys() == memberdict.keys()
-    assert gd.values() == memberdict.values()
-    assert gd.items() == memberdict.items()
-    assert [x for x in gd] == memberdict.keys()
-    assert all((k in gd) for k in memberdict.keys())
-    assert all((gd.get(k) == gd[k]) for k in memberdict.keys())
+    assert list(gd.keys()) == list(memberdict.keys())
+    assert list(gd.values()) == list(memberdict.values())
+    assert list(gd.items()) == list(memberdict.items())
+    assert [x for x in gd] == list(memberdict.keys())
+    assert all((k in gd) for k in list(memberdict.keys()))
+    assert all((gd.get(k) == gd[k]) for k in list(memberdict.keys()))
     assert gd.get("DOES_NOT_EXIST") is None
     assert gd.get("DOES_NOT_EXIST", "DEFAULT") == "DEFAULT"
 
@@ -54,8 +54,8 @@ def test_gathered_dict_update():
     gd.add_result(None, None)
     newdict = dict()
     newdict.update(gd)
-    assert all((k in newdict) for k in memberdict.keys())
-    assert all((newdict[k] == v) for k, v in memberdict.items())
+    assert all((k in newdict) for k in list(memberdict.keys()))
+    assert all((newdict[k] == v) for k, v in list(memberdict.items()))
     assert len(newdict) == len(memberdict)
 
 

@@ -89,7 +89,7 @@ class Command(PootleCommand):
         kwargs = {
             k: v
             for k, v
-            in options.items()
+            in list(options.items())
             if k in ["projects", "languages", "include_anon",
                      "since", "until", "sort_by"]}
         kwargs["project_codes"] = kwargs.pop("projects", None)
@@ -98,7 +98,7 @@ class Command(PootleCommand):
 
     def handle(self, **options):
         contributors = self.contributors(**self.contrib_kwargs(**options))
-        for username, user in contributors.items():
+        for username, user in list(contributors.items()):
             name = user["full_name"].strip() or username
 
             if options["mailmerge"]:

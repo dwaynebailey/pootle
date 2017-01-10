@@ -172,7 +172,7 @@ class StoreDiff(object):
 
     @cached_property
     def active_target_units(self):
-        return [unitid for unitid, unit in self.target_units.items()
+        return [unitid for unitid, unit in list(self.target_units.items())
                 if unit['state'] != OBSOLETE]
 
     @cached_property
@@ -238,7 +238,7 @@ class StoreDiff(object):
         # If source_revision is gte than the target_revision then new unit list
         # will be exactly what is in the file
         if self.source_revision >= self.target_revision:
-            return self.source_units.keys()
+            return list(self.source_units.keys())
 
         # These units are kept as they have been updated since source_revision
         # but do not appear in the file
@@ -247,14 +247,14 @@ class StoreDiff(object):
 
         # These unit are either present in both or only in the file so are
         # kept in the file order
-        new_units += [u for u in self.source_units.keys()
+        new_units += [u for u in list(self.source_units.keys())
                       if u not in self.obsoleted_target_units]
 
         return new_units
 
     @cached_property
     def obsoleted_target_units(self):
-        return [unitid for unitid, unit in self.target_units.items()
+        return [unitid for unitid, unit in list(self.target_units.items())
                 if (unit['state'] == OBSOLETE
                     and unit["revision"] > self.source_revision)]
 
@@ -267,7 +267,7 @@ class StoreDiff(object):
 
     @cached_property
     def updated_target_units(self):
-        return [unitid for unitid, unit in self.target_units.items()
+        return [unitid for unitid, unit in list(self.target_units.items())
                 if (unit['revision'] > self.source_revision
                     and unit["state"] != OBSOLETE)]
 
@@ -310,7 +310,7 @@ class StoreDiff(object):
         return to_add
 
     def get_units_to_obsolete(self):
-        return [unit['id'] for unitid, unit in self.target_units.items()
+        return [unit['id'] for unitid, unit in list(self.target_units.items())
                 if (unitid not in self.source_units
                     and unitid in self.active_target_units
                     and unitid not in self.updated_target_units)]
@@ -329,7 +329,7 @@ class StoreDiff(object):
             if delta > 0:
                 offset += delta
         update_ids = self.get_updated_sourceids()
-        update_ids.update({x['dbid'] for x in uid_index_map.values()})
+        update_ids.update({x['dbid'] for x in list(uid_index_map.values())})
         return (update_ids, uid_index_map)
 
     def get_updated_sourceids(self):
@@ -352,7 +352,7 @@ class StoreDiff(object):
         return update_ids
 
     def has_changes(self, diff):
-        for k, v in diff.items():
+        for k, v in list(diff.items()):
             if k == "update":
                 if len(v[0]) > 0:
                     return True

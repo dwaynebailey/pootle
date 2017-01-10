@@ -32,7 +32,7 @@ class ProjectAdminView(SuperuserRequiredMixin, TemplateView):
             default_language = languages[0].id
 
         filetypes = []
-        for info in formats.get().values():
+        for info in list(formats.get().values()):
             filetypes.append(
                 [info["pk"], info["display_title"]])
 

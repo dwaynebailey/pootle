@@ -130,7 +130,7 @@ def _test_translate_view(tp, request, response, kwargs, settings):
     schema = {sc["code"]: sc for sc in get_qualitycheck_schema()}
     check_data = obj.data_tool.get_checks()
     _checks = {}
-    for check, checkid in checks.items():
+    for check, checkid in list(checks.items()):
         if check not in check_data:
             continue
         _checkid = schema[checkid]["name"]
@@ -143,7 +143,7 @@ def _test_translate_view(tp, request, response, kwargs, settings):
                 count=check_data[check]))
     _checks = OrderedDict(
         (k, _checks[k])
-        for k in CATEGORY_IDS.keys()
+        for k in list(CATEGORY_IDS.keys())
         if _checks.get(k))
     current_vfolder_pk = ""
     display_priority = False
@@ -272,4 +272,5 @@ def test_view_user_choice(client):
 def test_uploads_tp(revision, tp_uploads):
     tp_, request_, response, kwargs_, errors = tp_uploads
     assert response.status_code == 200
-    assert errors.keys() == response.context['upload_form'].errors.keys()
+    assert list(errors.keys()) == list(
+        response.context['upload_form'].errors.keys())

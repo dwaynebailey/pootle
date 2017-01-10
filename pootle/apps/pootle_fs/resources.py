@@ -151,7 +151,7 @@ class FSProjectStateResources(object):
     @persistent_property
     def missing_file_paths(self):
         return [
-            path for path in self.tracked_paths.keys()
+            path for path in list(self.tracked_paths.keys())
             if path not in self.found_file_paths]
 
     @cached_property
@@ -225,7 +225,7 @@ class FSProjectStateResources(object):
         cache_reload = [
             "context", "pootle_path", "fs_path",
             "cache_key", "sync_revision", "fs_revision"]
-        for k, v_ in self.__dict__.items():
+        for k, v_ in list(self.__dict__.items()):
             if k in cache_reload:
                 continue
             del self.__dict__[k]

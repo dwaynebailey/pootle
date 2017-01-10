@@ -298,7 +298,7 @@ def test_date_format(source_string, target_string, should_skip):
 def test_get_qualitycheck_schema():
     d = {}
     checks = get_qualitychecks()
-    for check, cat in checks.items():
+    for check, cat in list(checks.items()):
         if cat not in d:
             d[cat] = {
                 'code': cat,
@@ -312,7 +312,7 @@ def test_get_qualitycheck_schema():
             'url': ''
         })
 
-    result = sorted([item for item in d.values()],
+    result = sorted([item for item in list(d.values())],
                     key=lambda x: x['code'],
                     reverse=True)
 
@@ -323,7 +323,7 @@ def test_get_qualitycheck_schema():
 def test_get_qualitycheck_list(tp0):
     result = []
     checks = get_qualitychecks()
-    for check, cat in checks.items():
+    for check, cat in list(checks.items()):
         result.append({
             'code': check,
             'is_critical': cat == Category.CRITICAL,

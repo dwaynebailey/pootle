@@ -23,7 +23,7 @@ from pootle_store.models import Suggestion
 
 
 def _format_numbers(numbers):
-    for k in numbers.keys():
+    for k in list(numbers.keys()):
         numbers[k] = formatter.number(numbers[k])
 
 

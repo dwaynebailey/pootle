@@ -68,7 +68,7 @@ class Contributors(object):
         return self.contributors[k]
 
     def items(self):
-        return self.contributors.items()
+        return list(self.contributors.items())
 
     @cached_property
     def contributors(self):

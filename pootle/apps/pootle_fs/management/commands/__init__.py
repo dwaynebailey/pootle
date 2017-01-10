@@ -69,7 +69,7 @@ class FSAPISubCommand(ProjectSubCommand):
         return {
             k: v
             for k, v
-            in options.items()
+            in list(options.items())
             if k in [
                 "pootle_path", "fs_path", "merge",
                 "force", "pootle_wins"]}

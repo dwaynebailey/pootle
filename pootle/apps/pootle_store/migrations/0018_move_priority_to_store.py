@@ -10,11 +10,11 @@ def move_priority_from_unit_to_store(apps, schema_editor):
     priorities = dict(
         Unit.objects.exclude(priority=1.0).values_list("store_id", "priority"))
     _prios = {}
-    for store_id, priority in priorities.items():
+    for store_id, priority in list(priorities.items()):
         _prios[priority] = _prios.get(priority, [])
         _prios[priority].append(store_id)
     Store.objects.all().update(priority=1.0)
-    for prio, stores in _prios.items():
+    for prio, stores in list(_prios.items()):
         Store.objects.filter(id__in=stores).update(priority=prio)
 
 

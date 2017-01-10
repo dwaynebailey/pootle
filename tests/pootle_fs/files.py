@@ -64,8 +64,8 @@ def test_wrap_store_fs(settings, tmpdir):
     testdict = {}
     testdict[fs_file] = "foo"
     testdict[FSFile(store_fs)] = "bar"
-    assert len(testdict.keys()) == 1
-    assert testdict.values()[0] == "bar"
+    assert len(list(testdict.keys())) == 1
+    assert list(testdict.values())[0] == "bar"
 
 
 @pytest.mark.django_db

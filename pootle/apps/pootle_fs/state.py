@@ -131,7 +131,7 @@ class ProjectFSState(State):
 
     @property
     def states(self):
-        return FS_STATE.keys()
+        return list(FS_STATE.keys())
 
     @cached_property
     def resources(self):
@@ -154,10 +154,10 @@ class ProjectFSState(State):
 
     @property
     def state_fs_untracked(self):
-        tracked_fs_paths = self.resources.tracked_paths.keys()
-        tracked_pootle_paths = self.resources.tracked_paths.values()
-        trackable_fs_paths = self.resources.trackable_store_paths.values()
-        trackable_pootle_paths = self.resources.trackable_store_paths.keys()
+        tracked_fs_paths = list(self.resources.tracked_paths.keys())
+        tracked_pootle_paths = list(self.resources.tracked_paths.values())
+        trackable_fs_paths = list(self.resources.trackable_store_paths.values())
+        trackable_pootle_paths = list(self.resources.trackable_store_paths.keys())
         for pootle_path, fs_path in self.resources.found_file_matches:
             fs_untracked = (
                 fs_path not in tracked_fs_paths
@@ -199,7 +199,7 @@ class ProjectFSState(State):
     @property
     def state_unchanged(self):
         has_changes = []
-        for v in self.__state__.values():
+        for v in list(self.__state__.values()):
             if v:
                 has_changes.extend([p.pootle_path for p in v])
         unchanged = (

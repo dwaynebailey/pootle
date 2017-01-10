@@ -29,7 +29,7 @@ def test_panel_language_table(language0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(LanguageBrowseView)
-    assert lang_panels.keys() == ["children"]
+    assert list(lang_panels.keys()) == ["children"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"

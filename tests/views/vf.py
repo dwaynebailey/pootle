@@ -41,7 +41,7 @@ def _test_vf_translate_view(tp, request, response, kwargs, settings):
     check_data = DirectoryVFDataTool(obj).get_checks(
         user=request.user).get(vfolder_pk, {})
     _checks = {}
-    for check, checkid in checks.items():
+    for check, checkid in list(checks.items()):
         if check not in check_data:
             continue
         _checkid = schema[checkid]["name"]
@@ -54,7 +54,7 @@ def _test_vf_translate_view(tp, request, response, kwargs, settings):
                 count=check_data[check]))
     _checks = OrderedDict(
         (k, _checks[k])
-        for k in CATEGORY_IDS.keys()
+        for k in list(CATEGORY_IDS.keys())
         if _checks.get(k))
     vfolder = VirtualFolder.objects.get(
         name=request.resolver_match.kwargs["vfolder_name"])
@@ -172,7 +172,7 @@ def test_views_vf_get_units(get_vfolder_units_views):
 
         for i, group in enumerate(expected_units):
             result_group = result["unitGroups"][i]
-            for store, data in group.items():
+            for store, data in list(group.items()):
                 result_data = result_group[store]
                 assert (
                     [u["id"] for u in result_data["units"]]

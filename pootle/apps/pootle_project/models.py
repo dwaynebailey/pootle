@@ -184,7 +184,7 @@ def validate_not_reserved(value):
 
 
 def validate_project_checker(value):
-    if value not in PROJECT_CHECKERS.keys():
+    if value not in list(PROJECT_CHECKERS.keys()):
         raise ValidationError(
             # Translators: this refers to the project quality checker
             _('"%(code)s" cannot be used as a project checker'),

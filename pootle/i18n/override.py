@@ -78,7 +78,7 @@ def get_lang_from_http_header(request, supported):
             return normalized
 
         # FIXME: horribly slow way of dealing with languages with @ in them
-        for lang in supported.keys():
+        for lang in list(supported.keys()):
             if normalized == data.normalize_code(lang):
                 return lang
     return None

@@ -83,7 +83,7 @@ def test_cmd_contributors(capfd, dummy_contributors,
         "\n".join(
             "%s (%s contributions)" % (k, v)
             for k, v
-            in result_kwargs.items()))
+            in list(result_kwargs.items())))
 
 
 @pytest.mark.cmd
@@ -106,10 +106,10 @@ def test_cmd_contributors_mailmerge(capfd, dummy_email_contributors):
     """Contributors across the site with mailmerge."""
     call_command('contributors', '--mailmerge')
     out, err = capfd.readouterr()
-    temp = OrderedDict(sorted(CONTRIBUTORS_WITH_EMAIL.items(),
+    temp = OrderedDict(sorted(list(CONTRIBUTORS_WITH_EMAIL.items()),
                               key=lambda x: str.lower(x[1]['username'])))
     expected = [
         formataddr((item["full_name"].strip() or item["username"],
                     item['email'].strip()))
-        for item in temp.values() if item['email'].strip()]
+        for item in list(temp.values()) if item['email'].strip()]
     assert out.strip() == "\n".join(expected)

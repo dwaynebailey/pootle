@@ -18,7 +18,8 @@ def command_caller():
             sorted(o.option_strings)[0].lstrip('-').replace('-', '_'): o.dest
             for o in parser._actions if o.option_strings}
         arg_options = {
-            opt_mapping.get(key, key): value for key, value in options.items()}
+            opt_mapping.get(key, key):
+            value for key, value in list(options.items())}
         defaults = parser.parse_args(args=args)
         defaults = dict(defaults._get_kwargs(), **arg_options)
         args = defaults.pop('args', ())

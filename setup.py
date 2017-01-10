@@ -253,7 +253,7 @@ class BuildChecksTemplatesCommand(Command):
         ).getfilters(excludefilters=excluded_filters)
 
         docs = sorted(
-            get_check_description(name, f) for name, f in fd.items()
+            get_check_description(name, f) for name, f in list(fd.items())
         )
 
         # Output the quality checks descriptions to the HTML file.

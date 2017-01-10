@@ -260,7 +260,7 @@ class FormtableForm(PaginatingForm, FormWithActionsMixin):
                 forms.ValidationError(self.msg_err_no_action))
         self._search_filters = {
             k: v
-            for k, v in self.cleaned_data.items()
+            for k, v in list(self.cleaned_data.items())
             if k in self.filter_fields}
 
         # limit the search_field queryset to criteria

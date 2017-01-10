@@ -61,14 +61,14 @@ def _test_serializer_list(out, err, model=None):
 
     expected = []
 
-    if not serials.keys():
+    if not list(serials.keys()):
         expected.append(NO_SERIALS)
 
-    if serials.keys():
+    if list(serials.keys()):
         heading = "Serializers"
         expected.append("\n%s" % heading)
         expected.append("-" * len(heading))
-        for name, klass in serials.items():
+        for name, klass in list(serials.items()):
             expected.append("{!s: <30} {!s: <50} ".format(name, klass))
     assert out == "%s\n" % ("\n".join(expected))
 
@@ -80,14 +80,14 @@ def _test_deserializer_list(out, err, model=None):
 
     expected = []
 
-    if not deserials.keys():
+    if not list(deserials.keys()):
         expected.append(NO_DESERIALS)
 
-    if deserials.keys():
+    if list(deserials.keys()):
         heading = "Deserializers"
         expected.append("\n%s" % heading)
         expected.append("-" * len(heading))
-        for name, klass in deserials.items():
+        for name, klass in list(deserials.items()):
             expected.append("{!s: <30} {!s: <50} ".format(name, klass))
     assert out == "%s\n" % ("\n".join(expected))
 

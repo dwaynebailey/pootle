@@ -283,7 +283,7 @@ class SuggestionsReview(object):
                          comment=comment))
 
     def notify_suggesters(self, rejected=True, comment=""):
-        for suggester, suggestions in self.users_and_suggestions.items():
+        for suggester, suggestions in list(self.users_and_suggestions.items()):
             if rejected:
                 template = self.reject_email_template
                 subject = self.reject_email_subject

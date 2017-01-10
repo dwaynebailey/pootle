@@ -62,7 +62,7 @@ RESPONSE_MAP = {
 def _possible_actions():
     actions = set()
     for state in RESPONSE_MAP:
-        actions.update(RESPONSE_MAP[state].keys())
+        actions.update(list(RESPONSE_MAP[state].keys()))
     return actions
 
 
@@ -71,7 +71,7 @@ def pytest_generate_tests(metafunc):
     if 'localfs_envs' in metafunc.fixturenames:
 
         from pootle_fs.state import FS_STATE
-        env_names = [e for e in FS_STATE.keys() if e not in ["both_removed"]]
+        env_names = [e for e in list(FS_STATE.keys()) if e not in ["both_removed"]]
         metafunc.parametrize("localfs_env_names", env_names)
 
     if "possible_action_keys" in metafunc.fixturenames:

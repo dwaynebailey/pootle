@@ -32,7 +32,7 @@ def test_panel_project_table(project0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(ProjectBrowseView)
-    assert lang_panels.keys() == ["children"]
+    assert list(lang_panels.keys()) == ["children"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"
@@ -68,7 +68,7 @@ def test_panel_projects_table(rf, member, project0):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(ProjectsBrowseView)
-    assert lang_panels.keys() == ["children"]
+    assert list(lang_panels.keys()) == ["children"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"
@@ -108,7 +108,7 @@ def test_panel_project_store_table(project0, store0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(ProjectBrowseView)
-    assert lang_panels.keys() == ["children"]
+    assert list(lang_panels.keys()) == ["children"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"

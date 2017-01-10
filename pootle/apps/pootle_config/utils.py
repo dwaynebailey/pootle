@@ -50,13 +50,13 @@ class ConfigDict(object):
         return self.conf.get(k, default)
 
     def keys(self):
-        return self.conf.keys()
+        return list(self.conf.keys())
 
     def items(self):
-        return self.conf.items()
+        return list(self.conf.items())
 
     def values(self):
-        return self.conf.values()
+        return list(self.conf.values())
 
 
 class SiteConfig(ConfigDict):

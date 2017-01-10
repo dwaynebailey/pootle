@@ -163,7 +163,7 @@ def _setup_store_test(store, member, member2, test):
             units_before, member, member2)
 
 
-@pytest.fixture(params=UPDATE_STORE_TESTS.keys())
+@pytest.fixture(params=list(UPDATE_STORE_TESTS.keys()))
 def store_diff_tests(request, tp0, member, member2):
     from pootle.core.contextmanagers import update_data_after
     from pootle_store.diff import StoreDiff
@@ -179,7 +179,7 @@ def store_diff_tests(request, tp0, member, member2):
     return [StoreDiff(test[0], test_store, test[2])] + list(test[:3])
 
 
-@pytest.fixture(params=UPDATE_STORE_TESTS.keys())
+@pytest.fixture(params=list(UPDATE_STORE_TESTS.keys()))
 def param_update_store_test(request, tp0, member, member2):
     from pootle.core.contextmanagers import update_data_after
 

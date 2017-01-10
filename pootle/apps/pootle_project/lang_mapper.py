@@ -103,12 +103,12 @@ class ProjectLanguageMapper(object):
         """Returns a pootle code for a given upstream code"""
         if upstream_code in self.lang_mappings:
             return self.lang_mappings[upstream_code]
-        if upstream_code not in self.lang_mappings.values():
+        if upstream_code not in list(self.lang_mappings.values()):
             return upstream_code
 
     def get_upstream_code(self, pootle_code):
         """Returns an upstream code for a given pootle code"""
-        for _upstream_code, _pootle_code in self.lang_mappings.items():
+        for _upstream_code, _pootle_code in list(self.lang_mappings.items()):
             if pootle_code == _pootle_code:
                 return _upstream_code
         if pootle_code not in self.lang_mappings:
@@ -117,8 +117,8 @@ class ProjectLanguageMapper(object):
     def _add_lang_to_mapping(self, upstream_code, pootle_code):
         # as its a 1 to 1 mapping remove any previous items with
         # same value
-        if pootle_code in self._mapping.values():
-            for k, v in self._mapping.items():
+        if pootle_code in list(self._mapping.values()):
+            for k, v in list(self._mapping.items()):
                 if v == pootle_code:
                     del self._mapping[k]
                     break
@@ -129,6 +129,6 @@ class ProjectLanguageMapper(object):
         mappings = self.mappings_from_presets
         mappings.update(self.project_mappings)
 
-        for upstream_code, pootle_code in mappings.items():
+        for upstream_code, pootle_code in list(mappings.items()):
             self._add_lang_to_mapping(upstream_code, pootle_code)
         return self._mapping

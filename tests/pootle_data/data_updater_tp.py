@@ -277,7 +277,7 @@ def test_data_tp_checks(tp0):
     checks = _calculate_checks(qc_qs.all())
     check_data = tp0.check_data.all().values_list("category", "name", "count")
     assert len(check_data) == len(checks)
-    for (category, name), count in checks.items():
+    for (category, name), count in list(checks.items()):
         assert (category, name, count) in check_data
     unit = units.exclude(
         qualitycheck__isnull=True,
@@ -287,5 +287,5 @@ def test_data_tp_checks(tp0):
     checks = _calculate_checks(qc_qs.all())
     check_data = tp0.check_data.all().values_list("category", "name", "count")
     assert len(check_data) == len(checks)
-    for (category, name), count in checks.items():
+    for (category, name), count in list(checks.items()):
         assert (category, name, count) in check_data

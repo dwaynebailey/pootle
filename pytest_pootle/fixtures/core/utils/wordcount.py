@@ -115,6 +115,6 @@ WORDCOUNT_TESTS['shortcuts_modifiers'] = {
 }
 
 
-@pytest.fixture(params=WORDCOUNT_TESTS.keys())
+@pytest.fixture(params=list(WORDCOUNT_TESTS.keys()))
 def wordcount_names(request):
     return request.param

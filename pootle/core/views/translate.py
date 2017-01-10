@@ -36,7 +36,7 @@ class PootleTranslateView(PootleDetailView):
         checks = get_qualitychecks()
         schema = {sc["code"]: sc for sc in get_qualitycheck_schema()}
         _checks = {}
-        for check, checkid in checks.items():
+        for check, checkid in list(checks.items()):
             if check not in check_data:
                 continue
             _checkid = schema[checkid]["name"]
@@ -49,7 +49,7 @@ class PootleTranslateView(PootleDetailView):
                     count=check_data[check]))
         return OrderedDict(
             (k, _checks[k])
-            for k in CATEGORY_IDS.keys()
+            for k in list(CATEGORY_IDS.keys())
             if _checks.get(k))
 
     @property

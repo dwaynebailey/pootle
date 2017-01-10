@@ -39,7 +39,7 @@ def handle_scorelog_save(**kwargs):
         created = True
     if not created:
         user_score.score += scorelog.score_delta
-        for k, v in changed.items():
+        for k, v in list(changed.items()):
             existing = getattr(user_score, k)
             if v is not 0:
                 setattr(user_score, k, existing + v)

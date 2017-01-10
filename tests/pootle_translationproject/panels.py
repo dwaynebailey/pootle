@@ -32,7 +32,7 @@ def test_panel_tp_table(tp0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(TPBrowseView)
-    assert lang_panels.keys() == ["children", "vfolders"]
+    assert list(lang_panels.keys()) == ["children", "vfolders"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"
@@ -70,7 +70,7 @@ def test_panel_tp_vfolder_table(tp0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(TPBrowseView)
-    assert lang_panels.keys() == ["children", "vfolders"]
+    assert list(lang_panels.keys()) == ["children", "vfolders"]
     assert lang_panels["vfolders"] == VFolderPanel
     panel = VFolderPanel(view)
     assert panel.panel_name == "vfolder"
@@ -104,7 +104,7 @@ def test_panel_tp_subdir_table(subdir0, rf, member):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(TPBrowseView)
-    assert lang_panels.keys() == ["children", "vfolders"]
+    assert list(lang_panels.keys()) == ["children", "vfolders"]
     assert lang_panels["children"] == ChildrenPanel
     panel = ChildrenPanel(view)
     assert panel.panel_name == "children"
@@ -141,7 +141,7 @@ def test_panel_tp_no_vfolders_table(tp0, rf, member, no_vfolders):
     view.request = request
     view.object = view.get_object()
     lang_panels = panels.gather(TPBrowseView)
-    assert lang_panels.keys() == ["children", "vfolders"]
+    assert list(lang_panels.keys()) == ["children", "vfolders"]
     assert lang_panels["vfolders"] == VFolderPanel
     panel = VFolderPanel(view)
     assert panel.panel_name == "vfolder"

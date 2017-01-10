@@ -55,14 +55,14 @@ class Command(BaseCommand):
             serializers.gather(model))
 
     def print_serializers_list(self, serials, serializer_type="serializers"):
-        if not serials.keys():
+        if not list(serials.keys()):
             self.stdout.write(
                 "There are no %s set up on your system" % serializer_type)
-        if not serials.keys():
+        if not list(serials.keys()):
             return
         heading = serializer_type.capitalize()
         self.stdout.write("\n%s" % heading)
         self.stdout.write("-" * len(heading))
-        for name, serializer in serials.items():
+        for name, serializer in list(serials.items()):
             self.stdout.write(
                 "{!s: <30} {!s: <50} ".format(name, serializer))

@@ -25,7 +25,7 @@ class StoreDataTool(DataTool):
     def object_stats(self):
         stats = {
             v: getattr(self.context.data, k)
-            for k, v in self.stats_mapping.items()}
+            for k, v in list(self.stats_mapping.items())}
         stats["children"] = {}
         stats["last_submission"] = (
             self.context.data.last_submission

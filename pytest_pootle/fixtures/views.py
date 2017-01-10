@@ -246,7 +246,7 @@ DISABLED_PROJECT_URL_PARAMS = OrderedDict(
          "filename": "store1.po"})))
 
 
-@pytest.fixture(params=GET_UNITS_TESTS.keys())
+@pytest.fixture(params=list(GET_UNITS_TESTS.keys()))
 def get_units_views(request, client, request_users):
     params = GET_UNITS_TESTS[request.param].copy()
     params["path"] = params.get("path", "/language0/")
@@ -271,7 +271,7 @@ def get_units_views(request, client, request_users):
     return user, params, url_params, response
 
 
-@pytest.fixture(params=PROJECT_VIEW_TESTS.keys())
+@pytest.fixture(params=list(PROJECT_VIEW_TESTS.keys()))
 def project_views(request, client, request_users, settings):
     from pootle_project.models import Project
 
@@ -290,7 +290,7 @@ def project_views(request, client, request_users, settings):
     return test_type, project, response.wsgi_request, response, kwargs
 
 
-@pytest.fixture(params=TP_VIEW_TESTS.keys())
+@pytest.fixture(params=list(TP_VIEW_TESTS.keys()))
 def tp_views(request, client, request_users, settings):
     from pootle_translationproject.models import TranslationProject
 
@@ -323,7 +323,7 @@ def tp_views(request, client, request_users, settings):
     return test_type, tp, response.wsgi_request, response, kwargs
 
 
-@pytest.fixture(params=LANGUAGE_VIEW_TESTS.keys())
+@pytest.fixture(params=list(LANGUAGE_VIEW_TESTS.keys()))
 def language_views(request, client):
 
     from pootle_language.models import Language
@@ -337,7 +337,7 @@ def language_views(request, client):
     return test_type, language, response.wsgi_request, response, kwargs
 
 
-@pytest.fixture(params=BAD_VIEW_TESTS.keys())
+@pytest.fixture(params=list(BAD_VIEW_TESTS.keys()))
 def bad_views(request, client):
     test = dict(code=404)
     test.update(BAD_VIEW_TESTS[request.param])
@@ -404,7 +404,7 @@ def view_types(request):
     return request.param
 
 
-@pytest.fixture(params=DISABLED_PROJECT_URL_PARAMS.keys())
+@pytest.fixture(params=list(DISABLED_PROJECT_URL_PARAMS.keys()))
 def dp_view_urls(request, view_types):
     """List of url params required for disabled project tests."""
     kwargs = DISABLED_PROJECT_URL_PARAMS[request.param].copy()
@@ -414,7 +414,7 @@ def dp_view_urls(request, view_types):
     return reverse(view_name, kwargs=kwargs)
 
 
-@pytest.fixture(params=VFOLDER_VIEW_TESTS.keys())
+@pytest.fixture(params=list(VFOLDER_VIEW_TESTS.keys()))
 def vfolder_views(request, client, request_users, settings, tp0):
 
     vfolder0 = tp0.stores.filter(
@@ -442,7 +442,7 @@ def vfolder_views(request, client, request_users, settings, tp0):
     return test_type, tp0, response.wsgi_request, response, kwargs
 
 
-@pytest.fixture(params=GET_VFOLDER_UNITS_TESTS.keys())
+@pytest.fixture(params=list(GET_VFOLDER_UNITS_TESTS.keys()))
 def get_vfolder_units_views(request, client, request_users):
     from virtualfolder.models import VirtualFolder
 

@@ -84,7 +84,7 @@ def _test_translate_view(language, request, response, kwargs, settings):
     schema = {sc["code"]: sc for sc in get_qualitycheck_schema()}
     check_data = language.data_tool.get_checks()
     _checks = {}
-    for check, checkid in checks.items():
+    for check, checkid in list(checks.items()):
         if check not in check_data:
             continue
         _checkid = schema[checkid]["name"]
@@ -97,7 +97,7 @@ def _test_translate_view(language, request, response, kwargs, settings):
                 count=check_data[check]))
     _checks = OrderedDict(
         (k, _checks[k])
-        for k in CATEGORY_IDS.keys()
+        for k in list(CATEGORY_IDS.keys())
         if _checks.get(k))
     view_context_test(
         ctx,

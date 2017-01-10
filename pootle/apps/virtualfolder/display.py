@@ -16,7 +16,7 @@ class VFolderStatsDisplay(StatsDisplay):
     @cached_property
     def stats(self):
         stats = self.stat_data
-        for k, item in stats.items():
+        for k, item in list(stats.items()):
             item["incomplete"] = item["total"] - item["translated"]
             item["untranslated"] = item["total"] - item["translated"]
             self.localize_stats(item)

@@ -65,7 +65,7 @@ class ProjectFSAdminForm(forms.Form):
         return (
             (plugin_type, plugin.name or plugin.fs_type)
             for plugin_type, plugin
-            in fs_plugins.gather().items())
+            in list(fs_plugins.gather().items()))
 
     def __init__(self, *args, **kwargs):
         self.project = kwargs.pop("project")
@@ -155,7 +155,7 @@ class BaseLangMappingFormSet(forms.BaseFormSet):
         if mappings:
             kwargs["initial"] = [
                 dict(pootle_code=v, fs_code=k)
-                for k, v in mappings.items()]
+                for k, v in list(mappings.items())]
         super(BaseLangMappingFormSet, self).__init__(*args, **kwargs)
 
     @property

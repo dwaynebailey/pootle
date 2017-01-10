@@ -52,7 +52,7 @@ def test_fs_state_instance(settings, english):
     plugin = DummyPlugin(project)
     state = ProjectFSState(plugin)
     assert state.project == project
-    assert state.states == FS_STATE.keys()
+    assert state.states == list(FS_STATE.keys())
     assert (
         str(state)
         == ("<ProjectFSState(<DummyPlugin(%s)>): Nothing to report>"
@@ -264,14 +264,14 @@ def test_fs_state_filtered(state_filters, dummyfs_plugin_no_files, tp0):
     current_state = {
         k: copy(v)
         for k, v
-        in state.__state__.items()}
+        in list(state.__state__.items())}
     filtered_state = state.filter(**state_filters)
     pootle_paths = state_filters["pootle_paths"]
     fs_paths = state_filters["fs_paths"]
     states = state_filters["states"]
     # original is unchanged
     assert state.__state__ == current_state
-    for name, items in state.__state__.items():
+    for name, items in list(state.__state__.items()):
         if states and name not in states:
             assert filtered_state[name] == []
             continue

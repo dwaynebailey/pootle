@@ -125,7 +125,7 @@ class UnitQualityCheck(object):
         """
         updated = False
         new_checks = []
-        for name in self.check_failures.iterkeys():
+        for name in self.check_failures.keys():
             if name in self.original_checks:
                 # keep false-positive checks if check is active
                 unmute = (

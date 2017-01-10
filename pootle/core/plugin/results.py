@@ -40,7 +40,7 @@ class GatheredDict(Gathered):
             return default
 
     def keys(self):
-        return self.results.keys()
+        return list(self.results.keys())
 
     def values(self):
         return [self[k] for k in self.results]
@@ -55,7 +55,7 @@ class GatheredDict(Gathered):
         return self.results[k]
 
     def __iter__(self):
-        for k in self.results.keys():
+        for k in list(self.results.keys()):
             yield k
 
 

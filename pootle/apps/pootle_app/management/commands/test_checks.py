@@ -84,10 +84,10 @@ class Command(BaseCommand):
         if settings.POOTLE_QUALITY_CHECKER:
             checkers = [import_func(settings.POOTLE_QUALITY_CHECKER)()]
         else:
-            checkers = [checker() for checker in projectcheckers.values()]
+            checkers = [checker() for checker in list(projectcheckers.values())]
 
         if not checks:
-            checks = get_qualitychecks().keys()
+            checks = list(get_qualitychecks().keys())
 
         error_checks = []
         for checker in checkers:

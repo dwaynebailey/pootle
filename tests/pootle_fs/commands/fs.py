@@ -166,7 +166,7 @@ def test_fs_cmd_state(capsys, dummy_cmd_state, fs_path_qs):
                             "escape sequences"))
 def test_fs_cmd_state_colors():
     state_cmd = StateCommand()
-    for k, (pootle_style, fs_style) in state_cmd.colormap.items():
+    for k, (pootle_style, fs_style) in list(state_cmd.colormap.items()):
         if pootle_style:
             pootle_style = getattr(state_cmd.style, "FS_%s" % pootle_style)
         if fs_style:
@@ -179,7 +179,7 @@ def test_fs_cmd_state_colors():
                             "escape sequences"))
 def test_fs_cmd_response_colors():
     sub_cmd = FSAPISubCommand()
-    for k, (pootle_style, fs_style) in sub_cmd.colormap.items():
+    for k, (pootle_style, fs_style) in list(sub_cmd.colormap.items()):
         if pootle_style:
             pootle_style = getattr(sub_cmd.style, "FS_%s" % pootle_style)
         if fs_style:

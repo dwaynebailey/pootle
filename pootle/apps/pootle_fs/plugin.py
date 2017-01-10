@@ -388,7 +388,7 @@ class Plugin(object):
         for fs_state in (state['merge_pootle_wins'] + state['merge_fs_wins']):
             sfs[fs_state.kwargs["store_fs"]] = fs_state
         _sfs = StoreFS.objects.filter(
-            id__in=sfs.keys()).select_related("store", "store__data")
+            id__in=list(sfs.keys())).select_related("store", "store__data")
         for store_fs in _sfs:
             fs_state = sfs[store_fs.id]
             fs_state.store_fs = store_fs
@@ -425,7 +425,7 @@ class Plugin(object):
         for fs_state in (state['fs_staged'] + state['fs_ahead']):
             sfs[fs_state.kwargs["store_fs"]] = fs_state
         _sfs = StoreFS.objects.filter(
-            id__in=sfs.keys()).select_related("store", "store__data")
+            id__in=list(sfs.keys())).select_related("store", "store__data")
         for store_fs in _sfs:
             store_fs.file.pull(user=self.pootle_user)
             if store_fs.store and store_fs.store.data:
@@ -479,7 +479,7 @@ class Plugin(object):
         sfs = {}
         for fs_state in state['remove']:
             sfs[fs_state.kwargs["store_fs"]] = fs_state
-        for store_fs in StoreFS.objects.filter(id__in=sfs.keys()):
+        for store_fs in StoreFS.objects.filter(id__in=list(sfs.keys())):
             fs_state = sfs[store_fs.pk]
             store_fs.file.delete()
             if store_fs.store and store_fs.store.data:
@@ -529,7 +529,7 @@ class Plugin(object):
                     fs_to_update[store_fs.id] = store_fs
         if fs_to_update:
             bulk_update(
-                fs_to_update.values(),
+                list(fs_to_update.values()),
                 update_fields=[
                     "last_sync_revision", "last_sync_hash",
                     "resolve_conflict", "staged_for_merge"])

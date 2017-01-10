@@ -110,7 +110,7 @@ def test_form_formtable_bad():
     # now submit the form with units set but no action
     form = DummySearchFormtableForm(data=dict(units=[unit_id]))
     assert not form.is_valid()
-    assert form.errors.keys() == ["actions"]
+    assert list(form.errors.keys()) == ["actions"]
     _test_batch(form, Unit.objects.order_by("id"))
     assert form._page_no == 1
     assert form._results_per_page == 10

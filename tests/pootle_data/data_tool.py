@@ -142,7 +142,7 @@ def test_data_tool_tp_get_stats_with_children(tp0):
             translated="translated_words",
             suggestions="pending_suggestions",
             critical="critical_checks")
-        for k, v in aggregate_mapping.items():
+        for k, v in list(aggregate_mapping.items()):
             assert (
                 dir_stats[k]
                 == store_data.aggregate(**{k: Sum(v)})[k])

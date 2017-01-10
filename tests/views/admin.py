@@ -275,7 +275,7 @@ def test_admin_view_projects(client, request_users, english):
     languages = Language.objects.exclude(code='templates')
     language_choices = [(lang.id, unicode(lang)) for lang in languages]
     filetypes = []
-    for info in formats.get().values():
+    for info in list(formats.get().values()):
         filetypes.append(
             [info["pk"], info["display_title"]])
     project_checker_choices = [
@@ -291,5 +291,5 @@ def test_admin_view_projects(client, request_users, english):
             'treestyle': Project.treestyle_choices,
             'defaults': {
                 'source_language': english.id}}}
-    for k, v in expected.items():
+    for k, v in list(expected.items()):
         assert response.context_data[k] == v

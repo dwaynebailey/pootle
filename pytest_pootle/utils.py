@@ -202,7 +202,7 @@ def log_test_report(debug_logger, timings):
     total_queries = sum(
         t["query_count"]
         for t
-        in timings["tests"].values())
+        in list(timings["tests"].values()))
     if total_queries:
         avg_query_time = total_time / total_queries
         debug_logger.debug(

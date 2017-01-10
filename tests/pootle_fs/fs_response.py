@@ -87,7 +87,7 @@ def test_fs_response_instance():
     context = DummyContext()
     resp = ProjectFSResponse(context)
     assert resp.context == context
-    assert resp.response_types == FS_RESPONSE.keys()
+    assert resp.response_types == list(FS_RESPONSE.keys())
     assert resp.has_failed is False
     assert resp.made_changes is False
     assert list(resp.failed()) == []
@@ -123,7 +123,7 @@ def _test_fs_response(expected=2, **kwargs):
         resp.add(action_type, fs_state=fs_state)
     assert resp.has_failed is False
     assert resp.made_changes is True
-    assert resp.response_types == FS_RESPONSE.keys()
+    assert resp.response_types == list(FS_RESPONSE.keys())
     assert len(list(resp.completed())) == 2
     assert list(resp.failed()) == []
     assert action_type in resp

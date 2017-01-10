@@ -127,7 +127,7 @@ def dummyfs_untracked(dummyfs):
     return dummyfs
 
 
-@pytest.fixture(params=FS_PATH_QS.keys())
+@pytest.fixture(params=list(FS_PATH_QS.keys()))
 def fs_path_qs(request):
     return FS_PATH_QS[request.param]
 

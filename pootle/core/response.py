@@ -89,7 +89,7 @@ class Response(object):
 
     @property
     def response_types(self):
-        return self.__responses__.keys()
+        return list(self.__responses__.keys())
 
     @property
     def success(self):

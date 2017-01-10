@@ -122,7 +122,7 @@ class CommandWithSubcommands(BaseCommand):
             self.stdout.write(title)
             self.stdout.write("=" * len(title))
             self.stdout.write("")
-            subs = "\n".join(self.subcommands.keys())
+            subs = "\n".join(list(self.subcommands.keys()))
             self.stdout.write(subs)
 
     def handle_exception(self, e, options=None):
@@ -190,7 +190,7 @@ class CommandWithSubcommands(BaseCommand):
             title="subcommands",
             dest="subcommand",
             parser_class=SubcommandsSubParser)
-        for name, subcommand in self.subcommands.items():
+        for name, subcommand in list(self.subcommands.items()):
             subc = subcommand()
             kwargs = dict(cmd=subc)
             for k in ("help", "description"):

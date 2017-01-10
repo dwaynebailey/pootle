@@ -115,7 +115,7 @@ class TPDataTool(RelatedStoresDataTool):
     def object_stats(self):
         stats = {
             v: getattr(self.context.data, k)
-            for k, v in self.stats_mapping.items()}
+            for k, v in list(self.stats_mapping.items())}
         stats["last_submission"] = self.get_last_submission()
         stats["last_created_unit"] = self.get_last_created()
         return stats

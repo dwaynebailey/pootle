@@ -66,7 +66,7 @@ def test_form_fs_project_admin(no_fs_plugins, project0):
     fs_type_choices = list(
         (plugin_type, plugin.name or plugin.fs_type)
         for plugin_type, plugin
-        in fs_plugins.gather().items())
+        in list(fs_plugins.gather().items()))
     assert list(form.fs_type_choices) == fs_type_choices
     assert list(form.fields["fs_type"].choices) == fs_type_choices
     assert form.fields["fs_type"].initial == "dummy1_plugin"
@@ -139,7 +139,7 @@ def test_form_fs_project_bad(no_fs_plugins, project0):
             fs_type="dummy2",
             fs_url="DONT_SET_THIS"))
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_url"]
+    assert list(form.errors.keys()) == ["fs_url"]
     form = ProjectFSAdminForm(
         project=project0,
         data=dict(
@@ -147,7 +147,7 @@ def test_form_fs_project_bad(no_fs_plugins, project0):
             fs_type="dummy2",
             fs_url="/good/path"))
     assert not form.is_valid()
-    assert form.errors.keys() == ["translation_mapping"]
+    assert list(form.errors.keys()) == ["translation_mapping"]
 
 
 def _get_management_data(formset):

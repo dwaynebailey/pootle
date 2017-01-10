@@ -18,14 +18,14 @@ from pootle_format.registry import FormatRegistry
 
 def _test_formats(registry, keys):
     formats = registry.formats
-    assert formats.keys() == keys
+    assert list(formats.keys()) == keys
     assert (
         list(Format.objects.filter(enabled=True).values_list("name", flat=True))
         == keys)
     assert list(registry) == keys
-    assert registry.keys() == keys
-    assert registry.items() == formats.items()
-    assert registry.values() == formats.values()
+    assert list(registry.keys()) == keys
+    assert list(registry.items()) == list(formats.items())
+    assert list(registry.values()) == list(formats.values())
     for key in keys:
         filetype = Format.objects.get(name=key)
         assert formats[key] == registry[key]
@@ -147,7 +147,7 @@ def test_format_registry_template_extension(no_formats):
 def test_format_registry_object(no_formats):
     format_registry = formats.get()
     assert isinstance(format_registry, FormatRegistry)
-    assert format_registry.keys() == []
+    assert list(format_registry.keys()) == []
     format_registry.initialize()
     assert set(format_registry.keys()) == set([x[0] for x in POOTLE_FORMATS])
     for filetype in POOTLE_FORMATS:

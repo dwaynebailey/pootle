@@ -167,7 +167,7 @@ class VFoldersDataView(object):
     def table_items(self):
         items = [make_vfolder_dict(self.context, *vf)
                  for vf
-                 in self.all_stats.items()]
+                 in list(self.all_stats.items())]
         items.sort(
             lambda x, y: cmp(y['stats']['priority'], x['stats']['priority']))
         return items

@@ -177,7 +177,7 @@ def set_sync_mode(noinput=False):
                 exit(2)
 
     # Update settings to set queues to ASYNC = False.
-    for q in settings.RQ_QUEUES.itervalues():
+    for q in settings.RQ_QUEUES.values():
         q['ASYNC'] = False
 
 
@@ -269,7 +269,7 @@ def run_app(project, default_settings_path, settings_template,
     # If no CACHES backend set tell user and exit. This prevents raising
     # ImproperlyConfigured error on trying to run any pootle commands
     # NB: it may be possible to remove this when #4006 is fixed
-    caches = settings.CACHES.keys()
+    caches = list(settings.CACHES.keys())
     for cache in PERSISTENT_STORES:
         if cache not in caches:
             sys.stdout.write("\nYou need to configure the CACHES setting, "

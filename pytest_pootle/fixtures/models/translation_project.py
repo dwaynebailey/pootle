@@ -15,7 +15,7 @@ def pytest_generate_tests(metafunc):
     from pootle_project.models import PROJECT_CHECKERS
 
     if 'checkers' in metafunc.funcargnames:
-        metafunc.parametrize("checkers", PROJECT_CHECKERS.keys())
+        metafunc.parametrize("checkers", list(PROJECT_CHECKERS.keys()))
 
 
 def _require_tp(language, project):

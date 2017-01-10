@@ -34,7 +34,7 @@ def test_vfolder_data_view(tp0, request_users):
     rows = [
         make_vfolder_dict(dir0, *vf)
         for vf
-        in vf_data.all_stats.items()]
+        in list(vf_data.all_stats.items())]
     for i, row in enumerate(vf_data.table_items):
         assert rows[i] == row
     assert "priority" in vf_data.table_fields

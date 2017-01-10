@@ -231,8 +231,8 @@ class DirectoryVFDataTool(RelatedStoresDataTool):
         vfolders = {
             vf.name: vf
             for vf
-            in VirtualFolder.objects.filter(name__in=stats.keys())}
-        for k, v in stats.items():
+            in VirtualFolder.objects.filter(name__in=list(stats.keys()))}
+        for k, v in list(stats.items()):
             vfolder = vfolders.get(k)
             stats[k]["priority"] = vfolder.priority
             stats[k]["isVisible"] = (

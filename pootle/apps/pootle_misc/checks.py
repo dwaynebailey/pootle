@@ -30,7 +30,7 @@ CATEGORY_IDS = OrderedDict(
      ['extraction', Category.EXTRACTION],
      ['other', Category.NO_CATEGORY]])
 
-CATEGORY_CODES = {v: k for k, v in CATEGORY_IDS.iteritems()}
+CATEGORY_CODES = {v: k for k, v in CATEGORY_IDS.items()}
 CATEGORY_NAMES = {
     Category.CRITICAL: _("Critical"),
     Category.COSMETIC: _("Cosmetic"),
@@ -924,7 +924,7 @@ class ENChecker(checks.UnitChecker):
                     if chunk == '>':
                         level -= 1
 
-            for key in sorted([x for x in d.keys() if d[x] > 0]):
+            for key in sorted([x for x in list(d.keys()) if d[x] > 0]):
                 fingerprint += u"\001%s\001%s" % (key, d[key])
                 quotes_paired &= d[key] % 2 == 0
 
@@ -1013,7 +1013,7 @@ def get_qualitychecks():
     if settings.POOTLE_QUALITY_CHECKER:
         checkers = [import_func(settings.POOTLE_QUALITY_CHECKER)()]
     else:
-        checkers = [checker() for checker in checks.projectcheckers.values()]
+        checkers = [checker() for checker in list(checks.projectcheckers.values())]
 
     for checker in checkers:
         for filt in checker.defaultfilters:
@@ -1039,7 +1039,7 @@ def get_qualitycheck_schema(path_obj=None):
     d = {}
     checks = get_qualitychecks()
 
-    for check, cat in checks.items():
+    for check, cat in list(checks.items()):
         if cat not in d:
             d[cat] = {
                 'code': cat,
@@ -1053,7 +1053,7 @@ def get_qualitycheck_schema(path_obj=None):
             'url': path_obj.get_translate_url(check=check) if path_obj else ''
         })
 
-    result = sorted([item for item in d.values()],
+    result = sorted([item for item in list(d.values())],
                     key=lambda x: x['code'],
                     reverse=True)
 
@@ -1068,7 +1068,7 @@ def get_qualitycheck_list(path_obj):
     result = []
     checks = get_qualitychecks()
 
-    for check, cat in checks.items():
+    for check, cat in list(checks.items()):
         result.append({
             'code': check,
             'is_critical': cat == Category.CRITICAL,

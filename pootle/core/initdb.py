@@ -274,7 +274,7 @@ class InitDB(object):
         from translate.lang import data, factory
 
         # import languages from toolkit
-        for code in data.languages.keys():
+        for code in list(data.languages.keys()):
             try:
                 tk_lang = factory.getlanguage(code)
                 criteria = {

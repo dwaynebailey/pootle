@@ -19,7 +19,7 @@ from pootle_project.models import (PROJECT_CHECKERS, RESERVED_PROJECT_CODES,
 def test_clean_code_invalid(reserved_code, format_registry):
     form_data = {
         'code': reserved_code,
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'filetypes': [format_registry["po"]["pk"]],
         'source_language': 1,
@@ -28,14 +28,14 @@ def test_clean_code_invalid(reserved_code, format_registry):
     form = ProjectForm(form_data)
     assert not form.is_valid()
     assert 'code' in form.errors
-    assert len(form.errors.keys()) == 1
+    assert len(list(form.errors.keys())) == 1
 
 
 @pytest.mark.django_db
 def test_clean_code_blank_invalid(format_registry):
     form_data = {
         'code': '  ',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'filetypes': [format_registry["po"]["pk"]],
         'source_language': 1,
@@ -44,14 +44,14 @@ def test_clean_code_blank_invalid(format_registry):
     form = ProjectForm(form_data)
     assert not form.is_valid()
     assert 'code' in form.errors
-    assert len(form.errors.keys()) == 1
+    assert len(list(form.errors.keys())) == 1
 
 
 @pytest.mark.django_db
 def test_clean_localfiletype_invalid(format_registry):
     form_data = {
         'code': 'foo',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'filetypes': ["NO_SUCH_FORMAT"],
         'source_language': 1,
@@ -60,7 +60,7 @@ def test_clean_localfiletype_invalid(format_registry):
     form = ProjectForm(form_data)
     assert not form.is_valid()
     assert 'filetypes' in form.errors
-    assert len(form.errors.keys()) == 1
+    assert len(list(form.errors.keys())) == 1
 
 
 @pytest.mark.django_db
@@ -68,7 +68,7 @@ def test_project_form_bad_filetype_removal(format_registry):
     form_data = {
         'fullname': "Project 0",
         'code': "project0",
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'disabled': False,
         'filetypes': [Format.objects.get(name="xliff").pk],
         'source_language': 1,
@@ -80,7 +80,7 @@ def test_project_form_bad_filetype_removal(format_registry):
     form = ProjectForm(form_data, instance=Project.objects.get(code="project0"))
     assert not form.is_valid()
     assert 'filetypes' in form.errors
-    assert len(form.errors.keys()) == 1
+    assert len(list(form.errors.keys())) == 1
 
 
 @pytest.mark.django_db
@@ -92,7 +92,7 @@ def test_project_form_change_filetypes(format_registry):
     form_data = {
         'fullname': "Project 0",
         'code': "project0",
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'disabled': False,
         'filetypes': filetypes,
         'source_language': 1,

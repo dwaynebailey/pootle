@@ -68,7 +68,7 @@ def serializer_should_not_be_saved(**kwargs):
         if not isinstance(kwargs["value"], list):
             return ValidationError(
                 "pootle.core.serializers must be a list")
-        available_serializers = serializers.gather(kwargs["sender"]).keys()
+        available_serializers = list(serializers.gather(kwargs["sender"]).keys())
         for k in kwargs["value"]:
             if k not in available_serializers:
                 return ValidationError(
@@ -77,7 +77,8 @@ def serializer_should_not_be_saved(**kwargs):
         if not isinstance(kwargs["value"], list):
             return ValidationError(
                 "pootle.core.deserializers must be a list")
-        available_deserializers = deserializers.gather(kwargs["sender"]).keys()
+        available_deserializers = list(
+            deserializers.gather(kwargs["sender"]).keys())
         for k in kwargs["value"]:
             if k not in available_deserializers:
                 return ValidationError(

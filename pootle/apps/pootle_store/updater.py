@@ -319,7 +319,7 @@ class StoreUpdater(object):
                 self.target_store.state = PARSED
             else:
                 self.target_store.state = old_state
-            has_changed = any(x > 0 for x in changes.values())
+            has_changed = any(x > 0 for x in list(changes.values()))
             self.target_store.save()
             if has_changed:
                 log(u"[update] %s units in %s [revision: %d]"
@@ -397,7 +397,7 @@ class StoreUpdater(object):
         self.target_store.file_mtime = self.target_store.get_file_mtime()
 
         # update last_sync_revision if anything changed
-        changed = changes and any(x > 0 for x in changes.values())
+        changed = changes and any(x > 0 for x in list(changes.values()))
         if changed:
             update_unsynced = None
             if self.target_store.last_sync_revision is not None:

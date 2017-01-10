@@ -119,7 +119,7 @@ def units_contributor_searches(request):
     return request.param
 
 
-@pytest.fixture(params=UNITS_TEXT_SEARCH_TESTS.keys())
+@pytest.fixture(params=list(UNITS_TEXT_SEARCH_TESTS.keys()))
 def units_text_searches(request):
     text = request.param
     if text.startswith("exact:"):

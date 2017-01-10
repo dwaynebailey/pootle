@@ -19,7 +19,7 @@ def test_prefix_dict_no_prefix():
 
     no_prefix = PrefixedDict(mydict, prefix="")
 
-    for k, v in mydict.items():
+    for k, v in list(mydict.items()):
         assert no_prefix[k] == v
 
     no_prefix["foo"] = "pears"
@@ -50,7 +50,7 @@ def test_prefix_dict_with_prefix():
         some_prefix_baz="bananas")
     with_prefix = PrefixedDict(mydict, prefix=prefix)
 
-    for k, v in mydict.items():
+    for k, v in list(mydict.items()):
         assert with_prefix[k[len(prefix):]] == v
 
     with_prefix["foo"] = "pears"

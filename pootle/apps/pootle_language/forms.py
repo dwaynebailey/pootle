@@ -166,7 +166,7 @@ class LanguageSuggestionAdminForm(LanguageTeamFormtableForm):
             [("", "-----")]
             + [(k, v)
                for k, v
-               in STATES_MAP.items() if k != OBSOLETE]),
+               in list(STATES_MAP.items()) if k != OBSOLETE]),
         widget=forms.Select(
             attrs={'class': 'js-select2 select2-language'}))
     filter_tp = forms.ModelChoiceField(

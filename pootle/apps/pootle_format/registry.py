@@ -17,7 +17,7 @@ from pootle_format.models import FileExtension, Format
 class FormatRegistry(object):
 
     def initialize(self):
-        for filetype, info in format_registration.gather().items():
+        for filetype, info in list(format_registration.gather().items()):
             self.register(filetype, **info)
 
     def register(self, name, extension, title=None, template_extension=None):
@@ -87,13 +87,13 @@ class FormatRegistry(object):
         return self.formats.__getitem__(k)
 
     def keys(self):
-        return self.formats.keys()
+        return list(self.formats.keys())
 
     def values(self):
-        return self.formats.values()
+        return list(self.formats.values())
 
     def items(self):
-        return self.formats.items()
+        return list(self.formats.items())
 
 
 format_registry = FormatRegistry()

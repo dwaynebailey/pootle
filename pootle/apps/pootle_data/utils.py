@@ -153,7 +153,7 @@ class DataUpdater(object):
             return {}
         data = self.store_data_qs.aggregate(
             **self.get_aggregation(fields))
-        for k, v in data.items():
+        for k, v in list(data.items()):
             if v is None and k in self.aggregate_defaults:
                 data[k] = self.aggregate_defaults[k]
         return data
@@ -215,7 +215,7 @@ class DataUpdater(object):
             elif checks[(category, name)][1] != count:
                 to_update.append((checks[(category, name)][0], count))
             del checks[(category, name)]
-        for category, name in checks.keys():
+        for category, name in list(checks.keys()):
             # bulk delete?
             self.model.check_data.filter(category=category, name=name).delete()
         for pk, count in to_update:
@@ -396,7 +396,7 @@ class RelatedStoresDataTool(DataTool):
 
     def add_last_created_info(self, stat_data, children):
         updated = self.get_last_created_for_children(stat_data, children)
-        for k, v in children.items():
+        for k, v in list(children.items()):
             children[k]["last_created_unit"] = updated.get(
                 children[k]["last_created_unit__pk"])
             del children[k]["last_created_unit__pk"]
@@ -406,7 +406,7 @@ class RelatedStoresDataTool(DataTool):
         with submission info
         """
         subs = self.get_submissions_for_children(stat_data, children)
-        for child in children.values():
+        for child in list(children.values()):
             add_sub_info = (
                 child["last_submission__pk"]
                 and subs.get(child["last_submission__pk"]))
@@ -521,7 +521,7 @@ class RelatedStoresDataTool(DataTool):
         """
         last_submissions = [
             v["last_submission__pk"]
-            for v in children.values()]
+            for v in list(children.values())]
         subs = Submission.objects.filter(pk__in=last_submissions).order_by()
         subs = subs.values(
             *[field
@@ -531,7 +531,7 @@ class RelatedStoresDataTool(DataTool):
 
     def get_last_created_for_children(self, stat_data, children):
         last_created_units = set(
-            [v["last_created_unit__pk"] for v in children.values()])
+            [v["last_created_unit__pk"] for v in list(children.values())])
         return {
             unit.pk: unit.get_last_created_unit_info()
             for unit
@@ -574,11 +574,11 @@ class RelatedStoresDataTool(DataTool):
         stats = {
             k[:-5]: v
             for k, v
-            in stat_data.aggregate(*self.aggregate_sum_fields).items()}
+            in list(stat_data.aggregate(*self.aggregate_sum_fields).items())}
         stats = {
             self.stats_mapping.get(k, k): v
             for k, v
-            in stats.items()}
+            in list(stats.items())}
         stats["last_submission"] = None
         stats["last_created_unit"] = None
         stats["suggestions"] = None

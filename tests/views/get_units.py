@@ -64,7 +64,7 @@ def test_get_units(get_units_views):
 
         for i, group in enumerate(expected_units):
             result_group = result["unitGroups"][i]
-            for store, data in group.items():
+            for store, data in list(group.items()):
                 result_data = result_group[store]
                 assert (
                     [u["id"] for u in result_data["units"]]
@@ -93,7 +93,7 @@ def test_get_previous_slice(client, request_users):
 
     uids = []
     for group in result["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids.append(unit["id"])
 
@@ -114,7 +114,7 @@ def test_get_previous_slice(client, request_users):
 
     uids2 = []
     for group in result2["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids2.append(unit["id"])
 
@@ -144,7 +144,7 @@ def test_get_previous_slice(client, request_users):
 
     uids3 = []
     for group in result3["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids3.append(unit["id"])
 
@@ -179,7 +179,7 @@ def test_get_next_slice(client, request_users):
 
     uids = []
     for group in result["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids.append(unit["id"])
 
@@ -201,7 +201,7 @@ def test_get_next_slice(client, request_users):
 
     uids2 = []
     for group in result2["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids2.append(unit["id"])
 
@@ -232,7 +232,7 @@ def test_get_next_slice(client, request_users):
 
     uids3 = []
     for group in result3["unitGroups"]:
-        for group_data in group.values():
+        for group_data in list(group.values()):
             for unit in group_data["units"]:
                 uids3.append(unit["id"])
 

@@ -52,7 +52,7 @@ def test_get_contributors_store(client, request_users):
     assert response.status_code == 200
     result = json.loads(response.content)
     top_scorers_data = get_top_scorers_test_data(store.translation_project)
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 
@@ -73,7 +73,7 @@ def test_get_contributors_tp(client, request_users):
     result = json.loads(response.content)
 
     top_scorers_data = get_top_scorers_test_data(tp)
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 
@@ -94,7 +94,7 @@ def test_get_contributors_project(client, request_users):
     result = json.loads(response.content)
 
     top_scorers_data = get_top_scorers_test_data(project)
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 
@@ -115,7 +115,7 @@ def test_get_contributors_language(client, request_users):
     result = json.loads(response.content)
 
     top_scorers_data = get_top_scorers_test_data(language)
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 
@@ -142,7 +142,7 @@ def test_get_contributors_projects_offset(client, request_users):
     top_scorers_data = get_top_scorers_test_data(
         ProjectSet(user_projects),
         offset=offset)
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 
@@ -166,7 +166,7 @@ def test_get_contributors_projects(client, request_users):
         Project.objects.for_user(user)
                        .filter(code__in=user_projects))
     top_scorers_data = get_top_scorers_test_data(ProjectSet(user_projects))
-    for k, v in result.items():
+    for k, v in list(result.items()):
         assert json.loads(json.dumps(top_scorers_data[k])) == v
 
 

@@ -29,7 +29,7 @@ class SearchBackend(object):
 
         Basically this tells if TM is the 'local' TM.
         """
-        for key, value in getattr(settings, SERVER_SETTINGS_NAME, {}).items():
+        for key, value in list(getattr(settings, SERVER_SETTINGS_NAME, {}).items()):
             if (value['INDEX_NAME'] == self._settings['INDEX_NAME'] and
                 key == 'local'):
 

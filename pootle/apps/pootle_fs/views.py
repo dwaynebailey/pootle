@@ -28,7 +28,7 @@ class ProjectFSAdminView(PootleAdminFormView):
     def get_lang_mapping_formset(self):
         formset_data = {
             k: v for k, v
-            in self.request.POST.items()
+            in list(self.request.POST.items())
             if k.startswith("lang-mapping")}
         formset_kwargs = dict(project=self.project, prefix="lang-mapping")
         if formset_data:
@@ -50,7 +50,7 @@ class ProjectFSAdminView(PootleAdminFormView):
         kwargs["prefix"] = "fs-config"
         kwargs["data"] = {
             k: v for k, v
-            in kwargs.get("data", {}).items()
+            in list(kwargs.get("data", {}).items())
             if k.startswith("fs-config")}
         if not kwargs["data"]:
             del kwargs["data"]

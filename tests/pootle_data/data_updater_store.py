@@ -297,7 +297,7 @@ def test_data_store_updater_fields(store0, stats_data_dict, stats_data_types):
     store0.data_tool.updater.update(**kwargs)
     # refresh fks
     store0.data.refresh_from_db()
-    for k, v in original_values.items():
+    for k, v in list(original_values.items()):
         if k == data_type:
             assert getattr(store0.data, k) == new_value
         else:
@@ -325,7 +325,7 @@ def test_data_store_updater_checks(store0):
     original_checks = _calculate_checks(qc_qs.all())
     check_data = store0.check_data.all().values_list("category", "name", "count")
     assert len(check_data) == len(original_checks)
-    for (category, name), count in original_checks.items():
+    for (category, name), count in list(original_checks.items()):
         assert (category, name, count) in check_data
     unit = store0.units.exclude(
         qualitycheck__isnull=True,
@@ -337,7 +337,7 @@ def test_data_store_updater_checks(store0):
     check_data = store0.check_data.all().values_list("category", "name", "count")
 
     assert len(check_data) == len(checks)
-    for (category, name), count in checks.items():
+    for (category, name), count in list(checks.items()):
         assert (category, name, count) in check_data
 
     unit = Unit.objects.get(id=unit.id)
@@ -347,7 +347,7 @@ def test_data_store_updater_checks(store0):
     check_data = store0.check_data.all().values_list("category", "name", "count")
 
     assert len(check_data) == len(original_checks)
-    for (category, name), count in original_checks.items():
+    for (category, name), count in list(original_checks.items()):
         assert (category, name, count) in check_data
 
 

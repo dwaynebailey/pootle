@@ -125,4 +125,4 @@ class ProjectFSResponse(Response):
 
     @property
     def response_types(self):
-        return FS_RESPONSE.keys()
+        return list(FS_RESPONSE.keys())

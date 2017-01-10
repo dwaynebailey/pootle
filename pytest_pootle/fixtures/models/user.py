@@ -50,7 +50,7 @@ def request_users(request):
     return test_user
 
 
-@pytest.fixture(scope="session", params=TEST_USERS.keys())
+@pytest.fixture(scope="session", params=list(TEST_USERS.keys()))
 def site_users(request):
     return copy.deepcopy(TEST_USERS[request.param])
 

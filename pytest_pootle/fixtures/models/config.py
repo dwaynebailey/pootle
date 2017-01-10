@@ -34,7 +34,7 @@ BAD_CONFIG_FLAGS = OrderedDict(
      ("missing_ct", "foo.bar")])
 
 
-@pytest.fixture(params=BAD_CONFIG_FLAGS.keys())
+@pytest.fixture(params=list(BAD_CONFIG_FLAGS.keys()))
 def bad_config_flags(request):
     return BAD_CONFIG_FLAGS[request.param]
 

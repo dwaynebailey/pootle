@@ -239,7 +239,7 @@ class PootleTestEnv(object):
     def setup_system_users(self):
         from .fixtures.models.user import TEST_USERS, _require_user
 
-        for username, user_params in TEST_USERS.items():
+        for username, user_params in list(TEST_USERS.items()):
             user = _require_user(username=username, **user_params)
             TEST_USERS[username]["user"] = user
 

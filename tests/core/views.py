@@ -497,7 +497,7 @@ def test_widget_table_select_multiple_objects():
     class Dummy(object):
 
         def __init__(self, **kwargs):
-            for k, v in kwargs.items():
+            for k, v in list(kwargs.items()):
                 setattr(self, k, v)
 
     object_choices = tuple(
@@ -611,7 +611,7 @@ def test_widget_table_select_multiple_object_methods():
 
         def __init__(self, **kwargs):
             self.kwargs = kwargs
-            for k in kwargs.keys():
+            for k in list(kwargs.keys()):
                 setattr(self, k, getattr(self, "get_%s" % k))
 
     object_choices = tuple(

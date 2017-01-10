@@ -110,13 +110,13 @@ def test_command_with_subcommands_many_subs(capsys, command_calls):
              ("bar6", BarSubcommand)])
 
     foo_command = FooCommand()
-    assert foo_command.subcommands.keys() == [
+    assert list(foo_command.subcommands.keys()) == [
         "bar1", "bar2", "bar3", "bar4", "bar5", "bar6"]
     exited = command_calls(foo_command, "--help")
     assert exited
     out, err = capsys.readouterr()
     assert "subcommands" in out.lower()
-    for k in foo_command.subcommands.keys():
+    for k in list(foo_command.subcommands.keys()):
         assert k in out
         assert "Do a bar for a foo" in out
 

@@ -86,7 +86,7 @@ def dummy_contributors(request, default_contributors_kwargs):
         def contributors(self):
             # Hack the output to get back our kwargs.
             _result_kwargs = OrderedDict()
-            for k in default_contributors_kwargs.keys():
+            for k in list(default_contributors_kwargs.keys()):
                 _result_kwargs[k] = dict(
                     full_name=k,
                     contributions=getattr(
@@ -118,7 +118,7 @@ def dummy_email_contributors(request):
         @property
         def contributors(self):
             return OrderedDict(
-                sorted(CONTRIBUTORS_WITH_EMAIL.items(),
+                sorted(list(CONTRIBUTORS_WITH_EMAIL.items()),
                        key=lambda x: str.lower(x[1]['username'])))
 
     @getter(contributors, weak=False)

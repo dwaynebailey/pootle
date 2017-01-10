@@ -85,7 +85,7 @@ def redirect_to_tp_on_404(f):
                             kwargs={
                                 k: v
                                 for k, v
-                                in kwargs.items()
+                                in list(kwargs.items())
                                 if k in [
                                     "language_code",
                                     "project_code"]}))

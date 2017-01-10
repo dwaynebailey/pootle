@@ -83,7 +83,7 @@ class ChildrenPanel(TablePanel):
 
     def update_times(self, content):
         times = {}
-        update_times = self.child_update_times.items()
+        update_times = list(self.child_update_times.items())
         for name, (last_submission, last_created_unit) in update_times:
             if last_submission:
                 times[
@@ -94,7 +94,8 @@ class ChildrenPanel(TablePanel):
                     "_XXX_LAST_CREATED_%s_LAST_CREATED_XXX_"
                     % name] = last_created_unit
         if times:
-            regex = re.compile("(%s)" % "|".join(map(re.escape, times.keys())))
+            regex = re.compile("(%s)" % "|".join(
+                map(re.escape, list(times.keys()))))
             return mark_safe(
                 regex.sub(
                     lambda match: times[match.string[match.start():match.end()]],

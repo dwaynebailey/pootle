@@ -166,7 +166,7 @@ def bad_finder_paths(request):
     return request.param
 
 
-@pytest.fixture(params=FILES.keys())
+@pytest.fixture(params=list(FILES.keys()))
 def finder_files(request):
     return request.param, FILES[request.param]
 
@@ -189,11 +189,11 @@ def fs_finder(test_fs, finder_files):
     return finder, expected
 
 
-@pytest.fixture(params=MATCHES.keys())
+@pytest.fixture(params=list(MATCHES.keys()))
 def finder_matches(request):
     return [request.param] + list(MATCHES[request.param])
 
 
-@pytest.fixture(params=ROOT_PATHS.keys())
+@pytest.fixture(params=list(ROOT_PATHS.keys()))
 def finder_root_paths(request):
     return request.param, ROOT_PATHS[request.param]

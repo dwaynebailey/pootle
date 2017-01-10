@@ -62,7 +62,7 @@ def calculate_search_results(kwargs, user):
     path_kwargs = {
         k: v
         for k, v
-        in resolve(pootle_path).kwargs.items()
+        in list(resolve(pootle_path).kwargs.items())
         if k in [
             "language_code",
             "project_code",

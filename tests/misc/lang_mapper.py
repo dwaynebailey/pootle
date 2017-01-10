@@ -133,8 +133,9 @@ def test_lang_mapper_mappings(po_directory, english):
 def _test_mapper(project, debug=False):
     project.config.reload()
     mapper = lang_mapper.get(project.__class__, instance=project)
-    assert mapper.site_config.items() == SiteConfig().items()
-    assert mapper.project.config.items() == ObjectConfig(project).items()
+    assert list(mapper.site_config.items()) == list(SiteConfig().items())
+    assert list(
+        mapper.project.config.items()) == list(ObjectConfig(project).items())
     assert mapper.project_mappings == ObjectConfig(project).get(
         "pootle.core.lang_mapping", {})
     assert mapper.project_presets == ObjectConfig(project).get(
@@ -156,16 +157,16 @@ def _test_mapper(project, debug=False):
     def _add_lang_to_mapping(upstream_code, pootle_code):
         # as its a 1 to 1 mapping remove any previous items with
         # same value
-        if pootle_code in _mapping.values():
-            for k, v in _mapping.items():
+        if pootle_code in list(_mapping.values()):
+            for k, v in list(_mapping.items()):
                 if v == pootle_code:
                     del _mapping[k]
                     break
         _mapping[upstream_code] = pootle_code
     mappings = OrderedDict(mapper.mappings_from_presets)
     mappings.update(OrderedDict(mapper.project_mappings))
-    for upstream_code, pootle_code in mappings.items():
+    for upstream_code, pootle_code in list(mappings.items()):
         _add_lang_to_mapping(upstream_code, pootle_code)
 
     assert mapper.lang_mappings == _mapping
-    assert len(_mapping.values()) == len(set(_mapping.values()))
+    assert len(list(_mapping.values())) == len(set(_mapping.values()))
