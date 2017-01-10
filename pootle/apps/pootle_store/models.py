@@ -217,12 +217,8 @@ class Unit(AbstractUnit):
 
     # # # # # # # # # # # # # #  Methods # # # # # # # # # # # # # # # # # # #
 
-    def __unicode__(self):
-        # FIXME: consider using unit id instead?
-        return unicode(self.source)
-
     def __str__(self):
-        return str(self.convert())
+        return self.source
 
     def __init__(self, *args, **kwargs):
         super(Unit, self).__init__(*args, **kwargs)
@@ -864,11 +860,8 @@ class Store(AbstractStore):
     def __init__(self, *args, **kwargs):
         super(Store, self).__init__(*args, **kwargs)
 
-    def __unicode__(self):
-        return unicode(self.pootle_path)
-
     def __str__(self):
-        return str(self.syncer.convert())
+        return self.pootle_path
 
     def save(self, *args, **kwargs):
         created = not self.id
