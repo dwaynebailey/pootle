@@ -39,7 +39,7 @@ def to_python(value):
         return multistring("", encoding="UTF-8")
     elif isinstance(value, multistring):
         return value
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         return parse_multistring(value)
     elif isinstance(value, dict):
         return multistring([val for __, val in sorted(value.items())],
@@ -90,7 +90,7 @@ class MultiStringField(models.Field):
 
     def get_prep_lookup(self, lookup_type, value):
         if (lookup_type in ('exact', 'iexact') or
-            not isinstance(value, basestring)):
+            not isinstance(value, str)):
             value = self.get_prep_value(value)
         return super(MultiStringField, self).get_prep_lookup(lookup_type,
                                                              value)

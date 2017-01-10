@@ -72,7 +72,7 @@ class MultiStringWidgetMixin(object):
             return [string for string in value.strings]
         elif isinstance(value, list):
             return value
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return [value]
 
         raise ValueError
