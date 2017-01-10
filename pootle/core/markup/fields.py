@@ -63,7 +63,7 @@ class Markup(object):
         except ParserError:
             return u''
 
-    def __nonzero__(self):
+    def __bool__(self):
         return self.raw.strip() != '' and self.raw is not None
 
 
