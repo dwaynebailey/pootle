@@ -170,7 +170,7 @@ class SuggestionsReview(object):
             If the suggestion already exists it's returned as well.
         """
         dont_add = (
-            not filter(None, translation)
+            not [_f for _f in translation if _f]
             or translation == unit.target)
         if dont_add:
             return (None, False)

@@ -74,7 +74,7 @@ HEADING_CHOICES = [
 
 def get_table_headings(choices):
     """Filters the list of available table headings to the given `choices`."""
-    return filter(lambda x: x['id'] in choices, HEADING_CHOICES)
+    return [x for x in HEADING_CHOICES if x['id'] in choices]
 
 
 def make_generic_item(path_obj, **kwargs):

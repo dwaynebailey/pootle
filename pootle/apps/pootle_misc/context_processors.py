@@ -18,8 +18,8 @@ from staticpages.models import LegalPage
 def _agreement_context(request):
     """Returns whether the agreement box should be displayed or not."""
     request_path = request.META['PATH_INFO']
-    nocheck = filter(lambda x: request_path.startswith(x),
-                     settings.POOTLE_LEGALPAGE_NOCHECK_PREFIXES)
+    nocheck = [x for x in settings.POOTLE_LEGALPAGE_NOCHECK_PREFIXES
+               if request_path.startswith(x)]
 
     if (request.user.is_authenticated and not nocheck and
         LegalPage.objects.has_pending_agreement(request.user)):

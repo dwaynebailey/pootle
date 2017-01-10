@@ -29,7 +29,7 @@ def get_pootle_permission(codename):
 
 def get_permissions_by_user(user, directory):
     pootle_path = directory.pootle_path
-    path_parts = filter(None, pootle_path.split('/'))
+    path_parts = [_f for _f in pootle_path.split('/') if _f]
     try:
         permissionset = user.permissionset_set.select_related("directory").filter(
             directory__in=directory.trail(
@@ -41,10 +41,8 @@ def get_permissions_by_user(user, directory):
         (len(path_parts) > 1
          and path_parts[0] != 'projects'
          and (permissionset is None
-              or len(
-                  filter(
-                      None,
-                      permissionset.directory.pootle_path.split('/'))) < 2)))
+              or len([_f for _f in permissionset.directory.pootle_path.split('/')
+                      if _f]) < 2)))
 
     if check_project_permissions:
         # Active permission at language level or higher, check project

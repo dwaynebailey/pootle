@@ -51,8 +51,8 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         default_static_dir = os.path.join(settings.WORKING_DIR, 'static')
-        custom_static_dirs = filter(lambda x: x != default_static_dir,
-                                    settings.STATICFILES_DIRS)
+        custom_static_dirs = [x for x in settings.STATICFILES_DIRS
+                              if x != default_static_dir]
 
         finder = AppDirectoriesFinder()
         for app_name in finder.storages:

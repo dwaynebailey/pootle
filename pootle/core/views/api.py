@@ -65,7 +65,7 @@ class APIView(View):
 
         if self.restrict_to_methods is not None:
             restricted_to = map(lambda x: x.lower(), self.restrict_to_methods)
-            methods = filter(lambda x: x in restricted_to, methods)
+            methods = [x for x in methods if x in restricted_to]
 
         return methods
 

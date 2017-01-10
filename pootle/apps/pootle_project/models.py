@@ -506,19 +506,19 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
             if not dirnames:
                 # No subdirectories
-                if filter(self.file_belongs_to_project, filenames):
+                if list(filter(self.file_belongs_to_project, filenames)):
                     # Translation files found, assume gnu
                     return "gnu"
 
             # There are subdirectories
-            if filter(lambda dirname: dirname == 'templates' or
-                      langcode_re.match(dirname), dirnames):
+            if [dirname for dirname in dirnames
+                if dirname == 'templates' or langcode_re.match(dirname)]:
                 # Found language dirs assume nongnu
                 return "nongnu"
 
             # No language subdirs found, look for any translation file
             for dirpath_, dirnames, filenames in os.walk(self.get_real_path()):
-                if filter(self.file_belongs_to_project, filenames):
+                if list(filter(self.file_belongs_to_project, filenames)):
                     return "gnu"
         except:
             pass

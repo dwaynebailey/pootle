@@ -454,12 +454,12 @@ class Unit(AbstractUnit):
             or (len(self.target.strings)
                 != stringcount(unit.target)))
         if update_target:
-            notempty = filter(None, self.target_f.strings)
+            notempty = [_f for _f in self.target_f.strings if _f]
             self.target = unit.target
             self.submitted_by = user
             self.submitted_on = timezone.now()
 
-            if filter(None, self.target_f.strings) or notempty:
+            if [_f for _f in self.target_f.strings if _f] or notempty:
                 # FIXME: we need to do this cause we discard nplurals for empty
                 # plurals
                 changed = True
@@ -684,7 +684,7 @@ class Unit(AbstractUnit):
     def getlocations(self):
         if self.locations is None:
             return []
-        return filter(None, self.locations.split('\n'))
+        return [_f for _f in self.locations.split('\n') if _f]
 
     def addlocation(self, location):
         if self.locations is None:
@@ -706,7 +706,7 @@ class Unit(AbstractUnit):
         if value:
             self.state = FUZZY
         elif self.state <= FUZZY:
-            if filter(None, self.target_f.strings):
+            if [_f for _f in self.target_f.strings if _f]:
                 self.state = TRANSLATED
             else:
                 self.state = UNTRANSLATED
@@ -728,7 +728,7 @@ class Unit(AbstractUnit):
         if self.state > OBSOLETE:
             return
 
-        if filter(None, self.target_f.strings):
+        if [_f for _f in self.target_f.strings if _f]:
             # when Unit toggles its OBSOLETE state the number of translated
             # words or fuzzy words also changes
             if is_fuzzy:
