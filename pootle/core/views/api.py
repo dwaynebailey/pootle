@@ -141,7 +141,7 @@ class APIView(View):
         the fields from `self.fields`.
         """
         try:
-            request_dict = json.loads(request.body)
+            request_dict = json.loads(request.body.decode('utf-8'))
         except ValueError:
             return self.status_msg('Invalid JSON data', status=400)
 
@@ -165,7 +165,7 @@ class APIView(View):
                                    status=405)
 
         try:
-            request_dict = json.loads(request.body)
+            request_dict = json.loads(request.body.decode('utf-8'))
             instance = self.base_queryset.get(pk=kwargs[self.pk_field_name])
         except ValueError:
             return self.status_msg('Invalid JSON data', status=400)
