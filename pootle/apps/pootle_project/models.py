@@ -502,7 +502,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
     def _detect_treestyle(self):
         try:
             dirlisting = os.walk(self.get_real_path())
-            dirpath_, dirnames, filenames = dirlisting.next()
+            dirpath_, dirnames, filenames = next(dirlisting)
 
             if not dirnames:
                 # No subdirectories

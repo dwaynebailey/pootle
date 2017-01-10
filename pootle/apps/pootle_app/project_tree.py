@@ -318,8 +318,8 @@ def translation_project_dir_exists(language, project):
     else:
         # find directory with the language name in the project dir
         try:
-            dirpath_, dirnames, filename = os.walk(
-                project.get_real_path()).next()
+            dirpath_, dirnames, filename = next(os.walk(
+                project.get_real_path()))
             lang_code = project.lang_mapper.get_upstream_code(language.code)
             if lang_code in dirnames:
                 return True
