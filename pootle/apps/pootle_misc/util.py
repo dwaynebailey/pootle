@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 from datetime import datetime, timedelta
-from functools import wraps
+from functools import cmp_to_key, wraps
 from importlib import import_module
 
 from django.conf import settings
@@ -101,3 +101,7 @@ def cmp_by_last_activity(x, y):
     if 'stats' in y and 'last_submission' in y['stats']:
         val_y = y['stats']['last_submission']['mtime']
     return cmp(val_y, val_x)
+
+
+def key_by_last_activity(x, y):
+    return cmp_to_key(cmp_by_last_activity(x, y))

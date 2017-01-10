@@ -28,7 +28,7 @@ from pootle.i18n.gettext import ugettext as _
 from pootle_app.models import Directory
 from pootle_app.views.admin import util
 from pootle_app.views.admin.permissions import admin_permissions
-from pootle_misc.util import cmp_by_last_activity
+from pootle_misc.util import key_by_last_activity
 from pootle_project.forms import TranslationProjectForm
 from pootle_store.models import Store
 from pootle_translationproject.models import TranslationProject
@@ -153,7 +153,7 @@ class ProjectBrowseView(ProjectMixin, PootleBrowseView):
         ]
 
         items = self.add_child_stats(items)
-        items.sort(cmp_by_last_activity)
+        items.sort(key=key_by_last_activity)
         return items
 
 
@@ -345,7 +345,7 @@ class ProjectsBrowseView(ProjectsMixin, PootleBrowseView):
             for project
             in self.object.children]
         items = self.add_child_stats(items)
-        items.sort(cmp_by_last_activity)
+        items.sort(key=key_by_last_activity)
         return items
 
     @property
