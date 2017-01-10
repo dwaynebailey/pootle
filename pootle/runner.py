@@ -16,7 +16,7 @@ from argparse import SUPPRESS, ArgumentParser
 from django.conf import settings
 from django.core import management
 
-import syspath_override  # noqa
+from pootle import syspath_override  # noqa
 from pootle.core.cache import PERSISTENT_STORES
 
 
@@ -95,7 +95,7 @@ def init_settings(settings_filepath, template_filename,
     with open(settings_filepath, 'w') as settings:
         with open(template_filename) as template:
             settings.write(
-                (template.read().decode("utf8") % context).encode("utf8"))
+                (template.read() % context))
 
 
 def init_command(parser, settings_template, args):
