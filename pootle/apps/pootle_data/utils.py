@@ -437,7 +437,8 @@ class RelatedStoresDataTool(DataTool):
                     latest["last_created_unit"] = last_created
                     last_created_unit_time = last_created["creation_time"]
             if (last_submission_pk is None
-                or child["last_submission__pk"] > last_submission_pk):
+                or (child["last_submission__pk"] is not None
+                    and child["last_submission__pk"] > last_submission_pk)):
                 if child.get("last_submission"):
                     latest['last_submission'] = child["last_submission"]
                     last_submission_pk = child["last_submission__pk"]
