@@ -1,6 +1,6 @@
 # https://travis-ci.org/#!/translate/pootle
 dist: trusty
-sudo: false
+sudo: required
 language: python
 addons:
   apt:
