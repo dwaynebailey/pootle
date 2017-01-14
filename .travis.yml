@@ -69,3 +69,4 @@ before_cache:
 services:
   - redis-server
   - elasticsearch
+  - mysql
