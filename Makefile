@@ -48,7 +48,7 @@ travis-assets:
 		npm install && \
 		cd ${CWD}; \
 		${POOTLE_CMD} compilejsi18n; \
-		${POOTLE_CMD} webpack --dev --nowatch; \
+		${POOTLE_CMD} webpack --extra=--display-error-details; \
 		mkdir -p ${ASSETS_DIR}; \
 		${POOTLE_CMD} collectstatic --noinput --clear -i node_modules -i .tox -i docs ${TAIL}; \
 		${POOTLE_CMD} assets build ${TAIL}; \
