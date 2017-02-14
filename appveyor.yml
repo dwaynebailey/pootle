@@ -49,9 +49,12 @@ install:
   #- chmod 664 ${ASSETS_DIR}.webassets-cache/*
 
 before_test:
-  - choco install redis-64
-  - redis-server --service-install
-  - redis-server --service-start
+  - nuget install redis-64 -excludeversion
+  - redis-64\tools\redis-server.exe --service-install
+  - redis-64\tools\redis-server --service-start
+  #- choco install redis-64
+  #- redis-server --service-install
+  #- redis-server --service-start
 
 build: off
 
