@@ -47,7 +47,7 @@ class Command(BaseCommand):
             score_updater.get(get_user_model())(users=users).clear()
             return
 
-        class Update:
+        class Update:  # pragma pylint: disable=old-style-class
             users = set()
 
         for tp in TranslationProject.objects.all():
