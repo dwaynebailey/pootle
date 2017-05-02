@@ -7,3 +7,11 @@ ignore-paths:
 pylint:
     options:
         dummy-variables-rgx: __|^.*[^_]_$
+
+pep8:
+  disable:
+    - E129
+    - E226
+    - E402
+    - E731
+    - W503
