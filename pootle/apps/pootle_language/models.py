@@ -25,35 +25,35 @@ class Language(models.Model, TreeItem):
     # see migration 0002_case_insensitive_schema.py
     code = models.CharField(
         max_length=50, null=False, unique=True, db_index=True,
-        verbose_name=_("Code"),
-        help_text=_('ISO 639 language code for the language, possibly '
-                    'followed by an underscore (_) and an ISO 3166 country '
-                    'code. <a href="http://www.w3.org/International/'
-                    'articles/language-tags/">More information</a>')
+        verbose_name=_(u"Code"),
+        help_text=_(u'ISO 639 language code for the language, possibly '
+                    u'followed by an underscore (_) and an ISO 3166 country '
+                    u'code. <a href="http://www.w3.org/International/'
+                    u'articles/language-tags/">More information</a>')
     )
     fullname = models.CharField(max_length=255, null=False,
-                                verbose_name=_("Full Name"))
+                                verbose_name=_(u"Full Name"))
 
     specialchars = models.CharField(
-        max_length=255, blank=True, verbose_name=_("Special Characters"),
-        help_text=_('Enter any special characters that users might find '
-                    'difficult to type')
+        max_length=255, blank=True, verbose_name=_(u"Special Characters"),
+        help_text=_(u'Enter any special characters that users might find '
+                    u'difficult to type')
     )
 
-    plurals_help_text = _('For more information, visit '
-                          '<a href="http://docs.translatehouse.org/projects/'
-                          'localization-guide/en/latest/l10n/'
-                          'pluralforms.html">'
-                          'our page</a> on plural forms.')
+    plurals_help_text = _(u'For more information, visit '
+                          u'<a href="http://docs.translatehouse.org/projects/'
+                          u'localization-guide/en/latest/l10n/'
+                          u'pluralforms.html">'
+                          u'our page</a> on plural forms.')
     nplural_choices = (
-        (0, _('Unknown')), (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)
+        (0, _(u'Unknown')), (1, 1), (2, 2), (3, 3), (4, 4), (5, 5), (6, 6)
     )
     nplurals = models.SmallIntegerField(
         default=0, choices=nplural_choices,
-        verbose_name=_("Number of Plurals"), help_text=plurals_help_text
+        verbose_name=_(u"Number of Plurals"), help_text=plurals_help_text
     )
     pluralequation = models.CharField(
-        max_length=255, blank=True, verbose_name=_("Plural Equation"),
+        max_length=255, blank=True, verbose_name=_(u"Plural Equation"),
         help_text=plurals_help_text)
 
     directory = models.OneToOneField('pootle_app.Directory', db_index=True,

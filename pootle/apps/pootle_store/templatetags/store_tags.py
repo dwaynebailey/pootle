@@ -34,16 +34,16 @@ def pluralize_source(unit):
 
     count = len(unit.source.strings)
     if count == 1:
-        return [(0, unit.source.strings[0], "%s+%s" % (_('Singular'),
-                                                       _('Plural')))]
+        return [(0, unit.source.strings[0], "%s+%s" % (_(u'Singular'),
+                                                       _(u'Plural')))]
 
     if count == 2:
-        return [(0, unit.source.strings[0], _('Singular')),
-                (1, unit.source.strings[1], _('Plural'))]
+        return [(0, unit.source.strings[0], _(u'Singular')),
+                (1, unit.source.strings[1], _(u'Plural'))]
 
     forms = []
     for i, source in enumerate(unit.source.strings):
-        forms.append((i, source, _('Plural Form %d', i)))
+        forms.append((i, source, _(u'Plural Form %d', i)))
     return forms
 
 
@@ -60,14 +60,14 @@ def pluralize_target(unit, nplurals=None):
     forms = []
     if nplurals is None:
         for i, target in enumerate(unit.target.strings):
-            forms.append((i, target, _('Plural Form %d', i)))
+            forms.append((i, target, _(u'Plural Form %d', i)))
     else:
         for i in range(nplurals):
             try:
                 target = unit.target.strings[i]
             except IndexError:
                 target = ''
-            forms.append((i, target, _('Plural Form %d', i)))
+            forms.append((i, target, _(u'Plural Form %d', i)))
 
     return forms
 

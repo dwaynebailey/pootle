@@ -114,13 +114,13 @@ Fields in models and forms
     class SampleForm(forms.Form):
         # Field declaration that spans to several lines.
         language = forms.ChoiceField(
-            label=_('Interface Language'),
+            label=_(u'Interface Language'),
             initial="",
             required=False,
             widget=forms.Select(attrs={
                 'class': 'js-select2 select2-language',
             }),
-            help_text=_('Default language for using on the user interface.'),
+            help_text=_(u'Default language for using on the user interface.'),
         )
         # One line field declaration.
         project = forms.ModelChoiceField(Project, required=True)

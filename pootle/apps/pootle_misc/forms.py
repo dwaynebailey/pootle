@@ -98,26 +98,26 @@ class SearchForm(forms.Form):
     search = forms.CharField(
         widget=forms.TextInput(attrs={
             'size': '15',
-            'placeholder': _('Search'),
-            'title': _("Search (Ctrl+Shift+S)<br/>Type and press Enter to "
-                       "search"),
+            'placeholder': _(u'Search'),
+            'title': _(u"Search (Ctrl+Shift+S)<br/>Type and press Enter to "
+                       u"search"),
         }),
     )
     soptions = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple,
         choices=(
-            ('exact', _('Exact Match')),
+            ('exact', _(u'Exact Match')),
         ),
     )
     sfields = forms.MultipleChoiceField(
         required=False,
         widget=forms.CheckboxSelectMultiple,
         choices=(
-            ('source', _('Source Text')),
-            ('target', _('Target Text')),
-            ('notes', _('Comments')),
-            ('locations', _('Locations'))
+            ('source', _(u'Source Text')),
+            ('target', _(u'Target Text')),
+            ('notes', _(u'Comments')),
+            ('locations', _(u'Locations'))
         ),
         initial=['source', 'target'],
     )

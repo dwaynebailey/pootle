@@ -26,7 +26,7 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
         max_length=100,
         label=_(u'Subject'),
         widget=forms.TextInput(
-            attrs={'placeholder': _('Please enter a message subject')}
+            attrs={'placeholder': _(u'Please enter a message subject')}
         ),
     )
 
@@ -34,15 +34,15 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
         super(ContactForm, self).__init__(*args, **kwargs)
 
         self.fields['name'].label = _(u'Name')
-        name_placeholder = _('Please enter your name')
+        name_placeholder = _(u'Please enter your name')
         self.fields['name'].widget.attrs['placeholder'] = name_placeholder
 
         self.fields['email'].label = _(u'Email address')
-        email_placeholder = _('Please enter your email address')
+        email_placeholder = _(u'Please enter your email address')
         self.fields['email'].widget.attrs['placeholder'] = email_placeholder
 
         self.fields['body'].label = _(u'Message')
-        body_placeholder = _('Please enter your message')
+        body_placeholder = _(u'Please enter your message')
         self.fields['body'].widget.attrs['placeholder'] = body_placeholder
 
         if self.request.user.is_authenticated:
@@ -123,7 +123,7 @@ class ReportForm(ContactForm):
         super(ReportForm, self).__init__(*args, **kwargs)
 
         self.fields['body'].label = _(u'Question or comment')
-        body_placeholder = _('Please enter your question or comment')
+        body_placeholder = _(u'Please enter your question or comment')
         self.fields['body'].widget.attrs['placeholder'] = body_placeholder
 
         del self.fields['email_subject']

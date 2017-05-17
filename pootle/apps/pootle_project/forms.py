@@ -54,7 +54,7 @@ class TranslationProjectFormSet(BaseModelFormSet):
 class TranslationProjectForm(forms.ModelForm):
 
     language = LiberalModelChoiceField(
-        label=_("Language"),
+        label=_(u"Language"),
         queryset=Language.objects.all(),
         widget=forms.Select(
             attrs={

@@ -36,27 +36,27 @@ logger = logging.getLogger(__name__)
 def import_file(f, user=None):
     ttk = getclass(f)(f.read())
     if not hasattr(ttk, "parseheader"):
-        raise UnsupportedFiletypeError(_("Unsupported filetype '%s', only PO "
-                                         "files are supported at this time\n",
+        raise UnsupportedFiletypeError(_(u"Unsupported filetype '%s', only PO "
+                                         u"files are supported at this time\n",
                                          f.name))
     header = ttk.parseheader()
     pootle_path = header.get("X-Pootle-Path")
     if not pootle_path:
-        raise MissingPootlePathError(_("File '%s' missing X-Pootle-Path "
-                                       "header\n", f.name))
+        raise MissingPootlePathError(_(u"File '%s' missing X-Pootle-Path "
+                                       u"header\n", f.name))
 
     rev = header.get("X-Pootle-Revision")
     if not rev or not rev.isdigit():
-        raise MissingPootleRevError(_("File '%s' missing or invalid "
-                                      "X-Pootle-Revision header\n",
+        raise MissingPootleRevError(_(u"File '%s' missing or invalid "
+                                      u"X-Pootle-Revision header\n",
                                       f.name))
     rev = int(rev)
 
     try:
         store = Store.objects.get(pootle_path=pootle_path)
     except Store.DoesNotExist as e:
-        raise FileImportError(_("Could not create '%s'. Missing "
-                                "Project/Language? (%s)", (f.name, e)))
+        raise FileImportError(_(u"Could not create '%s'. Missing "
+                                u"Project/Language? (%s)", (f.name, e)))
 
     tp = store.translation_project
     allow_add_and_obsolete = ((tp.project.checkstyle == 'terminology'
@@ -72,7 +72,7 @@ def import_file(f, user=None):
     except Exception as e:
         # This should not happen!
         logger.error("Error importing file: %s", str(e))
-        raise FileImportError(_("There was an error uploading your file"))
+        raise FileImportError(_(u"There was an error uploading your file"))
 
 
 class TPTMXExporter(object):

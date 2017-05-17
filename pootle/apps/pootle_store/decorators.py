@@ -22,12 +22,12 @@ def get_permission_message(permission_code):
     """Returns a human-readable message when `permission_code` is not met
     by the current context.
     """
-    default_message = _("Insufficient rights to access this directory.")
+    default_message = _(u"Insufficient rights to access this directory.")
 
     return {
-        'suggest': _('Insufficient rights to access suggestion mode.'),
-        'translate': _('Insufficient rights to access translation mode.'),
-        'review': _('Insufficient rights to access review mode.'),
+        'suggest': _(u'Insufficient rights to access suggestion mode.'),
+        'translate': _(u'Insufficient rights to access translation mode.'),
+        'review': _(u'Insufficient rights to access review mode.'),
     }.get(permission_code, default_message)
 
 

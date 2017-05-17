@@ -175,9 +175,9 @@ def get_units(request, **kwargs_):
         if "path" in errors:
             for error in errors["path"]:
                 if error.code == "max_length":
-                    raise Http400(_('Path too long.'))
+                    raise Http400(_(u'Path too long.'))
                 elif error.code == "required":
-                    raise Http400(_('Arguments missing.'))
+                    raise Http400(_(u'Arguments missing.'))
         raise Http404(forms.ValidationError(search_form.errors).messages)
 
     total, start, end, units_qs = search_backend.get(Unit)(
@@ -232,7 +232,7 @@ def delete_comment(request, unit, **kwargs_):
         form.save()
         return JsonResponse({})
 
-    return JsonResponseBadRequest({'msg': _("Failed to remove comment.")})
+    return JsonResponseBadRequest({'msg': _(u"Failed to remove comment.")})
 
 
 def save_comment(request, unit):
@@ -264,7 +264,7 @@ def save_comment(request, unit):
         return JsonResponse({'comment': t.render(context=ctx,
                                                  request=request)})
 
-    return JsonResponseBadRequest({'msg': _("Comment submission failed.")})
+    return JsonResponseBadRequest({'msg': _(u"Comment submission failed.")})
 
 
 class PootleUnitJSON(PootleJSON):
@@ -564,7 +564,7 @@ def suggest(request, unit, **kwargs_):
 
         return JsonResponse(json)
 
-    return JsonResponseBadRequest({'msg': _("Failed to process suggestion.")})
+    return JsonResponseBadRequest({'msg': _(u"Failed to process suggestion.")})
 
 
 class UnitSuggestionJSON(PootleJSONMixin, GatherContextMixin, FormView):

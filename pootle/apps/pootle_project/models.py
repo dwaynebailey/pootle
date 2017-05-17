@@ -176,7 +176,7 @@ class ProjectURLMixin(object):
 def validate_not_reserved(value):
     if value in RESERVED_PROJECT_CODES:
         raise ValidationError(
-            _('"%(code)s" cannot be used as a project code'),
+            _(u'"%(code)s" cannot be used as a project code'),
             params={'code': value},
         )
 
@@ -185,70 +185,70 @@ def validate_project_checker(value):
     if value not in PROJECT_CHECKERS.keys():
         raise ValidationError(
             # Translators: this refers to the project quality checker
-            _('"%(code)s" cannot be used as a project checker'),
+            _(u'"%(code)s" cannot be used as a project checker'),
             params={'code': value},
         )
 
 
 class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
-    code_help_text = _('A short code for the project. This should only '
-                       'contain ASCII characters, numbers, and the underscore '
-                       '(_) character.')
+    code_help_text = _(u'A short code for the project. This should only '
+                       u'contain ASCII characters, numbers, and the underscore '
+                       u'(_) character.')
     # any changes to the `code` field may require updating the schema
     # see migration 0003_case_sensitive_schema.py
     code = models.CharField(max_length=255, null=False, unique=True,
-                            db_index=True, verbose_name=_('Code'), blank=False,
+                            db_index=True, verbose_name=_(u'Code'), blank=False,
                             validators=[validate_not_reserved],
                             help_text=code_help_text)
 
     fullname = models.CharField(max_length=255, null=False, blank=False,
-                                verbose_name=_("Full Name"))
+                                verbose_name=_(u"Full Name"))
 
     checkstyle = models.CharField(
         max_length=50,
         default='standard',
         null=False,
         validators=[validate_project_checker],
-        verbose_name=_('Quality Checks'))
+        verbose_name=_(u'Quality Checks'))
 
     filetypes = SortedManyToManyField(Format)
 
     treestyle_choices = (
         # TODO: check that the None is stored and handled correctly
-        ('auto', _('Automatic detection of GNU/non-GNU file layouts (slower)')),
-        ('gnu', _('GNU style: files named by language code')),
-        ('nongnu', _('Non-GNU: Each language in its own directory')),
-        ('pootle_fs', _('Allow Pootle FS to manage filesystems (Experimental)')),
+        ('auto', _(u'Automatic detection of GNU/non-GNU file layouts (slower)')),
+        ('gnu', _(u'GNU style: files named by language code')),
+        ('nongnu', _(u'Non-GNU: Each language in its own directory')),
+        ('pootle_fs', _(u'Allow Pootle FS to manage filesystems (Experimental)')),
     )
     treestyle = models.CharField(max_length=20, default='auto',
                                  choices=treestyle_choices,
-                                 verbose_name=_('Project Tree Style'))
+                                 verbose_name=_(u'Project Tree Style'))
 
     source_language = models.ForeignKey(
         'pootle_language.Language', db_index=True,
-        verbose_name=_('Source Language'), on_delete=models.CASCADE)
+        verbose_name=_(u'Source Language'), on_delete=models.CASCADE)
 
     ignoredfiles = models.CharField(
         max_length=255, blank=True, null=False, default="",
-        verbose_name=_('Ignore Files'))
+        verbose_name=_(u'Ignore Files'))
 
     directory = models.OneToOneField(
         'pootle_app.Directory', db_index=True, editable=False,
         on_delete=models.CASCADE)
     report_email = models.EmailField(
-        max_length=254, blank=True, verbose_name=_("Errors Report Email"),
-        help_text=_('An email address where issues with the source text '
+        max_length=254, blank=True, verbose_name=_(u"Errors Report Email"),
+        help_text=_(u'An email address where issues with the source text '
                     'can be reported.'))
 
     screenshot_search_prefix = models.URLField(
         # Translators: This is the URL prefix to search for context screenshots
-        blank=True, null=True, verbose_name=_('Screenshot Search Prefix'))
+        blank=True, null=True, verbose_name=_(u'Screenshot Search Prefix'))
 
     creation_time = models.DateTimeField(auto_now_add=True, db_index=True,
                                          editable=False, null=True)
 
-    disabled = models.BooleanField(verbose_name=_('Disabled'), default=False)
+    disabled = models.BooleanField(verbose_name=_(u'Disabled'), default=False)
     revisions = GenericRelation(Revision)
 
     objects = ProjectManager()

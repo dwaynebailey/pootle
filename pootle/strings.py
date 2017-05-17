@@ -36,14 +36,14 @@ from pootle.i18n.gettext import ugettext as _
 # remain 100% translated.
 
 # Translators: Label that refers to the site's privacy policy
-_("Privacy Policy")
+_(u"Privacy Policy")
 # Translators: Label that refers to the site's legal requirements
-_("Legal")
+_(u"Legal")
 # Translators: Label that refers to the site's license requirements
-_("License")
+_(u"License")
 # Translators: Label that refers to the site's license requirements
-_("Contributor License")
+_(u"Contributor License")
 # Translators: Label that refers to the site's terms of use
-_("Terms of Use")
+_(u"Terms of Use")
 # Translators: Label that refers to the site's terms of service
-_("Terms of Service")
+_(u"Terms of Service")

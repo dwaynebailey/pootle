@@ -114,7 +114,7 @@ class MathCaptchaForm(forms.Form):
     def clean_captcha_token(self):
         t = self._parse_token(self.cleaned_data['captcha_token'])
         if time.time() > t['expires']:
-            raise forms.ValidationError(_("Time to answer has expired"))
+            raise forms.ValidationError(_(u"Time to answer has expired"))
         self._plain_question = t['q']
         return t
 
@@ -133,7 +133,7 @@ class MathCaptchaForm(forms.Form):
     def clean_captcha_answer(self):
         a = self.A_RE.match(self.cleaned_data.get('captcha_answer'))
         if not a:
-            raise forms.ValidationError(_("Enter a number"))
+            raise forms.ValidationError(_(u"Enter a number"))
         return int(a.group(0))
 
     def clean(self):
@@ -148,7 +148,7 @@ class MathCaptchaForm(forms.Form):
             form_sign = self._sign(t['q'], cd['captcha_answer'],
                                    t['expires'])
             if form_sign != t['sign']:
-                self._errors['captcha_answer'] = [_("Incorrect")]
+                self._errors['captcha_answer'] = [_(u"Incorrect")]
         else:
             self.reset_captcha()
         return super(MathCaptchaForm, self).clean()
@@ -177,21 +177,21 @@ class FormWithActionsMixin(forms.Form):
     select_all_field = "select_all"
     actions = forms.ChoiceField(
         required=False,
-        label=ugettext_lazy("With selected"),
+        label=ugettext_lazy(u"With selected"),
         widget=forms.Select(attrs={'class': 'js-select2'}),
         choices=(
             ("", "----"),
-            ("reject", _("Reject")),
-            ("accept", _("Accept"))))
+            ("reject", _(u"Reject")),
+            ("accept", _(u"Accept"))))
     comment = forms.CharField(
-        label=ugettext_lazy("Add comment"),
+        label=ugettext_lazy(u"Add comment"),
         required=False,
         widget=forms.Textarea(attrs=dict(rows=2)))
     select_all = forms.BooleanField(
         required=False,
         label=ugettext_lazy(
-            "Select all items matching filter criteria, including those not "
-            "shown"),
+            u"Select all items matching filter criteria, including those not "
+            u"shown"),
         widget=forms.CheckboxInput(
             attrs={"class": "js-formtable-select-all"}))
 
@@ -210,8 +210,8 @@ class FormWithActionsMixin(forms.Form):
 
 class FormtableForm(PaginatingForm, FormWithActionsMixin):
     search_field = None
-    msg_err_no_action = _("You must specify an action to take")
-    msg_err_no_search_field = _("A valid search field must be specified")
+    msg_err_no_action = _(u"You must specify an action to take")
+    msg_err_no_search_field = _(u"A valid search field must be specified")
 
     def __init__(self, *args, **kwargs):
         super(FormtableForm, self).__init__(*args, **kwargs)

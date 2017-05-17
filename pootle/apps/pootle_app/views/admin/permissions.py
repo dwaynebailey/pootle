@@ -62,7 +62,7 @@ def admin_permissions(request, current_directory, template, ctx):
     ))]
 
     choice_groups.append((
-        _('All Users'),
+        _(u'All Users'),
         base_queryset.exclude(username__in=('nobody',
                                             'default')).order_by('username'),
     ))
@@ -80,7 +80,7 @@ def admin_permissions(request, current_directory, template, ctx):
             widget=forms.HiddenInput,
         )
         user = GroupedModelChoiceField(
-            label=_('Username'),
+            label=_(u'Username'),
             choice_groups=choice_groups,
             queryset=User.objects.all(),
             required=True,
@@ -89,21 +89,21 @@ def admin_permissions(request, current_directory, template, ctx):
             }),
         )
         positive_permissions = PermissionFormField(
-            label=_('Add Permissions'),
+            label=_(u'Add Permissions'),
             queryset=positive_permissions_qs,
             required=False,
             widget=forms.SelectMultiple(attrs={
                 'class': 'js-select2 select2-multiple',
-                'data-placeholder': _('Select one or more permissions'),
+                'data-placeholder': _(u'Select one or more permissions'),
             }),
         )
         negative_permissions = PermissionFormField(
-            label=_('Revoke Permissions'),
+            label=_(u'Revoke Permissions'),
             queryset=negative_permissions_qs,
             required=False,
             widget=forms.SelectMultiple(attrs={
                 'class': 'js-select2 select2-multiple',
-                'data-placeholder': _('Select one or more permissions'),
+                'data-placeholder': _(u'Select one or more permissions'),
             }),
         )
 

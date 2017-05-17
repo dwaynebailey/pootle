@@ -63,6 +63,6 @@ class PootleAccountAdapter(DefaultAccountAdapter):
         except Exception:
             logger.exception("ERROR: Sign up failed. Couldn't sent "
                              "confirmation email.")
-            raise RuntimeError(_('Some problem happened when tried to send '
-                                 'the confirmation email. Please try again '
-                                 'later.'))
+            raise RuntimeError(_(u'Some problem happened when tried to send '
+                                 u'the confirmation email. Please try again '
+                                 u'later.'))

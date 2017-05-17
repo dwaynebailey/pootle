@@ -29,8 +29,8 @@ class SignInForm(LoginForm):
             return super(SignInForm, self).login(request, redirect_url)
         except Exception as e:
             logger.exception("%s %s", e.__class__.__name__, e)
-            raise RuntimeError(_("An error occurred logging you in. Please "
-                                 "contact your system administrator"))
+            raise RuntimeError(_(u"An error occurred logging you in. Please "
+                                 u"contact your system administrator"))
 
 
 class SocialVerificationForm(LoginForm):
@@ -56,6 +56,6 @@ class SocialVerificationForm(LoginForm):
 
         # Oops, something must be really broken if this stage is reached
         raise forms.ValidationError(
-            _('Your user seems to have disappeared. Please report this '
-              'to the site owners.')
+            _(u'Your user seems to have disappeared. Please report this '
+              u'to the site owners.')
         )

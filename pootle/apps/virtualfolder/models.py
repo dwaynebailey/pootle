@@ -24,39 +24,39 @@ class VirtualFolder(models.Model):
     # any changes to the `name` field may require updating the schema
     # see migration 0003_case_sensitive_schema.py
     name = models.CharField(
-        _('Name'),
+        _(u'Name'),
         blank=False,
         unique=True,
         max_length=70)
     title = models.CharField(
-        _('Title'),
+        _(u'Title'),
         blank=True,
         null=True,
         max_length=255)
 
     filter_rules = models.TextField(
         # Translators: This is a noun.
-        _('Filter'),
+        _(u'Filter'),
         blank=False,
-        help_text=_('Filtering rules that tell which files this virtual '
-                    'folder comprises.'),
+        help_text=_(u'Filtering rules that tell which files this virtual '
+                    u'folder comprises.'),
     )
     priority = models.FloatField(
-        _('Priority'),
+        _(u'Priority'),
         default=1,
-        help_text=_('Number specifying importance. Greater priority means it '
+        help_text=_(u'Number specifying importance. Greater priority means it '
                     'is more important.'),
     )
     is_public = models.BooleanField(
-        _('Is public?'),
+        _(u'Is public?'),
         default=True,
-        help_text=_('Whether this virtual folder is public or not.'),
+        help_text=_(u'Whether this virtual folder is public or not.'),
     )
     description = MarkupField(
-        _('Description'),
+        _(u'Description'),
         blank=True,
-        help_text=_('Use this to provide more information or instructions. '
-                    'Allowed markup: %s', get_markup_filter_display_name()),
+        help_text=_(u'Use this to provide more information or instructions. '
+                    u'Allowed markup: %s', get_markup_filter_display_name()),
     )
     stores = models.ManyToManyField(
         Store,

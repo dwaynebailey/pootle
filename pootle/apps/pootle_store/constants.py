@@ -62,10 +62,10 @@ TRANSLATED = 200
 
 # Map for retrieving natural names for unit states
 STATES_MAP = {
-    OBSOLETE: _("Obsolete"),
-    UNTRANSLATED: _("Untranslated"),
-    FUZZY: _("Needs work"),
-    TRANSLATED: _("Translated"),
+    OBSOLETE: _(u"Obsolete"),
+    UNTRANSLATED: _(u"Untranslated"),
+    FUZZY: _(u"Needs work"),
+    TRANSLATED: _(u"Translated"),
 }
 
 STATES_NAMES = {

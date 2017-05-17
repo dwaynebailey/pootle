@@ -21,11 +21,11 @@ CATEGORY_IDS = OrderedDict(
      ['other', Category.NO_CATEGORY]])
 CATEGORY_CODES = {v: k for k, v in CATEGORY_IDS.iteritems()}
 CATEGORY_NAMES = {
-    Category.CRITICAL: _("Critical"),
-    Category.COSMETIC: _("Cosmetic"),
-    Category.FUNCTIONAL: _("Functional"),
-    Category.EXTRACTION: _("Extraction"),
-    Category.NO_CATEGORY: _("Other")}
+    Category.CRITICAL: _(u"Critical"),
+    Category.COSMETIC: _(u"Cosmetic"),
+    Category.FUNCTIONAL: _(u"Functional"),
+    Category.EXTRACTION: _(u"Extraction"),
+    Category.NO_CATEGORY: _(u"Other")}
 
 CHECK_NAMES = {
     'accelerators': _(u"Accelerators"),  # fixme duplicated

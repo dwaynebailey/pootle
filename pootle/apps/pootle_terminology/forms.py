@@ -44,8 +44,8 @@ def term_unit_form_factory(terminology_store):
                 existing = terminology_store.findid(value[0])
 
                 if existing and existing.id != self.instance.id:
-                    raise forms.ValidationError(_('This term already exists '
-                                                  'in this file.'))
+                    raise forms.ValidationError(_(u'This term already exists '
+                                                  u'in this file.'))
                 self.instance.setid(value[0])
 
             return value

@@ -123,7 +123,7 @@ def form_set_as_table(formset, link=None, linkfield='code'):
     except IndexError:
         result.append('<tr>\n')
         result.append('<td>\n')
-        result.append(_('No files in this project.'))
+        result.append(_(u'No files in this project.'))
         result.append('</td>\n')
         result.append('</tr>\n')
 
@@ -157,8 +157,8 @@ def process_modelformset(request, model_class, queryset, **kwargs):
             formset.save()
         else:
             # Otherwise, complain to the user that something went wrong
-            return formset, _("There are errors in the form. Please review "
-                              "the problems below."), objects
+            return formset, _(u"There are errors in the form. Please review "
+                              u"the problems below."), objects
 
         # Hack to force reevaluation of same query
         queryset = queryset.filter()

@@ -32,15 +32,15 @@ class AbstractFormat(models.Model):
         abstract = True
 
     name = models.CharField(
-        _('Format name'),
+        _(u'Format name'),
         max_length=30,
         unique=True,
         db_index=True)
     title = models.CharField(
-        _('Format title'),
+        _(u'Format title'),
         max_length=255,
         db_index=True)
     enabled = models.BooleanField(
-        verbose_name=_('Enabled'), default=True)
+        verbose_name=_(u'Enabled'), default=True)
     monolingual = models.BooleanField(
-        verbose_name=_('Monolingual format'), default=False)
+        verbose_name=_(u'Monolingual format'), default=False)

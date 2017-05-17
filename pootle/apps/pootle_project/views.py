@@ -173,8 +173,8 @@ class ProjectAdminView(PootleAdminView):
     template_name = 'projects/admin/languages.html'
 
     msg_form_error = _(
-        "There are errors in the form. Please review "
-        "the problems below.")
+        u"There are errors in the form. Please review "
+        u"the problems below.")
 
     model_formset_class = TranslationProject
     form_class = TranslationProjectForm
@@ -263,14 +263,14 @@ class ProjectAdminView(PootleAdminView):
                 messages.add_message(
                     self.request,
                     messages.INFO,
-                    _("Translation project (%s) has been created. We are "
-                      "now updating its files from file templates." % tp))
+                    _(u"Translation project (%s) has been created. We are "
+                      u"now updating its files from file templates." % tp))
 
             for tp in formset.deleted_objects:
                 messages.add_message(
                     self.request,
                     messages.INFO,
-                    _("Translation project (%s) has been deleted" % tp))
+                    _(u"Translation project (%s) has been deleted" % tp))
         else:
             messages.add_message(self.request, messages.ERROR,
                                  self.msg_form_error)

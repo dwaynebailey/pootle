@@ -145,8 +145,8 @@ def test_form_language_suggestions(language0, admin):
     assert (
         form.fields["actions"].choices
         == [("", "----"),
-            ("reject", _("Reject")),
-            ("accept", _("Accept"))])
+            ("reject", _(u"Reject")),
+            ("accept", _(u"Accept"))])
 
 
 @pytest.mark.django_db

@@ -102,9 +102,9 @@ def get_vfolder_units(request, **kwargs):
         if "path" in errors:
             for error in errors["path"]:
                 if error.code == "max_length":
-                    raise Http400(_('Path too long.'))
+                    raise Http400(_(u'Path too long.'))
                 elif error.code == "required":
-                    raise Http400(_('Arguments missing.'))
+                    raise Http400(_(u'Arguments missing.'))
         raise Http404(forms.ValidationError(search_form.errors).messages)
 
     search_form.cleaned_data["vfolder"] = vfolder

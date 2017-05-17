@@ -58,6 +58,6 @@ class UserSettingsView(TestUserFieldMixin, UserObjectMixin, UpdateView):
         form.fields['alt_src_langs'].widget.attrs['class'] = \
             'js-select2 select2-multiple'
         form.fields['alt_src_langs'].widget.attrs['data-placeholder'] = \
-            _('Select one or more languages')
+            _(u'Select one or more languages')
 
         return form

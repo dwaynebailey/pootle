@@ -67,7 +67,7 @@ def requires_permission(permission):
                     self.required_permission, request, self.permission_context)
             if not directory_permission:
                 raise PermissionDenied(
-                    _("Insufficient rights to access this page."), )
+                    _(u"Insufficient rights to access this page."), )
             return f(self, request, *args, **kwargs)
         return method_wrapper
     return class_wrapper

@@ -36,7 +36,7 @@ class LanguageForm(forms.ModelForm):
         if (not self.cleaned_data['code'] == 'templates' and
             not LANGCODE_RE.match(self.cleaned_data['code'])):
             raise forms.ValidationError(
-                _('Language code does not follow the ISO convention')
+                _(u'Language code does not follow the ISO convention')
             )
 
         return self.cleaned_data["code"]
@@ -51,7 +51,7 @@ class LanguageForm(forms.ModelForm):
 
 class ProjectForm(forms.ModelForm):
 
-    source_language = forms.ModelChoiceField(label=_('Source Language'),
+    source_language = forms.ModelChoiceField(label=_(u'Source Language'),
                                              queryset=Language.objects.none())
 
     class Meta(object):
@@ -85,8 +85,8 @@ class ProjectForm(forms.ModelForm):
                     translation_project__project=self.instance, filetype=filetype)
                 if has_stores.exists():
                     raise forms.ValidationError(
-                        _("You cannot remove a file type from a Project, "
-                          "if there are files of that file type ('%s')"
+                        _(u"You cannot remove a file type from a Project, "
+                          u"if there are files of that file type ('%s')"
                           % filetype))
         return value
 
@@ -105,7 +105,7 @@ class ProjectForm(forms.ModelForm):
 
 class UserForm(forms.ModelForm):
 
-    password = forms.CharField(label=_('Password'), required=False,
+    password = forms.CharField(label=_(u'Password'), required=False,
                                widget=forms.PasswordInput)
 
     class Meta(object):
@@ -140,7 +140,7 @@ class UserForm(forms.ModelForm):
             parsed = urlparse.urlparse(url)
             if 'linkedin.com' not in parsed.netloc or parsed.path == '/':
                 raise forms.ValidationError(
-                    _('Please enter a valid LinkedIn user profile URL.')
+                    _(u'Please enter a valid LinkedIn user profile URL.')
                 )
 
         return url

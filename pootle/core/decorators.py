@@ -38,7 +38,7 @@ def get_path_obj(func):
         if request.is_ajax():
             pootle_path = request.GET.get('path', None)
             if pootle_path is None:
-                raise Http400(_('Arguments missing.'))
+                raise Http400(_(u'Arguments missing.'))
 
             language_code, project_code, dir_path, filename = \
                 split_pootle_path(pootle_path)
@@ -137,7 +137,7 @@ def permission_required(permission_code):
 
             if not check_permission(permission_code, request):
                 raise PermissionDenied(
-                    _("Insufficient rights to access this page."),
+                    _(u"Insufficient rights to access this page."),
                 )
 
             return func(request, *args, **kwargs)
@@ -150,7 +150,7 @@ def admin_required(func):
     def wrapped(request, *args, **kwargs):
         if not request.user.is_superuser:
             raise PermissionDenied(
-                _("You do not have rights to administer Pootle.")
+                _(u"You do not have rights to administer Pootle.")
             )
         return func(request, *args, **kwargs)
 

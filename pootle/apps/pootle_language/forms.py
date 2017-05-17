@@ -24,10 +24,10 @@ from .models import Language
 User = get_user_model()
 
 LANGUAGE_TEAM_ROLES = (
-    ("member", _("Member")),
-    ("submitter", _("Submitter")),
-    ("reviewer", _("Reviewer")),
-    ("admin", _("Administrator")))
+    ("member", _(u"Member")),
+    ("submitter", _(u"Submitter")),
+    ("reviewer", _(u"Reviewer")),
+    ("admin", _(u"Administrator")))
 
 
 class LanguageSpecialCharsForm(forms.ModelForm):
@@ -66,35 +66,35 @@ class LanguageTeamNewMemberSearchForm(LanguageTeamBaseAdminForm):
 
 class LanguageTeamAdminForm(LanguageTeamBaseAdminForm):
     rm_admins = forms.ModelMultipleChoiceField(
-        label=_("Administrators"),
+        label=_(u"Administrators"),
         widget=TableSelectMultiple(item_attrs=["username"]),
         required=False,
         queryset=User.objects.none())
     rm_reviewers = forms.ModelMultipleChoiceField(
         required=False,
-        label=_("Reviewers"),
+        label=_(u"Reviewers"),
         widget=TableSelectMultiple(item_attrs=["username"]),
         queryset=User.objects.none())
     rm_submitters = forms.ModelMultipleChoiceField(
         required=False,
-        label=_("Submitters"),
+        label=_(u"Submitters"),
         widget=TableSelectMultiple(item_attrs=["username"]),
         queryset=User.objects.none())
     rm_members = forms.ModelMultipleChoiceField(
         required=False,
-        label=_("Members"),
+        label=_(u"Members"),
         widget=TableSelectMultiple(item_attrs=["username"]),
         queryset=User.objects.none())
     new_member = forms.ModelChoiceField(
-        label=_("New member"),
-        help_text=_("Add a user to this team"),
+        label=_(u"New member"),
+        help_text=_(u"Add a user to this team"),
         required=False,
         queryset=User.objects.none(),
         widget=forms.Select(
             attrs={
                 'class': 'js-select2-remote'}))
     role = forms.ChoiceField(
-        label=_("Role"),
+        label=_(u"Role"),
         required=False,
         widget=forms.Select(
             attrs={'class': 'js-select2'}),
@@ -125,7 +125,7 @@ class LanguageTeamAdminForm(LanguageTeamBaseAdminForm):
             self.add_error(
                 "role",
                 forms.ValidationError(
-                    _("Role is required when adding a new member")))
+                    _(u"Role is required when adding a new member")))
 
     def should_save(self):
         return (
@@ -151,16 +151,16 @@ class LanguageSuggestionAdminForm(LanguageTeamFormtableForm):
     search_field = "suggestions"
     action_choices = (
         ("", "----"),
-        ("reject", _("Reject")),
-        ("accept", _("Accept")))
+        ("reject", _(u"Reject")),
+        ("accept", _(u"Accept")))
     filter_suggester = forms.ChoiceField(
-        label=_("Filter by suggester"),
+        label=_(u"Filter by suggester"),
         choices=(),
         required=False,
         widget=forms.Select(
             attrs={'class': 'js-select2 select2-language'}))
     filter_state = forms.ChoiceField(
-        label=_("Filter by state"),
+        label=_(u"Filter by state"),
         required=False,
         choices=(
             [("", "-----")]
@@ -170,7 +170,7 @@ class LanguageSuggestionAdminForm(LanguageTeamFormtableForm):
         widget=forms.Select(
             attrs={'class': 'js-select2 select2-language'}))
     filter_tp = forms.ModelChoiceField(
-        label=_("Project"),
+        label=_(u"Project"),
         required=False,
         queryset=TranslationProject.objects.none(),
         widget=forms.Select(

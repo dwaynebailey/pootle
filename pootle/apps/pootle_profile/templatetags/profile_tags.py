@@ -32,10 +32,10 @@ def profile_score(request, profile):
     if top_lang and not top_lang[0] == -1 and top_lang[1]:
         if context["own_profile"]:
             score_tweet_content = _(
-                "My current score at %s is %s"
+                u"My current score at %s is %s"
                 % (settings.POOTLE_TITLE,
                    profile.scores.public_score))
-            context["score_tweet_message"] = _("Tweet this!")
+            context["score_tweet_message"] = _(u"Tweet this!")
             context["score_tweet_link"] = (
                 "https://twitter.com/share?text=%s"
                 % urllib.quote_plus(score_tweet_content.encode("utf8")))
@@ -49,20 +49,20 @@ def profile_ranking(request, profile):
     context["own_profile"] = request.user == profile.user
     if top_lang and not top_lang[0] == -1 and top_lang[1]:
         context["ranking_text"] = _(
-            "#%s contributor in %s in the last 30 days"
+            u"#%s contributor in %s in the last 30 days"
             % (top_lang[0], top_lang[1].name))
         if context["own_profile"]:
             ranking_tweet_content = _(
-                "I am #%s contributor in %s in the last 30 days at %s!"
+                u"I am #%s contributor in %s in the last 30 days at %s!"
                 % (top_lang[0],
                    top_lang[1].name,
                    settings.POOTLE_TITLE))
             context["ranking_tweet_link"] = (
                 "https://twitter.com/share?text=%s"
                 % urllib.quote_plus(ranking_tweet_content.encode("utf8")))
-            context["ranking_tweet_link_text"] = _("Tweet this!")
+            context["ranking_tweet_link_text"] = _(u"Tweet this!")
     else:
-        context["no_ranking_text"] = _("No contributions in the last 30 days")
+        context["no_ranking_text"] = _(u"No contributions in the last 30 days")
     return context
 
 
@@ -73,7 +73,7 @@ def profile_social(profile):
         links.append(
             dict(url=profile.user.website,
                  icon="icon-user-website",
-                 text=_("My Website")))
+                 text=_(u"My Website")))
     if profile.user.twitter:
         links.append(
             dict(url=profile.user.twitter_url,
@@ -83,7 +83,7 @@ def profile_social(profile):
         links.append(
             dict(url=profile.user.linkedin,
                  icon="icon-user-linkedin",
-                 text=_("My LinkedIn Profile")))
+                 text=_(u"My LinkedIn Profile")))
     return dict(social_media_links=links)
 
 
@@ -92,16 +92,16 @@ def profile_teams(request, profile):
     teams = profile.membership.teams_and_roles
     site_permissions = []
     if not request.user.is_anonymous and profile.user.is_superuser:
-        site_permissions.append(_("Site administrator"))
+        site_permissions.append(_(u"Site administrator"))
     for code, info in teams.items():
         info["url"] = reverse(
             "pootle-language-browse",
             kwargs=dict(language_code=code))
     teams_title = _(
-        "%s's language teams"
+        u"%s's language teams"
         % profile.user.display_name)
     no_teams_message = _(
-        "%s is not a member of any language teams"
+        u"%s is not a member of any language teams"
         % profile.user.display_name)
     return dict(
         anon_request=request.user.is_anonymous,
@@ -118,12 +118,12 @@ def profile_user(request, profile):
         request.user.has_manager_permissions())
     if profile.user.is_anonymous:
         context["bio"] = _(
-            "Some translations are provided by anonymous volunteers. "
-            "These are registered under this special meta-account.")
+            u"Some translations are provided by anonymous volunteers. "
+            u"These are registered under this special meta-account.")
     elif profile.user.is_system():
         context["bio"] = _(
-            "Some translations are imported from external files. "
-            "These are registered under this special meta-account.")
+            u"Some translations are imported from external files. "
+            u"These are registered under this special meta-account.")
     else:
         if request.user == profile.user:
             context["can_edit_profile"] = True
@@ -132,10 +132,10 @@ def profile_user(request, profile):
                 or not profile.user.bio)
             if context["should_edit_profile"]:
                 context["edit_profile_message"] = mark_safe(
-                    _("Show others who you are, tell about yourself<br/>"
-                      "and make your public profile look gorgeous!"))
+                    _(u"Show others who you are, tell about yourself<br/>"
+                      u"and make your public profile look gorgeous!"))
             context["user_title"] = _(
-                "You can set or change your avatar image at www.gravatar.com")
+                u"You can set or change your avatar image at www.gravatar.com")
         if profile.user.bio:
             context["bio"] = profile.user.bio
     return context

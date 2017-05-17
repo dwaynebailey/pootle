@@ -25,7 +25,7 @@ class EditUserForm(forms.ModelForm):
             parsed = urlparse.urlparse(url)
             if 'linkedin.com' not in parsed.netloc or parsed.path == '/':
                 raise forms.ValidationError(
-                    _('Please enter a valid LinkedIn user profile URL.')
+                    _(u'Please enter a valid LinkedIn user profile URL.')
                 )
 
         return url

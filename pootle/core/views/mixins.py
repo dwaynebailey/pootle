@@ -23,7 +23,7 @@ class SuperuserRequiredMixin(object):
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.is_superuser:
-            msg = _('You do not have rights to administer Pootle.')
+            msg = _(u'You do not have rights to administer Pootle.')
             raise PermissionDenied(msg)
 
         return super(SuperuserRequiredMixin, self).dispatch(request, *args,
@@ -63,7 +63,7 @@ class TestUserFieldMixin(object):
             unicode(field_value) == url_field_value
 
         if not can_access:
-            raise PermissionDenied(_('You cannot access this page.'))
+            raise PermissionDenied(_(u'You cannot access this page.'))
 
         return super(TestUserFieldMixin, self).dispatch(*args, **kwargs)
 

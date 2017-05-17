@@ -21,30 +21,30 @@ from .delegate import (
 
 
 FS_CHOICES = (
-    ("gnu", _("GNU-style"), "/po/<language_code>.<ext>"),
+    ("gnu", _(u"GNU-style"), "/po/<language_code>.<ext>"),
     ("non-gnu",
-     _("non GNU-style"),
+     _(u"non GNU-style"),
      "/<language_code>/<dir_path>/<filename>.<ext>"),
     ("django",
-     _("Django-style"),
+     _(u"Django-style"),
      "/locale/<language_code>/LC_MESSAGES/<filename>.<ext>"),
-    ("custom", _("Custom"), ""))
+    ("custom", _(u"Custom"), ""))
 
 
 class ProjectFSAdminForm(forms.Form):
 
     fs_type = forms.ChoiceField(
-        label=_("Filesystem backend"),
-        help_text=_("Select a filesystem backend"),
+        label=_(u"Filesystem backend"),
+        help_text=_(u"Select a filesystem backend"),
         choices=(),
         widget=forms.Select(
             attrs={'class': 'js-select2'}))
     fs_url = forms.CharField(
-        label=_("Backend URL or path"),
+        label=_(u"Backend URL or path"),
         help_text=_(
-            "The URL or path to your translation files"))
+            u"The URL or path to your translation files"))
     translation_mapping_presets = forms.ChoiceField(
-        label=_("Translation mapping presets"),
+        label=_(u"Translation mapping presets"),
         required=False,
         choices=(
             [("", "-----"), ]
@@ -52,9 +52,9 @@ class ProjectFSAdminForm(forms.Form):
         widget=forms.Select(
             attrs={'class': 'js-select2 js-select-fs-mapping'}))
     translation_mapping = forms.CharField(
-        label=_("Translation path mapping"),
-        help_text=_("Translation path mapping that maps the localisation "
-                    "files on the filesystem to files on Pootle."),
+        label=_(u"Translation path mapping"),
+        help_text=_(u"Translation path mapping that maps the localisation "
+                    u"files on the filesystem to files on Pootle."),
         widget=forms.TextInput(
             attrs={'class': 'js-select-fs-mapping-target'}))
 
@@ -179,11 +179,11 @@ class BaseLangMappingFormSet(forms.BaseFormSet):
         fs_counter = Counter([v["fs_code"] for v in self.cleaned_data if v])
         if set(fs_counter.values()) != set([1]):
             raise forms.ValidationError(
-                _("Filesystem language codes must be unique"))
+                _(u"Filesystem language codes must be unique"))
         pootle_counter = Counter([v["pootle_code"] for v in self.cleaned_data if v])
         if set(pootle_counter.values()) != set([1]):
             raise forms.ValidationError(
-                _("Pootle language mappings must be unique"))
+                _(u"Pootle language mappings must be unique"))
 
     def get_form_kwargs(self, index):
         kwargs = super(BaseLangMappingFormSet, self).get_form_kwargs(index)

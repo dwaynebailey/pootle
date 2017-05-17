@@ -100,33 +100,33 @@ class ActionDisplay(object):
         msg = ""
         params = self.params
         if (self.action_type == 2):
-            msg = _('%(user)s removed translation for %(source)s', params)
+            msg = _(u'%(user)s removed translation for %(source)s', params)
         if (self.action_type == 3):
-            msg = _('%(user)s accepted suggestion for %(source)s', params)
+            msg = _(u'%(user)s accepted suggestion for %(source)s', params)
         if (self.action_type == 4):
-            msg = _('%(user)s uploaded file', params)
+            msg = _(u'%(user)s uploaded file', params)
         if (self.action_type == 6):
-            msg = _('%(user)s muted %(check)s for %(source)s', params)
+            msg = _(u'%(user)s muted %(check)s for %(source)s', params)
         if (self.action_type == 7):
-            msg = _('%(user)s unmuted %(check)s for %(source)s', params)
+            msg = _(u'%(user)s unmuted %(check)s for %(source)s', params)
         if (self.action_type == 8):
-            msg = _('%(user)s added suggestion for %(source)s', params)
+            msg = _(u'%(user)s added suggestion for %(source)s', params)
         if (self.action_type == 9):
-            msg = _('%(user)s rejected suggestion for %(source)s', params)
+            msg = _(u'%(user)s rejected suggestion for %(source)s', params)
         if (self.action_type in [1, 5]):
             if self.translation_action_type == 0:
-                msg = _('%(user)s translated %(source)s', params)
+                msg = _(u'%(user)s translated %(source)s', params)
             if self.translation_action_type == 1:
-                msg = _('%(user)s edited %(source)s', params)
+                msg = _(u'%(user)s edited %(source)s', params)
             if self.translation_action_type == 2:
                 # Translators: pre-translate is translating with first 100% TM match
-                msg = _('%(user)s pre-translated %(source)s', params)
+                msg = _(u'%(user)s pre-translated %(source)s', params)
             if self.translation_action_type == 3:
-                msg = _('%(user)s removed translation for %(source)s', params)
+                msg = _(u'%(user)s removed translation for %(source)s', params)
             if self.translation_action_type == 4:
-                msg = _('%(user)s reviewed %(source)s', params)
+                msg = _(u'%(user)s reviewed %(source)s', params)
             if self.translation_action_type == 5:
-                msg = _('%(user)s marked as needs work %(source)s', params)
+                msg = _(u'%(user)s marked as needs work %(source)s', params)
         return mark_safe(msg)
 
 

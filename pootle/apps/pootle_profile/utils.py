@@ -47,7 +47,7 @@ class UserProfile(object):
         return (
             self.user.display_name
             if not self.user.is_anonymous
-            else _("Anonymous User"))
+            else _(u"Anonymous User"))
 
     def get_events(self, start=None, n=None):
         sortable = comparable_event.get(self.log.__class__)
@@ -93,11 +93,11 @@ class UserMembership(object):
         for team, permissions in self.teams_and_permissions.items():
             teams[team] = dict(name=self.site_languages.languages[team])
             if "administrate" in permissions:
-                teams[team]["role"] = _("Admin")
+                teams[team]["role"] = _(u"Admin")
             elif "review" in permissions:
-                teams[team]["role"] = _("Reviewer")
+                teams[team]["role"] = _(u"Reviewer")
             elif "translate" in permissions:
-                teams[team]["role"] = _("Translator")
+                teams[team]["role"] = _(u"Translator")
             else:
                 teams[team]["role"] = ""
         return teams

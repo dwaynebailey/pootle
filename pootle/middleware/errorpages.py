@@ -80,8 +80,8 @@ def handle_exception(request, exception, template_name):
                 'filename': exception.filename,
                 'errormsg': exception.strerror,
             }
-            msg = _('Error accessing %(filename)s, Filesystem '
-                    'sent error: %(errormsg)s', msg_args)
+            msg = _(u'Error accessing %(filename)s, Filesystem '
+                    u'sent error: %(errormsg)s', msg_args)
             ctx['fserror'] = msg
 
         return HttpResponseServerError(
@@ -116,8 +116,8 @@ class ErrorPagesMiddleware(MiddlewareMixin):
                     'login_link': reverse('account_login'),
                 }
                 login_msg = _(
-                    'You need to <a class="js-login" '
-                    'href="%(login_link)s">login</a> to access this page.',
+                    u'You need to <a class="js-login" '
+                    u'href="%(login_link)s">login</a> to access this page.',
                     msg_args
                 )
                 ctx["login_message"] = login_msg

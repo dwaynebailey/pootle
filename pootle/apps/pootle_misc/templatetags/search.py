@@ -25,7 +25,7 @@ def render_search(context):
             'readonly': 'readonly',
             'disabled': True,
             'title': '',
-            'placeholder': _("Search unavailable"),
+            'placeholder': _(u"Search unavailable"),
         })
 
     return {

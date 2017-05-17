@@ -97,7 +97,7 @@ class MultiStringWidget(MultiStringWidgetMixin, forms.MultiWidget):
         output = ''
         for i, widget in enumerate(rendered_widgets):
             output += '<div lang="%s" title="%s">' % \
-                (get_language(), _('Plural Form %d', i))
+                (get_language(), _(u'Plural Form %d', i))
             output += widget
             output += '</div>'
 
@@ -185,7 +185,7 @@ def unit_form_factory(language, snplurals=None, request=None):
         )
         is_fuzzy = forms.BooleanField(
             required=False,
-            label=_("Needs work"),
+            label=_(u"Needs work"),
             widget=forms.CheckboxInput(attrs=fuzzy_attrs))
         suggestion = forms.ModelChoiceField(
             queryset=Suggestion.objects.all(),
@@ -243,7 +243,7 @@ def unit_form_factory(language, snplurals=None, request=None):
                 self.add_error(
                     'is_fuzzy',
                     forms.ValidationError(
-                        _('Needs work flag must be cleared')))
+                        _(u'Needs work flag must be cleared')))
 
             if new_target:
                 if is_fuzzy:
@@ -298,7 +298,7 @@ def unit_comment_form_factory(language):
 
         translator_comment = forms.CharField(
             required=True,
-            label=_("Translator comment"),
+            label=_(u"Translator comment"),
             widget=forms.Textarea(attrs=comment_attrs),
         )
 
@@ -365,16 +365,16 @@ class UnitSearchForm(forms.Form):
         required=False,
         widget=forms.CheckboxSelectMultiple,
         choices=(
-            ('exact', _('Exact Match')), ))
+            ('exact', _(u'Exact Match')), ))
 
     sfields = forms.MultipleChoiceField(
         required=False,
         widget=CommaSeparatedCheckboxSelectMultiple,
         choices=(
-            ('source', _('Source Text')),
-            ('target', _('Target Text')),
-            ('notes', _('Comments')),
-            ('locations', _('Locations'))),
+            ('source', _(u'Source Text')),
+            ('target', _(u'Target Text')),
+            ('notes', _(u'Comments')),
+            ('locations', _(u'Locations'))),
         initial=['source', 'target'])
 
     def __init__(self, *args, **kwargs):
@@ -478,7 +478,7 @@ class SuggestionReviewForm(BaseSuggestionForm):
             self.add_error(
                 "action",
                 forms.ValidationError(
-                    _("Suggestion '%s' has already been accepted or rejected.",
+                    _(u"Suggestion '%s' has already been accepted or rejected.",
                       self.target_object)))
         return self.data["action"]
 
@@ -496,7 +496,7 @@ class SuggestionReviewForm(BaseSuggestionForm):
             self.target_object.unit.store.parent)
         if not has_permission:
             raise forms.ValidationError(
-                _("Insufficient rights to access this page."))
+                _(u"Insufficient rights to access this page."))
         if not self.errors:
             super(SuggestionReviewForm, self).clean()
 
@@ -560,7 +560,7 @@ class SuggestionSubmitForm(SubmitFormMixin, BaseSuggestionForm):
 class SubmitForm(SubmitFormMixin, forms.Form):
     is_fuzzy = forms.BooleanField(
         initial=False,
-        label=_("Needs work"))
+        label=_(u"Needs work"))
     target_f = MultiStringFormField(required=False, require_all_fields=False)
 
     def clean_is_fuzzy(self):

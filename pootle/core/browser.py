@@ -13,61 +13,61 @@ HEADING_CHOICES = [
     {
         'id': 'name',
         'class': 'stats',
-        'display_name': _("Name"),
+        'display_name': _(u"Name"),
     },
     {
         'id': 'priority',
         'class': 'stats-number sorttable_numeric',
-        'display_name': _("Priority"),
+        'display_name': _(u"Priority"),
     },
     {
         'id': 'project',
         'class': 'stats',
-        'display_name': _("Project"),
+        'display_name': _(u"Project"),
     },
     {
         'id': 'language',
         'class': 'stats',
-        'display_name': _("Language"),
+        'display_name': _(u"Language"),
     },
     {
         'id': 'progress',
         'class': 'stats',
         # Translators: noun. The graphical representation of translation status
-        'display_name': _("Progress"),
+        'display_name': _(u"Progress"),
     },
     {
         'id': 'activity',
         'class': 'stats sorttable_numeric when-loaded',
-        'display_name': _("Last Activity"),
+        'display_name': _(u"Last Activity"),
     },
     {
         'id': 'critical',
         'class': 'stats-number sorttable_numeric when-loaded',
-        'display_name': _("Critical"),
+        'display_name': _(u"Critical"),
     },
     {
         'id': 'suggestions',
         'class': 'stats-number sorttable_numeric when-loaded',
         # Translators: The number of suggestions pending review
-        'display_name': _("Suggestions"),
+        'display_name': _(u"Suggestions"),
     },
     {
         'id': 'need-translation',
         'class': 'stats-number sorttable_numeric when-loaded',
-        'display_name': _("Incomplete"),
+        'display_name': _(u"Incomplete"),
     },
     {
         'id': 'total',
         'class': 'stats-number sorttable_numeric when-loaded',
         # Translators: Heading representing the total number of words of a file
         # or directory
-        'display_name': _("Total"),
+        'display_name': _(u"Total"),
     },
     {
         'id': 'last-updated',
         'class': 'stats sorttable_numeric when-loaded',
-        'display_name': _("Last updated"),
+        'display_name': _(u"Last updated"),
     },
 ]
 
@@ -116,9 +116,9 @@ def get_parent(path_obj):
         return None
 
     if parent_dir.is_language():
-        label = _('Back to language')
+        label = _(u'Back to language')
     else:
-        label = _('Back to parent folder')
+        label = _(u'Back to parent folder')
 
     return {
         'title': label,

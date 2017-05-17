@@ -53,52 +53,52 @@ class User(AbstractBaseUser):
     """
 
     username = models.CharField(
-        _('Username'), max_length=30, unique=True,
-        help_text=_('Required. 30 characters or fewer. Letters, numbers and '
-                    '@/./+/-/_ characters'),
+        _(u'Username'), max_length=30, unique=True,
+        help_text=_(u'Required. 30 characters or fewer. Letters, numbers and '
+                    u'@/./+/-/_ characters'),
         validators=[
             RegexValidator(re.compile('^[\w.@+-]+$', re.UNICODE),
-                           _('Enter a valid username.'),
+                           _(u'Enter a valid username.'),
                            'invalid')
         ],
         error_messages={
-            'unique': _('A user with that username already exists.'),
+            'unique': _(u'A user with that username already exists.'),
         },
     )
-    email = models.EmailField(_('Email Address'), max_length=255)
-    full_name = models.CharField(_('Full Name'), max_length=255, blank=True)
+    email = models.EmailField(_(u'Email Address'), max_length=255)
+    full_name = models.CharField(_(u'Full Name'), max_length=255, blank=True)
 
     is_active = models.BooleanField(
-        _('Active'),
+        _(u'Active'),
         default=True,
         db_index=True,
-        help_text=_('Designates whether this user should be treated as '
-                    'active. Unselect this instead of deleting accounts.'))
+        help_text=_(u'Designates whether this user should be treated as '
+                    u'active. Unselect this instead of deleting accounts.'))
     is_superuser = models.BooleanField(
-        _('Superuser Status'),
+        _(u'Superuser Status'),
         default=False,
         db_index=True,
-        help_text=_('Designates that this user has all permissions without '
-                    'explicitly assigning them.'))
+        help_text=_(u'Designates that this user has all permissions without '
+                    u'explicitly assigning them.'))
 
-    date_joined = models.DateTimeField(_('date joined'), default=timezone.now)
+    date_joined = models.DateTimeField(_(u'date joined'), default=timezone.now)
 
     # Translation setting fields
     unit_rows = models.SmallIntegerField(default=9,
-                                         verbose_name=_("Number of Rows"))
+                                         verbose_name=_(u"Number of Rows"))
     alt_src_langs = models.ManyToManyField(
         'pootle_language.Language', blank=True, db_index=True,
         limit_choices_to=~Q(code='templates'),
-        verbose_name=_("Alternative Source Languages"))
+        verbose_name=_(u"Alternative Source Languages"))
 
     # Score-related fields
-    score = models.FloatField(_('Score'), null=False, default=0)
-    is_employee = models.BooleanField(_('Is employee?'), default=False)
-    twitter = models.CharField(_('Twitter'), max_length=15, null=True,
+    score = models.FloatField(_(u'Score'), null=False, default=0)
+    is_employee = models.BooleanField(_(u'Is employee?'), default=False)
+    twitter = models.CharField(_(u'Twitter'), max_length=15, null=True,
                                blank=True)
-    website = models.URLField(_('Website'), null=True, blank=True)
-    linkedin = models.URLField(_('LinkedIn'), null=True, blank=True)
-    bio = models.TextField(_('Short Bio'), null=True, blank=True)
+    website = models.URLField(_(u'Website'), null=True, blank=True)
+    linkedin = models.URLField(_(u'LinkedIn'), null=True, blank=True)
+    bio = models.TextField(_(u'Short Bio'), null=True, blank=True)
 
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
@@ -238,7 +238,7 @@ class User(AbstractBaseUser):
             pass
         else:
             raise ValidationError({
-                'email': [_('This email address already exists.')]
+                'email': [_(u'This email address already exists.')]
             })
 
     def sync_email(self, old_email):

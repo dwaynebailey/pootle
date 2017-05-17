@@ -206,13 +206,13 @@ class LanguageSuggestionAdminView(PootleLanguageAdminFormView):
     form_class = LanguageSuggestionAdminForm
     success_url_pattern = "pootle-language-admin-suggestions"
     formtable_columns = (
-        _("Unit"),
-        _("State"),
-        _("Source"),
-        _("Suggestion"),
-        _("Suggested by"),
-        _("Suggested at"),
-        _("Project"))
+        _(u"Unit"),
+        _(u"State"),
+        _(u"Source"),
+        _(u"Suggestion"),
+        _(u"Suggested by"),
+        _(u"Suggested at"),
+        _(u"Project"))
 
     @property
     def default_form_kwargs(self):
@@ -233,23 +233,23 @@ class LanguageSuggestionAdminView(PootleLanguageAdminFormView):
             and form.cleaned_data["comment"])
         if reject_and_notify:
             message = ungettext_lazy(
-                "Rejected %s suggestion with comment. User will be notified",
-                "Rejected %s suggestions with comment. Users will be notified",
+                u"Rejected %s suggestion with comment. User will be notified",
+                u"Rejected %s suggestions with comment. Users will be notified",
                 count, count)
         elif accept_and_notify:
             message = ungettext_lazy(
-                "Accepted %s suggestion with comment. User will be notified",
-                "Accepted %s suggestions with comment. Users will be notified",
+                u"Accepted %s suggestion with comment. User will be notified",
+                u"Accepted %s suggestions with comment. Users will be notified",
                 count, count)
         elif form.cleaned_data["actions"] == "reject":
             message = ungettext_lazy(
-                "Rejected %s suggestion",
-                "Rejected %s suggestions",
+                u"Rejected %s suggestion",
+                u"Rejected %s suggestions",
                 count, count)
         else:
             message = ungettext_lazy(
-                "Accepted %s suggestion",
-                "Accepted %s suggestions",
+                u"Accepted %s suggestion",
+                u"Accepted %s suggestions",
                 count, count)
         messages.success(self.request, message)
 

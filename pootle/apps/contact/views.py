@@ -32,7 +32,7 @@ class ContactFormView(AjaxResponseMixin, OriginalContactFormView):
         # Provide the form action URL to use in the template that renders the
         # contact dialog.
         ctx.update({
-            'contact_form_title': _('Contact Us'),
+            'contact_form_title': _(u'Contact Us'),
             'contact_form_url': reverse('pootle-contact-xhr'),
         })
         return ctx
@@ -89,7 +89,7 @@ class ReportFormView(ContactFormView):
         unit_pk = self.unit.pk if self.unit else ''
         url = "%s?report=%s" % (reverse('pootle-contact-report-error'), unit_pk)
         ctx.update({
-            'contact_form_title': _('Report problem with string'),
+            'contact_form_title': _(u'Report problem with string'),
             'contact_form_url': url,
         })
         return ctx

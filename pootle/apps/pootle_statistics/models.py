@@ -53,11 +53,11 @@ class SubmissionFields(object):
 
     NAMES_MAP = {
         NONE: "",
-        SOURCE: _("Source"),
-        TARGET: _("Target"),
-        STATE: _("State"),
-        COMMENT: _("Comment"),
-        CHECK: (_("Check")),
+        SOURCE: _(u"Source"),
+        TARGET: _(u"Target"),
+        STATE: _(u"State"),
+        COMMENT: _(u"Comment"),
+        CHECK: (_(u"Check")),
     }
 
 

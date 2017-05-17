@@ -115,7 +115,7 @@ class PageCreateView(SuperuserRequiredMixin, AdminCtxMixin, PageModelMixin,
         initial = super(PageModelMixin, self).get_initial()
 
         initial_args = {
-            'title': _('Page Title'),
+            'title': _(u'Page Title'),
         }
 
         if self.page_type != ANN_TYPE:
@@ -227,7 +227,7 @@ def preview_content(request):
     """Returns content rendered based on the configured markup settings."""
     if 'text' not in request.POST:
         return JsonResponseBadRequest({
-            'msg': _('Text is missing'),
+            'msg': _(u'Text is missing'),
         })
 
     return JsonResponse({

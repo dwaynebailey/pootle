@@ -132,27 +132,27 @@ class InitDB(object):
         # Create the permissions.
         permissions = [
             {
-                'name': _("Can access a project"),
+                'name': _(u"Can access a project"),
                 'codename': "view",
             },
             {
-                'name': _("Cannot access a project"),
+                'name': _(u"Cannot access a project"),
                 'codename': "hide",
             },
             {
-                'name': _("Can make a suggestion for a translation"),
+                'name': _(u"Can make a suggestion for a translation"),
                 'codename': "suggest",
             },
             {
-                'name': _("Can submit a translation"),
+                'name': _(u"Can submit a translation"),
                 'codename': "translate",
             },
             {
-                'name': _("Can review suggestions"),
+                'name': _(u"Can review suggestions"),
                 'codename': "review",
             },
             {
-                'name': _("Can perform administrative tasks"),
+                'name': _(u"Can perform administrative tasks"),
                 'codename': "administrate",
             },
         ]

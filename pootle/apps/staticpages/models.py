@@ -27,29 +27,29 @@ ANN_VPATH = ANN_TYPE + u'/'
 class AbstractPage(models.Model):
 
     active = models.BooleanField(
-        _('Active'),
+        _(u'Active'),
         default=False,
-        help_text=_('Whether this page is active or not.'),
+        help_text=_(u'Whether this page is active or not.'),
     )
     virtual_path = models.CharField(
-        _("Virtual Path"),
+        _(u"Virtual Path"),
         max_length=100,
         default='',
         unique=True,
         help_text='/pages/',
     )
     # TODO: make title and body localizable fields
-    title = models.CharField(_("Title"), max_length=100)
+    title = models.CharField(_(u"Title"), max_length=100)
     body = MarkupField(
         # Translators: Content that will be used to display this static page
-        _("Display Content"),
+        _(u"Display Content"),
         blank=True,
-        help_text=_('Allowed markup: %s', get_markup_filter_display_name()),
+        help_text=_(u'Allowed markup: %s', get_markup_filter_display_name()),
     )
     url = models.URLField(
-        _("Redirect to URL"),
+        _(u"Redirect to URL"),
         blank=True,
-        help_text=_('If set, this page will redirect to this URL'),
+        help_text=_(u'If set, this page will redirect to this URL'),
     )
     modified_on = models.DateTimeField(
         default=now,
@@ -94,7 +94,7 @@ class AbstractPage(models.Model):
         """
         if not self.url and not self.body:
             # Translators: 'URL' and 'content' refer to form fields.
-            raise ValidationError(_('URL or content must be provided.'))
+            raise ValidationError(_(u'URL or content must be provided.'))
 
         pages = [p.objects.filter(Q(virtual_path=self.virtual_path),
                                   ~Q(pk=self.pk),).exists() for p in
@@ -110,7 +110,7 @@ class AbstractPage(models.Model):
 
 class LegalPage(AbstractPage):
 
-    display_name = _('Legal Page')
+    display_name = _(u'Legal Page')
 
     def localized_title(self):
         return _(self.title)
@@ -121,7 +121,7 @@ class LegalPage(AbstractPage):
 
 class StaticPage(AbstractPage):
 
-    display_name = _('Regular Page')
+    display_name = _(u'Regular Page')
 
     @classmethod
     def get_announcement_for(cls, pootle_path, user=None):
