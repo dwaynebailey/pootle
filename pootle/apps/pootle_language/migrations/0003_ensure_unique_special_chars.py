@@ -18,7 +18,7 @@ def remove_duplicate_special_characters(apps, schema_editor):
                 continue
             special_chars.append(special_char)
         if len(special_chars) < language.specialchars:
-            logger.info("Removed duplicate specialchars for %s" % language.code)
+            logger.info("Removed duplicate specialchars for %s", language.code)
         language.specialchars = u"".join(special_chars)
         language.save()
 

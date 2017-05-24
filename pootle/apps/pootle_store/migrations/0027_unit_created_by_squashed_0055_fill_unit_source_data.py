@@ -222,7 +222,7 @@ def clean_abs_file_paths(apps, schema_editor):
             to_update,
             update_fields=["file"],
             reduces=False)
-        logger.debug("Cleaned %s store paths" % result)
+        logger.debug("Cleaned %s store paths", result)
 
 
 def remove_fields_with_sql(apps, schema_editor):
