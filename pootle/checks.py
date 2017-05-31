@@ -586,6 +586,26 @@ def check_mysql_timezones(app_configs=None, **kwargs):
 
 
 @checks.register()
+def check_mysql_myisam(app_configs=None, **kwargs):
+    from django.db import connection
+
+    errors = []
+    with connection.cursor() as cursor:
+    #   if hasattr(cursor.db, "mysql_version"):
+    #        cursor.execute("SELECT CONVERT_TZ(NOW(), 'UTC', 'UTC');")
+    #        converted_now = cursor.fetchone()[0]
+    #        if converted_now is None:
+    #            errors.append(missing_mysql_timezone_tables)
+        missing_mysql_timezone_tables = checks.Critical(
+            _("MySQL has MyISAM tables:\n%s\n" % cursor.db),
+            hint=("Convert all MyISAM tables to InnoDB."),
+            id="pootle.C022",
+        )
+        errors.append(missing_mysql_timezone_tables)
+    return errors
+
+
+@checks.register()
 def check_unsupported_python(app_configs=None, **kwargs):
     errors = []
     if sys.version_info >= (3, 0):
