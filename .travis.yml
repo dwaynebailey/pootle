@@ -3,20 +3,20 @@ dist: trusty
 sudo: false
 language: python
 env:
-  - TOXENV=py27-django110-sqlite PYTHONPATH=$HOME/virtualenv/python2.7.9/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
-  - TOXENV=py27-django110-mysql PYTHONPATH=$HOME/virtualenv/python2.7.9/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
-  - TOXENV=py27-django110-postgres PYTHONPATH=$HOME/virtualenv/python2.7.9/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
+  - TOXENV=py27-django110-sqlite PYTHONPATH=$HOME/virtualenv/python2.7.13/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
+  - TOXENV=py27-django110-mysql PYTHONPATH=$HOME/virtualenv/python2.7.13/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
+  - TOXENV=py27-django110-postgres PYTHONPATH=$HOME/virtualenv/python2.7.13/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
   # Meta
-  - TOXENV=project PYTHONPATH=$HOME/virtualenv/python2.7.9/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
+  - TOXENV=project PYTHONPATH=$HOME/virtualenv/python2.7.13/lib/python2.7/site-packages  TOX_TESTENV_PASSENV="PYTHONPATH"
 cache:
   directories:
     - pootle/static/js/node_modules
     - pootle/assets
-    - $HOME/virtualenv/python2.7.9/bin
-    - $HOME/virtualenv/python2.7.9/lib
+    - $HOME/virtualenv/python2.7.13/bin
+    - $HOME/virtualenv/python2.7.13/lib
     - $HOME/virtualenv/python2.7/bin
 before_install:
-    - cp -a $HOME/virtualenv/python2.7.9/lib/python2.7/site-packages/ $HOME/py-workaround/
+    - cp -a $HOME/virtualenv/python2.7.13/lib/python2.7/site-packages/ $HOME/py-workaround/
 install:
   - if [[ ( "$TRAVIS_BRANCH" == "master" || "$TRAVIS_BRANCH" == "stable/*" ) && "$TRAVIS_PULL_REQUEST" == "false" ]]; then upgrade="--upgrade"; fi;
       pip install 'setuptools>=18.5';
