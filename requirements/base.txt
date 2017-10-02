@@ -17,24 +17,24 @@ django-sortedm2m==1.5.0
 django-statici18n==1.4.0
 
 # Libraries
-Babel==2.5.0
+Babel==2.5.1
 cssmin==0.2.0
 diff-match-patch==20121119
 dirsync==2.2.2
 jsonfield==2.0.2
 # Note: also adjust pootle/checks::LXML_MINIMUM_REQUIRED_VERSION
-lxml>=3.5,<=3.8.0
+lxml>=4.0,<4.1
 pathlib==1.0.1
 python-dateutil==2.6.1
 python-levenshtein==0.12.0
 pytz==2017.2
 rq==0.8.2
-scandir==1.5
+scandir==1.6
 stemming==1.0.1
-pycountry==17.5.14
+pycountry==17.9.23
 
 # Markup: Markdown filter for POOTLE_MARKUP_FILTER
-bleach==2.0.0
+bleach==2.1
 Markdown==2.6.9
 
 # Translate Toolkit
