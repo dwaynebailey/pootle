@@ -4,7 +4,7 @@
 -r _docs.txt
 -r _lint.txt
 
-tox==2.8.1
+tox==3.14.5
 
 # Databases
 -r _db_mysql.txt
@@ -14,6 +14,6 @@ tox==2.8.1
 -r _es_5.txt
 
 # Test coverage
-codecov==2.0.9
-coverage==4.4.1
-coveralls==1.2.0
+codecov==2.0.16
+coverage==5.0.3
+coveralls==1.11.1
