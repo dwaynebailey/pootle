@@ -2,7 +2,7 @@
 
 # Note: also adjust pootle/constants::DJANGO_MINIMUM_REQUIRED_VERSION
 # and docs/releases/M.N.O.rst
-Django~=1.10.5  # rq.filter: <1.11
+Django~=1.11.12  # rq.filter: <1.12
 
 # Django apps
 django-allauth==0.41.0
@@ -16,6 +16,8 @@ django-rq==2.3.0
 django-sortedm2m==3.0.0
 django-statici18n==1.9.0
 
+dj.subcommand==0.0.3
+
 # Libraries
 Babel==2.8.0
 cssmin==0.2.0
@@ -24,6 +26,7 @@ dirsync==2.2.4
 jsonfield==3.1.0
 # Note: also adjust pootle/checks::LXML_MINIMUM_REQUIRED_VERSION
 lxml>=4.5,<4.6
+makeyfile==0.0.2
 pathlib==1.0.1
 python-dateutil==2.8.1
 python-levenshtein==0.12.0
