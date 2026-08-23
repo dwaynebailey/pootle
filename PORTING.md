@@ -1,5 +1,13 @@
 # Porting plan: repo & branch strategy
 
+> **Critical rule: no code is ever pushed to `upstream` (`translate/pootle`).**
+> This fork is a one-way street — fixes may be pulled *from* upstream (see
+> below), nothing is ever pushed *to* it. Locally, `upstream`'s push URL is
+> set to a dummy value (`git remote set-url --push upstream
+> DISABLED_DO_NOT_PUSH_TO_UPSTREAM`) so an accidental `git push upstream`
+> fails immediately instead of reaching the real repo. Anyone re-cloning
+> this fork should set that up again before doing any work.
+
 This fork (`dwaynebailey/pootle`) is a personal effort to modernize Pootle
 (Python 3, current Django, current dependencies — see the full audit for
 detail). These are the Phase 0 / stream J decisions this file exists to
