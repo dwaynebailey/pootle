@@ -1,0 +1,54 @@
+name: Old-stack CI (control channel)
+
+# Phase 0, stream B: runs the pre-port (Python 2.7 / Django 1.11) test
+# suite against each supported DB backend, using the reproducible
+# baseline image from docker/ci/Dockerfile (stream A). This is a
+# control channel, not the app's eventual CI: it exists so every later
+# porting phase (1-5) has a trusted "old behavior" to diff against.
+# Watches this fork's main only — see PORTING.md; never targets
+# upstream/translate/pootle.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  test:
+    name: pytest (${{ matrix.db.name }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        db:
+          - { name: sqlite, env: "", wait: "" }
+          - { name: postgres, env: postgres, wait: "pg_isready -U pootle" }
+          - { name: mariadb, env: mariadb, wait: "mysqladmin ping -h 127.0.0.1 --silent" }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start redis
+        run: docker compose -f docker-compose.ci.yml up -d redis
+
+      - name: Start ${{ matrix.db.name }}
+        if: matrix.db.env != ''
+        run: docker compose -f docker-compose.ci.yml up -d ${{ matrix.db.env }}
+
+      - name: Wait for ${{ matrix.db.name }} to accept connections
+        if: matrix.db.wait != ''
+        run: |
+          for i in $(seq 1 30); do
+            docker compose -f docker-compose.ci.yml exec -T ${{ matrix.db.env }} ${{ matrix.db.wait }} && break
+            sleep 2
+          done
+
+      - name: Build test image
+        run: docker compose -f docker-compose.ci.yml build test
+
+      - name: Run pytest
+        run: docker compose -f docker-compose.ci.yml run --rm -e APP_DB_ENV=${{ matrix.db.env }} test
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.ci.yml down -v

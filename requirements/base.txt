@@ -16,6 +16,13 @@ django-rq==1.0.1
 django-sortedm2m==1.5.0
 django-statici18n==1.7.0
 
+# django-statici18n pulls this in unpinned; 1.0.4 (2020-03) dropped Python 2
+# support (class Foo(metaclass=...) syntax, a SyntaxError under py2), so an
+# unpinned install picks up whatever's newest and breaks django.setup()
+# outright. 1.0.3 is the last release before that. Found running Phase 0
+# stream B's control CI; see PORTING.md.
+django-appconf==1.0.3
+
 dj.subcommand==0.0.3
 
 # Libraries

@@ -6,3 +6,11 @@ pytest-cov==2.5.1
 pytest-django==3.1.2
 
 pytest-mock
+
+# pytest 3.3.0's fixtures module calls attr.ib(convert=...); that kwarg was
+# renamed to converter= and later removed from attrs entirely, so an
+# unpinned attrs install (pip picks today's latest) breaks pytest at
+# import time. Pin to the last version contemporary with this pytest that
+# still supports the old kwarg. Found running Phase 0 stream B's control
+# CI; see PORTING.md.
+attrs==18.2.0

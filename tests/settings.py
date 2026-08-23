@@ -98,6 +98,15 @@ PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',
 )
 
+# The default (40-apps.conf) is ASSETS_DEBUG = False, which requires a
+# pre-built webassets manifest (normally produced by `manage.py assets
+# build`, part of the JS/webpack build pipeline). Tests don't run that
+# build step and don't need real bundled output, only for
+# {% assets %} template tags to resolve without erroring - so build CSS
+# bundles on the fly here instead. Found running Phase 0 stream B; see
+# PORTING.md.
+ASSETS_DEBUG = True
+
 
 SCRIPT_NAME = '/'
 

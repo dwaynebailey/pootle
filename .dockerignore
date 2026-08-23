@@ -1,0 +1,9 @@
+.git
+*.pyc
+__pycache__/
+.tox/
+.pytest_cache/
+pootle/static/js/node_modules/
+pootle/assets/
+docs/_build/
+*.egg-info/

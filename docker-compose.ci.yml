@@ -1,0 +1,61 @@
+# Phase 0, stream B: the "old-stack" control channel.
+#
+# Runs the existing (Python 2.7 / Django 1.11) test suite against each
+# supported DB backend, using the pre-port baseline image. This is not a
+# deployment file — see docker-compose.yml for that. Purpose here is
+# narrow: give every later porting phase something fixed to diff
+# behavior against. See PORTING.md and docker/ci/Dockerfile.
+#
+# Service names (postgres, mariadb, redis) are load-bearing: tests/settings.py
+# hardcodes these as DB/cache hostnames.
+
+services:
+  test:
+    build:
+      context: .
+      dockerfile: docker/ci/Dockerfile
+    environment:
+      - APP_DB_ENV=${APP_DB_ENV:-}
+    depends_on:
+      - redis
+    command: ["pytest", "tests", "-q"]
+
+  postgres:
+    image: postgres:9.4-alpine
+    environment:
+      - POSTGRES_USER=pootle
+      - POSTGRES_PASSWORD=CHANGEME
+      - POSTGRES_DB=pootledb
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  mariadb:
+    image: mariadb:10.3
+    # No --init-connect: this image's entrypoint mis-splits any multi-word
+    # option value (list form or not) into extra positional args and
+    # aborts ("Too many arguments"). character-set-server/collation-server
+    # below cover what we need; the app also sets its own sql_mode via
+    # DATABASES OPTIONS in tests/settings.py. Found running Phase 0
+    # stream B.
+    command:
+      - mysqld
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+      - --innodb-flush-log-at-trx-commit=0
+    environment:
+      # The bundled entrypoint script in current mariadb:10.3 pulls wants
+      # MARIADB_*, not the older MYSQL_* names - found running Phase 0
+      # stream B (the image tag is pinned, but Docker Hub still updates
+      # its entrypoint script/content over time). Password must be
+      # CHANGEME, not empty: tests/settings.py's mariadb branch inherits
+      # PASSWORD: 'CHANGEME' from the base DATABASES dict without
+      # overriding it (matches docker-compose.dev.yml's convention).
+      - MARIADB_ROOT_PASSWORD=CHANGEME
+      - MARIADB_DATABASE=pootledb
+    tmpfs:
+      - /var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    tmpfs:
+      - /data
