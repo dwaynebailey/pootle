@@ -11,6 +11,17 @@ function get_requirement () {
     curl -sO $APP_REQUIREMENTS/$1.txt
 }
 
+# The apt-installed 'virtualenv' (docker/root/install-root) ships without
+# its bundled seed wheels on this image, so it falls back to downloading
+# setuptools/pip/wheel from PyPI's simple index at bootstrap time — which
+# 404s on the (long-defunct) standalone 'pkg-resources' package it asks
+# for, and the whole thing fails with "failed with error code 2" before a
+# venv is even created. Bootstrap pip properly via get-pip.py instead, and
+# use a pip-installed virtualenv (last version with Python 2 support),
+# which bundles working wheels. Verified during Phase 0, stream A2.
+curl -sS https://bootstrap.pypa.io/pip/2.7/get-pip.py -o /tmp/get-pip.py
+python2 /tmp/get-pip.py -q
+python2 -m pip install -q "virtualenv<20"
 
 if [ "$BUILD_IMAGE" == 'dev' ];
 then
@@ -23,7 +34,7 @@ then
         get_requirement "$i"
     done
     cd ..
-    virtualenv .
+    python2 -m virtualenv .
     . bin/activate \
         && pip install --no-cache-dir -qr requirements/dev.txt \
         && pip install --no-cache-dir -qr requirements/_es_5.txt \
@@ -34,7 +45,12 @@ then
         && pyclean .
 else
     echo "Installing package: $APP_PKG"
-    virtualenv .
+    python2 -m virtualenv .
+    # NOTE: --process-dependency-links was removed in pip 19 (this
+    # bootstrap installs pip 20.3.4, the last release with Python 2
+    # support) — this branch will fail as-is. Left unfixed here since it's
+    # the PyPI-package install path, out of scope for the Phase 0
+    # baseline; revisit alongside the Phase 4 build-pipeline work.
     . bin/activate \
         && pip install \
                -q \
