@@ -5,6 +5,19 @@
 
 set -e
 
+# Debian stretch reached EOL (2022-06) and its packages moved to the
+# archive. Repoint apt at archive.debian.org so this baseline image can
+# still be rebuilt for comparison during the Python 3 / Django port
+# (Phase 0, stream A). archive.debian.org has no 'stretch-updates' or
+# 'security' suite of its own, and Release files there are intentionally
+# stale, so point everything at the plain archive suite and disable the
+# valid-until check.
+if grep -qs stretch /etc/os-release 2>/dev/null; then
+    printf 'deb http://archive.debian.org/debian stretch main\ndeb http://archive.debian.org/debian-security stretch/updates main\n' \
+        > /etc/apt/sources.list
+    echo 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until
+fi
+
 apt-get update -qq
 apt-get install \
    -y \
