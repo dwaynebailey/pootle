@@ -21,9 +21,9 @@ jobs:
       fail-fast: false
       matrix:
         db:
-          - { name: sqlite, env: "", wait: "" }
-          - { name: postgres, env: postgres, wait: "pg_isready -U pootle" }
-          - { name: mariadb, env: mariadb, wait: "mysqladmin ping -h 127.0.0.1 --silent" }
+          - { name: sqlite, env: "", wait: "", cov: "true" }
+          - { name: postgres, env: postgres, wait: "pg_isready -U pootle", cov: "" }
+          - { name: mariadb, env: mariadb, wait: "mysqladmin ping -h 127.0.0.1 --silent", cov: "" }
 
     steps:
       - uses: actions/checkout@v4
@@ -59,7 +59,11 @@ jobs:
       # minor flakiness without masking a real drop.
       - name: Run pytest
         run: |
-          docker compose -f docker-compose.ci.yml run --rm -e APP_DB_ENV=${{ matrix.db.env }} test pytest tests -q 2>&1 | tee pytest-output.txt
+          args="tests -q"
+          if [ -n "${{ matrix.db.cov }}" ]; then
+            args="$args --cov=pootle --cov-report=term-missing --cov-config=.coveragerc"
+          fi
+          docker compose -f docker-compose.ci.yml run --rm -e APP_DB_ENV=${{ matrix.db.env }} test pytest $args 2>&1 | tee pytest-output.txt
           exit 0
 
       - name: Check pass count against floor
@@ -72,6 +76,23 @@ jobs:
             echo "::error::Pass count ${passed:-0} is below the floor of $FLOOR - likely a regression, not the known baseline"
             exit 1
           fi
+
+      # Coverage baseline (Phase 0, stream C): 88.8% as of 2026-08-24,
+      # measured the same way (sqlite, --cov=pootle). Floor set a few
+      # points under that to leave room for minor variance without
+      # masking a real drop - see PORTING.md.
+      - name: Check coverage against floor
+        if: matrix.db.cov != ''
+        env:
+          COV_FLOOR: 85
+        run: |
+          total=$(grep -E '^TOTAL' pytest-output.txt | grep -oE '[0-9]+\.[0-9]+%' | tr -d '%' || echo 0)
+          echo "Coverage: ${total:-0}% (floor: ${COV_FLOOR}%)"
+          awk -v c="${total:-0}" -v f="$COV_FLOOR" 'BEGIN { exit !(c+0 < f+0) }' && {
+            echo "::error::Coverage ${total:-0}% is below the floor of ${COV_FLOOR}% - likely a regression, not the known baseline"
+            exit 1
+          }
+          true
 
       - name: Tear down
         if: always()

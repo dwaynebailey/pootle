@@ -48,3 +48,42 @@ record, so they don't live only in chat history.
 - Deferred. No public plan announcement, no upstream PR, while this stays
   a private, personal fork. Revisit once the port is stable enough to
   show.
+
+## Phase 0 baselines (streams B & C)
+
+`.github/workflows/old-stack-ci.yml` runs the pre-port test suite on every
+push to `main`, against sqlite/postgres/mariadb, using
+`docker/ci/Dockerfile`. It's a control channel, not the app's eventual CI —
+it exists so every later porting phase has a trusted "old behavior" to
+diff against.
+
+**Pass-count baseline** (2026-08-23): 2286 passed / 123 failed / 94 error
+(sqlite), 2285 / 2285 (postgres), 2295 (mariadb), out of ~2503 collected.
+Non-passing results are >90% one already-understood, already-deferred
+cause: `js/vendor.bundle.js` needs a real webpack build, out of scope
+until the Phase 4 frontend rebuild. The workflow fails a job only if the
+pass count drops below a floor (2200), not on pytest's own exit code — a
+control channel permanently red on a known baseline can't signal an
+actual regression.
+
+**Coverage baseline** (2026-08-24, stream C): **88.8%** (`pootle` package,
+17,859 statements / 2,002 missed — see `.coveragerc`), measured on the
+sqlite leg only (coverage is a code-path property, not really
+DB-backend-specific). The workflow fails if coverage drops below 85%.
+Later phases (1-5) should not lower this without a deliberate reason.
+
+**`filterwarnings = error` in `setup.cfg`** treats deprecation warnings in
+in-house code as build breaks today, which is useful now but will need
+retuning at each step of the Phase 2 Django ladder (1.11→2.2→3.2→4.2→5.2)
+— each hop is expected to introduce new deprecation warnings on the way
+to the next version, and the filter list will need new entries rather
+than a blanket loosening.
+
+**The real gap stream C surfaced:** every test in this repo (204 files)
+is unit/integration level via Django's test client — there is no
+browser-level or JS-integration test anywhere. That's exactly what a
+Django-version-ladder-plus-React-rewrite can silently break without
+either the Python test suite or a human noticing. Streams D (a curated
+Playwright smoke suite over the actual user journeys) and E (golden-master
+snapshots of API/page output for a frozen dataset) exist specifically to
+close this gap before Phase 1 starts.

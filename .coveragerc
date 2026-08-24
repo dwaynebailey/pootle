@@ -1,0 +1,14 @@
+[run]
+source = pootle
+omit =
+    */migrations/*
+    pootle/static/*
+    pootle/settings/*
+    manage.py
+
+[report]
+precision = 1
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError
+    if __name__ == .__main__.:
