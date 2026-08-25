@@ -191,3 +191,51 @@ Snapshotted endpoints: `/xhr/admin/languages/`, `/xhr/admin/projects/`,
 `/xhr/admin/users/` (JSON), and `/`, `/projects/terminology/`,
 `/af/terminology/`, `/af/terminology/terminology/manage/` (HTML
 title + structural counts).
+
+## Stream F: dependency & security baseline
+
+`tools/security-audit.py` queries [OSV.dev](https://osv.dev)'s API
+directly by name+version for every package in `requirements/base.lock.txt`
+and `pootle/static/js/package.json`. Not `pip-audit`/`npm audit`'s normal
+path — both tried to actually build/install the pinned packages first to
+get their metadata, and hit the same class of failure as the rest of
+Phase 0 (`pip-audit` failed on `django-allauth==0.35.0`'s `setup.py`
+importing `setuptools.convert_path`, which current setuptools removed).
+Querying OSV directly by name+version sidesteps needing to build
+anything.
+
+**PyPI side** (`requirements/base.lock.txt`, 45 packages, run
+2026-08-25) — 11 packages carry advisories against the exact pinned
+version:
+
+| Package | Advisories | Worth flagging |
+|---|---|---|
+| `Django==1.11.29` | 16 | SQL injection via `QuerySet` `_connector` kwarg (GHSA-frmv-pr5f-9mcr), another via column aliases (GHSA-6w2r-r2m5-xq5w), signed-cookie salt-namespace collisions, cache-disclosure issues |
+| `bleach==2.1.3` | 10 | Multiple XSS/mutation-XSS bypasses, a ReDoS |
+| `lxml==4.2.6` | 10 | XXE via default `iterparse()`/`ETCompatXMLParser()` config, XSS in the HTML cleaner |
+| `urllib3==1.26.20` | 10 | — |
+| `requests==2.27.1` | 8 | `.netrc` credential leak via crafted URLs |
+| `django-allauth==0.35.0` | 6 | Open redirect, inactive-user access tokens accepted |
+| `certifi==2021.10.8` | 6 | Distrusted root certs still shipped (GLOBALTRUST, TrustCor, e-Tugra) |
+| `idna==2.10` | 4 | A DoS |
+| `Babel==2.5.3` | 2 | Directory traversal |
+| `Markdown==2.6.11` | 2 | — |
+| `click==7.1.2` | 1 | — |
+
+**npm side** (`pootle/static/js/package.json`, ranges resolved to their
+minimum version — no committed lockfile, so these are approximate):
+`lodash@4.2.1` (9 advisories), `underscore@1.6.0` (2),
+`codemirror@5.7.0` (1), `select2@4.0.3` (1).
+
+This re-orders priority within phases already on the roadmap rather than
+adding new work: the Django-heavy PyPI list is exactly why the Phase 2
+ladder is already the largest line item, and most of the rest
+(`certifi`/`idna`/`urllib3`/`requests`/`bleach`/`lxml`/`Babel`/`Markdown`)
+are transitive dependencies that get fixed for free the moment `base.txt`
+itself moves off pins that predate Python 3 support — they don't need
+individual attention. The npm findings land squarely in the already-
+deferred Phase 4 frontend rebuild.
+
+Raw OSV responses (verbose descriptions/references, ~600KB) aren't
+committed — regenerate via `python3 tools/security-audit.py --json
+<path>`.
