@@ -21,13 +21,21 @@ jobs:
       - name: Build and start the e2e stack
         run: docker compose -f docker-compose.e2e.yml up -d --build
 
+      # initdb seeds a real demo dataset (a "terminology" project across
+      # dozens of languages) on every container start - locally this
+      # takes ~90s-2min under QEMU emulation (this fork's dev machine is
+      # arm64), so give it real headroom here too rather than guessing a
+      # tight budget. Dump the container logs on failure so a repeat
+      # failure is diagnosable instead of a bare timeout.
       - name: Wait for the app to accept connections
         run: |
-          for i in $(seq 1 60); do
-            curl -sf http://localhost:8000/ >/dev/null && break
-            sleep 2
+          for i in $(seq 1 90); do
+            curl -sf http://localhost:8000/ >/dev/null && exit 0
+            sleep 5
           done
-          curl -sf http://localhost:8000/ >/dev/null
+          echo "::error::App did not come up in time - dumping container logs"
+          docker compose -f docker-compose.e2e.yml logs
+          exit 1
 
       - uses: actions/setup-node@v4
         with:
