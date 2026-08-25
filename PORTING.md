@@ -87,3 +87,66 @@ either the Python test suite or a human noticing. Streams D (a curated
 Playwright smoke suite over the actual user journeys) and E (golden-master
 snapshots of API/page output for a frozen dataset) exist specifically to
 close this gap before Phase 1 starts.
+
+## Stream D: e2e smoke suite, and how much of the UI is JS-only
+
+`docker-compose.e2e.yml` + `docker/e2e/` bring up a minimally-seeded,
+real running instance (real Postgres, real Redis, real `initdb` demo
+data — a "terminology" project across dozens of languages). `e2e/` is a
+separate Playwright project (current Node/Playwright, unrelated to the
+legacy `pootle/static/js/` toolchain) that drives it —
+`.github/workflows/e2e-smoke.yml` runs it on every push to `main`.
+
+Getting a real browser suite running surfaced something bigger than
+expected: **far more of the UI is JS-only than just the translate
+editor.** In order of discovery:
+
+1. Every page using `{% assets 'js_*' %}` (i.e. almost every page)
+   references literal pre-built webpack output
+   (`pootle/apps/pootle_app/assets.py`) with no source list for
+   webassets to assemble — `ASSETS_DEBUG` (stream B/C's fix for the CSS
+   bundles) doesn't help here. `docker/e2e/stub-assets.sh` drops empty
+   placeholder files at the expected paths purely so pages don't 500 on
+   load; it produces zero working JS and is never committed
+   (`*.bundle.js` is already gitignored). Goes away when Phase 4 lands
+   real bundles.
+2. **The login form doesn't exist in server HTML at all.** `/accounts/login/`
+   renders the same shell page as everywhere else and relies on
+   `PTL.auth.open(...)` (JS) to open a modal. With JS stubbed, there is
+   no login UI to click.
+3. **The whole nav chrome (logged-in state, username, logout link) is
+   client-rendered too** — server HTML for `/` is byte-identical for
+   anonymous and authenticated users except the CSRF token.
+4. The upload form *is* real, server-rendered HTML
+   (`#js-upload-form`, `action=""`) — but its real submission path
+   expects file metadata (`X-Pootle-Path`) the JS uploader attaches
+   that a plain form POST doesn't reproduce.
+5. The checks and search *results* views are hash-routed
+   (`/translate/#filter=...`) and entirely client-mounted.
+
+None of this is new brokenness — it's how this version of the UI has
+always worked, just invisible until something tries to test it without a
+JS engine attached. The smoke suite works around (1)-(3) by
+authenticating via a direct POST to the real login endpoint (the same
+one the JS modal calls) rather than clicking a UI that doesn't render,
+and verifying "authenticated" by requesting a permission-gated page
+rather than looking for UI chrome that isn't server-rendered. (4) and
+(5) are out of scope until Phase 4.
+
+Also needed: `django-allauth` blocks login behind email verification
+regardless of `is_superuser`; the seed script
+(`docker/e2e/entrypoint.sh`) marks the seeded admin's email verified
+directly (`EmailAddress.objects.get_or_create(..., verified=True)`)
+rather than running the real confirmation-email flow.
+
+**Covered by the suite (10 tests, all passing as of 2026-08-25):**
+anonymous homepage/project-listing load, anonymous admin access is
+blocked, login with valid/invalid credentials, logout clears the
+session, authenticated server-admin access, a translation project page
+renders its real forms, the terminology manager page renders, PO export
+downloads a real file.
+
+**Deliberately deferred to Phase 4:** the translate editor itself, the
+login/signup modal as a UI interaction, file upload as a UI interaction,
+and checks/search results pages — all genuinely need real JS to test
+meaningfully, not just a passing HTTP status.
