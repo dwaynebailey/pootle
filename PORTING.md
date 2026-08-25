@@ -150,3 +150,44 @@ downloads a real file.
 login/signup modal as a UI interaction, file upload as a UI interaction,
 and checks/search results pages — all genuinely need real JS to test
 meaningfully, not just a passing HTTP status.
+
+## Stream E: golden-master snapshots
+
+`e2e/snapshot.js` captures a **normalized** fingerprint — record counts,
+field-name schemas, and content-derived stable identifiers (language/
+project codes, usernames), plus page title and a couple of structural
+element counts — against the same deterministic e2e-seeded instance
+stream D uses, and diffs it against the committed baseline
+(`e2e/snapshots/baseline.json`). Wired into
+`.github/workflows/e2e-smoke.yml` right after the Playwright suite, same
+running stack, no extra infra.
+
+Deliberately not raw bytes or exact JSON: the plan's own guidance was to
+avoid that given the Phase 4 rewrite, and it turned out to matter for
+JSON too, not just HTML — record `pk`s, timestamps, and exact markup are
+all expected to shift across the port, so diffing them literally would
+just be noise. What this *is* built to catch: a field disappearing from
+an API response, a collection unexpectedly emptying out, or a page
+starting to error or lose content it's expected to have.
+
+One deviation from the original plan worth recording: rather than
+building a second, separate seeding path from `pytest_pootle`'s
+factories/`env.py` (streams B/C already exercise those, extensively, via
+the pytest suite itself), this reuses stream D's `initdb`-seeded e2e
+stack — it was already built, already validated, and is just as
+deterministic (same script, same bundled content, same result every
+run). Trade-off: the dataset is real demo content (a "terminology"
+project) rather than data purpose-built to exercise suggestions/TM/
+permissions edge cases the way `pytest_pootle/env.py` is — that
+depth of coverage already exists in the pytest suite (streams B/C);
+stream E's job is specifically to catch drift in what a browser/API
+client actually sees, which the pytest suite can't.
+
+Verified the check mechanism actually catches drift (not just always
+passing): corrupted a value in the baseline, confirmed a nonzero exit
+and a reported diff, restored it.
+
+Snapshotted endpoints: `/xhr/admin/languages/`, `/xhr/admin/projects/`,
+`/xhr/admin/users/` (JSON), and `/`, `/projects/terminology/`,
+`/af/terminology/`, `/af/terminology/terminology/manage/` (HTML
+title + structural counts).

@@ -1,0 +1,96 @@
+{
+  "admin_languages": {
+    "status": 200,
+    "count": 10,
+    "fields": [
+      "code",
+      "fullname",
+      "id",
+      "nplurals",
+      "pk",
+      "pluralequation",
+      "specialchars"
+    ],
+    "ids": [
+      "jbo",
+      "ku",
+      "kw",
+      "ky",
+      "nb",
+      "sd",
+      "se",
+      "sl",
+      "ti",
+      "yue"
+    ]
+  },
+  "admin_projects": {
+    "status": 200,
+    "count": 2,
+    "fields": [
+      "checkstyle",
+      "code",
+      "disabled",
+      "filetypes",
+      "fs_mapping",
+      "fs_plugin",
+      "fs_url",
+      "fullname",
+      "id",
+      "ignoredfiles",
+      "pk",
+      "report_email",
+      "screenshot_search_prefix",
+      "source_language",
+      "template_name"
+    ],
+    "ids": [
+      "terminology",
+      "tutorial"
+    ]
+  },
+  "admin_users": {
+    "status": 200,
+    "count": 2,
+    "fields": [
+      "bio",
+      "email",
+      "full_name",
+      "id",
+      "is_active",
+      "is_superuser",
+      "linkedin",
+      "pk",
+      "twitter",
+      "username",
+      "website"
+    ],
+    "ids": [
+      "admin",
+      "system"
+    ]
+  },
+  "homepage": {
+    "status": 302
+  },
+  "project_listing": {
+    "status": 200,
+    "title": "Terminology | Projects | Pootle Translation Server",
+    "counts": {
+      "language_links": 57
+    }
+  },
+  "translation_project": {
+    "status": 200,
+    "title": "Terminology | Afrikaans | Pootle Translation Server",
+    "counts": {
+      "search_input": 1,
+      "upload_input": 1
+    }
+  },
+  "terminology_manager": {
+    "status": 200,
+    "title": "Manage Terminology | Terminology | Afrikaans | Pootle Translation Server",
+    "counts": {}
+  }
+}

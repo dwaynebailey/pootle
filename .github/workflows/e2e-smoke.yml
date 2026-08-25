@@ -1,7 +1,8 @@
 name: E2E smoke suite
 
-# Phase 0, stream D: a curated Playwright suite against a running,
-# minimally-seeded Pootle instance (docker-compose.e2e.yml,
+# Phase 0, streams D & E: a curated Playwright suite (stream D) and a
+# golden-master drift check (stream E, e2e/snapshot.js) against the same
+# running, minimally-seeded Pootle instance (docker-compose.e2e.yml,
 # docker/e2e/Dockerfile). Deliberately scoped to what's real without the
 # Phase 4 frontend rebuild - see e2e/tests/smoke.spec.js's header and
 # PORTING.md for what's covered vs. deferred and why. Watches this fork's
@@ -52,6 +53,13 @@ jobs:
       - name: Run the smoke suite
         working-directory: e2e
         run: npx playwright test
+
+      # Stream E: normalized record counts/schemas/ids and page
+      # title/structure, diffed against e2e/snapshots/baseline.json.
+      # Deliberately not raw bytes - see snapshot.js's header.
+      - name: Check for golden-master drift
+        working-directory: e2e
+        run: node snapshot.js
 
       - uses: actions/upload-artifact@v4
         if: failure()
