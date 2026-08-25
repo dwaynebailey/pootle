@@ -192,7 +192,7 @@ Snapshotted endpoints: `/xhr/admin/languages/`, `/xhr/admin/projects/`,
 `/af/terminology/`, `/af/terminology/terminology/manage/` (HTML
 title + structural counts).
 
-## Stream F: dependency & security baseline
+## Stream G: dependency & security baseline
 
 `tools/security-audit.py` queries [OSV.dev](https://osv.dev)'s API
 directly by name+version for every package in `requirements/base.lock.txt`
@@ -239,3 +239,33 @@ deferred Phase 4 frontend rebuild.
 Raw OSV responses (verbose descriptions/references, ~600KB) aren't
 committed — regenerate via `python3 tools/security-audit.py --json
 <path>`.
+
+## Stream H: config & secrets hygiene
+
+Audited every committed config file (`docker/settings.conf`,
+`docker/settings.postgres.conf`, `docker/settings.mariadb.conf`,
+`docker/e2e/91-e2e.conf`) for real vs. placeholder secrets: every
+`SECRET_KEY` is the literal string `'SECRETKEY'` (or, for the e2e-only
+config, `'e2e-not-a-real-secret'`), every database password is
+`'CHANGEME'` — clearly placeholders, not real credentials.
+`.gitignore` already excludes where real local overrides would go
+(`pootle/settings/*-local.conf`, `.env`).
+
+Confirmed directly (2026-08-25): **no live Pootle instance runs on this
+codebase**, so there's nothing that could have inherited these demo
+defaults as production values. Closes this stream.
+
+Intended pattern for later (formalized properly in the Docker & cloud
+packaging work, not needed for Phase 0 itself): secrets injected via
+environment variables at deploy time (e.g. `django-environ` reading
+`SECRET_KEY`/`DATABASE_PASSWORD` from the environment), nothing baked
+into an image or committed to a conf file. The current placeholder
+pattern (`docker/settings*.conf`) is fine for local dev/CI, where the
+values are genuinely throwaway per-container.
+
+## Stream I: live-data safety
+
+**Not applicable — explicitly marked skipped, not left ambiguous.**
+Confirmed directly (2026-08-25): no production or staging Pootle
+instance exists under this fork's — or anyone's — active care right
+now. Nothing to back up before this port touches data.

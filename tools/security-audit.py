@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Phase 0, stream F: dependency vulnerability baseline.
+"""Phase 0, stream G: dependency vulnerability baseline.
 
 Queries the OSV.dev API directly for each pinned package, rather than
 going through pip-audit/npm audit's normal resolution path - both tried
