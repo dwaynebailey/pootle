@@ -269,3 +269,40 @@ values are genuinely throwaway per-container.
 Confirmed directly (2026-08-25): no production or staging Pootle
 instance exists under this fork's — or anyone's — active care right
 now. Nothing to back up before this port touches data.
+
+## Stream F: performance baseline
+
+`e2e/perf-baseline.js` times representative pages against stream D's
+e2e stack (real dataset, 69,323 units across a "terminology" project in
+~57 languages — already at the scale the plan called for, no separate
+larger dataset needed). 20 requests each, run 2026-08-26:
+
+| Page | p50 | p95 |
+|---|---|---|
+| `/` | 38ms | 82ms |
+| `/projects/terminology/` | 40ms | 72ms |
+| `/af/terminology/` | 37ms | 54ms |
+| `/af/terminology/translate/` (shell only — JS-mounted, see stream D) | 29ms | 47ms |
+| `/af/terminology/terminology/manage/` | **151ms** | **213ms** |
+| `/admin/languages/` | 9ms | 10ms |
+
+The terminology manager page is the outlier — 4-15x slower than
+everything else. Worth watching specifically during the Phase 2 Django/
+ORM ladder as a candidate for an N+1 query pattern, rather than
+something this stream needed to root-cause.
+
+**Background job throughput turned out not to be the useful number
+here.** The plan called for "RQ jobs/sec for stats recalculation," but
+this version's real RQ/background-job usage is far lighter than that
+assumed: `grep` found only 3 files referencing `django_rq` directly, and
+`refresh_scores` (the obvious "stats recalculation" command) completed
+in ~1s on the full dataset — because score updates key off user
+*submission* events, and this demo dataset was bulk-imported via
+`initdb`, not submitted through the app. Forcing a queue-throughput
+measurement here would have measured an empty queue, not real work.
+
+Instead: `calculate_checks` (recomputes quality checks for every unit —
+real per-unit work, already observed running during `initdb` seeding)
+took **9s for all 69,323 units — ≈7,700 units/sec** for checks
+recalculation. That's the throughput number worth carrying forward as
+this stream's actual baseline.
