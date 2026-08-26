@@ -32,14 +32,24 @@ diff-match-patch==20121119
 dirsync==2.2.3
 jsonfield==2.0.2
 # Note: also adjust pootle/checks::LXML_MINIMUM_REQUIRED_VERSION
-lxml>=4.2,<4.3
+# 4.2.6 (the prior pin) can't build against Python 3.12's C headers
+# (longintrepr.h moved) - 4.9.3 is the first release with a cp312 wheel.
+# Minimal bump for Phase 1's build to succeed; Phase 3 item 14 still
+# owns bumping this to current. Found running Phase 1's install probe.
+lxml==4.9.3
 makeyfile==0.0.2
-pathlib==1.0.1
+# pathlib and scandir were Python-2 backports for stdlib modules
+# (pathlib since 3.4, os.walk incorporating scandir's C-acceleration
+# since 3.5) - removed for the Python 3 port; see pootle/core/paths.py
+# and pootle/apps/pootle_fs/finder.py.
 python-dateutil==2.7.2
-python-levenshtein==0.12.0
+# python-levenshtein==0.12.0 was Python-2-only (and separately: yanked
+# from PyPI as insecure, see requirements/base.lock.txt). Levenshtein is
+# the actively maintained continuation under the rapidfuzz org, same
+# `import Levenshtein` - no code changes needed.
+Levenshtein>=0.20,<1.0
 pytz==2018.3
 rq==0.10.0
-scandir==1.7
 stemming==1.0.1
 pycountry==18.2.23
 

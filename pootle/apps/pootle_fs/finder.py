@@ -10,8 +10,6 @@ import fnmatch
 import os
 import re
 
-import scandir
-
 from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
 from django.utils.lru_cache import lru_cache
@@ -79,7 +77,7 @@ class TranslationFileFinder(object):
 
     def walk(self):
         """Walk a filesystem"""
-        for root, dirs_, files in scandir.walk(self.file_root):
+        for root, dirs_, files in os.walk(self.file_root):
             for filename in files:
                 yield os.path.join(root, filename)
 
