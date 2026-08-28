@@ -385,14 +385,45 @@ about if more turn up during Phase 2:
   fixing in `pytest_pootle/`'s fixture machinery, independent of the
   app code itself.
 
-**Current state** (full suite, sqlite, `pytest tests -q`):
-**1766 passed / 565 failed / 170 errors / 10 skipped / 1 xfailed**,
-out of 2512 collected — up from complete infrastructure failure (2510
-errors, one universal `get_marker()` bug) at the start of execution
-work. Compare against the **Python 2 baseline**: 2286 passed / 123
-failed / 94 error (sqlite) out of ~2503 collected (see stream B/C
-above) — so Phase 1 isn't at parity yet, but the shape of what's left
-is now well understood rather than a wall of infrastructure errors.
+**Current state** (full suite, sqlite, `pytest tests -q`, as of
+`2039b616e`): **2133 passed / 266 failed / 102 errors / 10 skipped /
+1 xfailed**, out of 2512 collected — up from complete infrastructure
+failure (2510 errors, one universal `get_marker()` bug) at the start
+of execution work, and up from 1766/565/170 a few commits earlier.
+Compare against the **Python 2 baseline**: 2286 passed / 123 failed /
+94 error (sqlite) out of ~2503 collected (see stream B/C above) —
+close to parity now, and closing further follows the same pattern:
+rerun the full suite, frequency-rank the failure log, fix the
+highest-leverage cause, repeat. Several single fixes this phase
+cascaded into 50-120 passing tests each because they sat in shared
+fixture setup or a widely-used utility (`unit/search.py`'s offset
+check, `FSItemState.__gt__`, `bulk_update()` on `dict.values()`) —
+worth re-checking that pattern (one early, universal cause behind a
+pile of unrelated-looking failures) before assuming remaining
+failures are all independent.
+
+More recurring bug shapes found in this later stretch, beyond the
+ones already listed above:
+- **`filter()`/`map()` returning iterators** turned out to be a much
+  bigger, more scattered pattern than first thought — a repeat `grep
+  -rn "filter("` sweep after fixing the ones test failures pointed at
+  found *more* silent-logic-bug instances nothing had failed loudly
+  on yet (`pootle_store/receivers.py`, `models.py`'s `markfuzzy()`/
+  `resurrect()`, `unit/proxy.py`, `utils.py`, two more in the same fs
+  migration file). Worth another such sweep before Phase 2.
+- **`.next()`** — Python 2's method-call spelling for what's
+  `next(x)` in Python 3 — found on both a stdlib generator
+  (`os.walk()` in a migration) and test fixture generators.
+- **`dict.values()` fed to something needing a real sequence**:
+  `bulk_update()` (third-party, indexes its argument) and
+  `JsonResponse` (needs JSON-serializable data) both hit this same
+  "was a list under Python 2" gap.
+- The `None`-vs-`int` comparison bug shape recurred **within a single
+  accumulator loop from both directions** — `pootle_data/utils.py`'s
+  `aggregate_children()` needed guards for both the accumulator being
+  `None` (first iteration) *and* the per-item value being `None` (an
+  item with nothing to compare) — fixing only one direction still
+  left the other to be found by a later test run.
 
 One cluster worth flagging so it isn't mistaken for a regression:
 `webassets.exceptions.BundleError: 'js/vendor.bundle.js' not found`
