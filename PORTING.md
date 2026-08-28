@@ -306,3 +306,119 @@ real per-unit work, already observed running during `initdb` seeding)
 took **9s for all 69,323 units — ≈7,700 units/sec** for checks
 recalculation. That's the throughput number worth carrying forward as
 this stream's actual baseline.
+
+## Phase 1: Python 3 port
+
+Work lives on the long-lived `python3-port` branch (off `main`, per the
+branch strategy above) — not merged to `main` yet. Validation
+environment: `docker/py3/Dockerfile`, building `FROM python:3.12-slim`.
+It is **not a production image** (no app server, no asset pipeline) —
+it exists purely to validate that the port itself works: requirements
+install, the app imports, and the test suite runs, under Python 3.12.
+`docker/py3/patch-*.sh` explain the third-party packages that needed
+build-time patching (django-allauth, django-sortedm2m never shipped
+wheels and have broken `setup.py` under modern tooling; Django 1.11's
+vendored `six.py` doesn't resolve under Python 3.12's import system).
+
+Two milestones reached in order:
+
+1. `django.setup()` succeeds cleanly under Python 3.12, zero errors,
+   zero warnings.
+2. The full pytest suite (2476 tests) collects cleanly under
+   Python 3.12, zero collection errors.
+
+Getting the suite to actually *execute* surfaced a long tail of Python
+2→3 semantic changes, not just syntax. Some were near-universal
+blockers (one broken line failing every single test); most were
+localized bugs found by re-running the full suite and frequency-ranking
+the failure log after each fix. Recurring bug *shapes*, worth knowing
+about if more turn up during Phase 2:
+
+- **`hasattr()` no longer swallows arbitrary exceptions** — only
+  `AttributeError`. A descriptor raising bare `KeyError` for "not set
+  yet" (`pootle_store/fields.py`) silently worked as intended in Python
+  2 and hard-failed in Python 3. Fix: raise `AttributeError`, which is
+  the descriptor protocol's actual contract anyway.
+- **Cross-type comparisons** (`None >= int`, `None > int`) were always
+  `False` under Python 2's total-ordering-by-typename; Python 3 raises
+  `TypeError`. Found in `pootle_store/diff.py` and
+  `pootle_data/utils.py` (both "first real value wins" accumulator
+  patterns) — fixed by making the `is None` case explicit rather than
+  relying on ordering to encode it.
+- **`str(store)` on a translate-toolkit `TranslationStore`** only
+  serializes under Python 2 (translate-toolkit's own compat shim,
+  documented in its source as kept "for compatibility purpose"); under
+  Python 3 it silently falls through to plain `object.__str__()` and
+  produces garbage rather than raising. `bytes(store)` is the real,
+  version-independent entry point. Turned up in 5 separate files
+  (production code and tests) — worth a `grep -rn "str(.*store"` sweep
+  before Phase 2 in case more remain unexercised.
+- **`filter()`/`map()` return one-shot iterators, not lists.** Some
+  call sites crashed outright (`len()`, indexing, `.append()` on the
+  result). More dangerously, several didn't crash at all: an iterator
+  is *always truthy* regardless of whether it has any matches, so
+  `if filtered_result:` / `not filtered_result` silently always took
+  the same branch in Python 3 — wrong behaviour with no exception to
+  find it by. Fixed 5 of these (`pootle_app/models/permissions.py`,
+  a migration, `context_processors.py`, `pootle_store/models.py`,
+  `core/views/api.py`); the migration and `context_processors.py` ones
+  were pure silent-logic-bug cases, not crashes — grep for `= filter(`
+  / `= map(` is worth repeating periodically since nothing will ever
+  fail loudly on its own to point back at them.
+- **Defining `__eq__` without `__hash__`** kept the default
+  identity-based hash in Python 2 regardless; Python 3 sets `__hash__
+  = None` as soon as a class defines `__eq__` without it, breaking
+  anything that hashes instances later (`@lru_cache`-memoized methods,
+  set/dict membership). Fixed 4 classes
+  (`pootle_fs/plugin.py:Plugin`, `pootle_fs/utils.py:FSPlugin`,
+  `core/state.py:ItemState` and `State`) by adding `__hash__` mirroring
+  each class's own `__eq__` fields. `pootle_project/models.py`'s
+  `ProjectResource`/`ProjectSet` and `pootle_store/diff.py` have the
+  same shape but weren't yet observed being hashed anywhere — left
+  alone rather than guessing (their equality includes an unhashable
+  `list`, so a naive `__hash__` would be wrong), pending an actual
+  failure.
+- **pytest itself moved on**: `Item.get_marker()` →
+  `get_closest_marker()`, `Metafunc.funcargnames` → `.fixturenames`,
+  and calling an `@pytest.fixture`-decorated function directly (works,
+  with a warning, pre-pytest-4; hard `Failed` error since) all needed
+  fixing in `pytest_pootle/`'s fixture machinery, independent of the
+  app code itself.
+
+**Current state** (full suite, sqlite, `pytest tests -q`):
+**1766 passed / 565 failed / 170 errors / 10 skipped / 1 xfailed**,
+out of 2512 collected — up from complete infrastructure failure (2510
+errors, one universal `get_marker()` bug) at the start of execution
+work. Compare against the **Python 2 baseline**: 2286 passed / 123
+failed / 94 error (sqlite) out of ~2503 collected (see stream B/C
+above) — so Phase 1 isn't at parity yet, but the shape of what's left
+is now well understood rather than a wall of infrastructure errors.
+
+One cluster worth flagging so it isn't mistaken for a regression:
+`webassets.exceptions.BundleError: 'js/vendor.bundle.js' not found`
+affects any view test that renders a real page (as opposed to an error
+page or a bare API response). This is **not** a Python 3 issue — stream
+D (above) already documented that `*.bundle.js` files are gitignored,
+webpack-built artifacts that this repo's baseline pytest environment
+(`docker/ci/Dockerfile`) never builds either, and that
+`ASSETS_DEBUG=True` (`tests/settings.py`) doesn't help because these
+bundles have no source list for webassets to assemble from — they're
+literal pre-built output. It's already folded into the Python 2
+baseline's 123 failed / 94 error above. Not a Phase 1 target; goes away
+when Phase 4 (frontend rebuild) lands real bundles.
+
+**Not yet done, still on the branch:**
+
+- Get sqlite failures down to Python 2 baseline parity (or document
+  remaining deltas as pre-existing/out-of-scope, per the webassets
+  case above).
+- Validate against postgres and mariadb too (Phase 0 stream B checked
+  all three; Phase 1 so far has only run sqlite).
+- The ad-hoc test dependencies (`pytest==7.4.4`, `pytest-django==4.8.0`,
+  `pytest-cov==4.1.0`, `factory-boy==3.3.0`, `pytest-mock`) are only
+  ever `pip install`-ed inline in `docker run` commands — not yet
+  persisted into a requirements file. `requirements/tests.txt` still
+  pins the Python 2-era versions (`pytest==3.3.0`, etc.) for the
+  Phase 0 control channel; Phase 1 needs its own pinned set.
+- Merge `python3-port` into `main` once the suite is at (or has a
+  documented reason to be below) parity — not done yet.
