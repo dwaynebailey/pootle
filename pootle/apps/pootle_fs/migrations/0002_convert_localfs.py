@@ -35,11 +35,14 @@ def _file_belongs_to_project(project, filename):
 
 def _detect_treestyle_and_path(Config, Language, project, proj_trans_path):
     dirlisting = os.walk(proj_trans_path)
-    dirpath_, dirnames, filenames = dirlisting.next()
+    # generator.next() was Python 2's method-call spelling; Python 3
+    # only supports the next(generator) builtin. Phase 1 Python 3
+    # port; see PORTING.md.
+    dirpath_, dirnames, filenames = next(dirlisting)
 
     if not dirnames:
         # No subdirectories
-        if filter(partial(_file_belongs_to_project, project), filenames):
+        if list(filter(partial(_file_belongs_to_project, project), filenames)):
             # Translation files found, assume gnu
             return "gnu", ""
 
@@ -69,7 +72,7 @@ def _detect_treestyle_and_path(Config, Language, project, proj_trans_path):
     # No language subdirs found, look for any translation file
     # in subdirs
     for dirpath_, dirnames, filenames in os.walk(proj_trans_path):
-        if filter(partial(_file_belongs_to_project, project), filenames):
+        if list(filter(partial(_file_belongs_to_project, project), filenames)):
             return "gnu", dirpath_.replace(proj_trans_path, "")
     # Unsure
     return "nongnu", None

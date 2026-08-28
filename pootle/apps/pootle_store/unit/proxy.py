@@ -32,7 +32,10 @@ class UnitProxy(object):
     def getlocations(self):
         if self.locations is None:
             return []
-        return filter(None, self.locations.split('\n'))
+        # filter() returns an iterator under Python 3 (a list under
+        # Python 2); see models.py's Unit.getlocations() for the same
+        # fix and why. Phase 1 Python 3 port; see PORTING.md.
+        return list(filter(None, self.locations.split('\n')))
 
     def hasplural(self):
         return (

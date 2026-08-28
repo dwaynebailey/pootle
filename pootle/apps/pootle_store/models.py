@@ -674,7 +674,11 @@ class Unit(AbstractUnit):
     def getlocations(self):
         if self.locations is None:
             return []
-        return filter(None, self.locations.split('\n'))
+        # filter() returns an iterator under Python 3 (a list under
+        # Python 2); callers (e.g. translate-toolkit's addlocations())
+        # iterate this more than once / index into individual
+        # elements. Phase 1 Python 3 port; see PORTING.md.
+        return list(filter(None, self.locations.split('\n')))
 
     def addlocation(self, location):
         if self.locations is None:
@@ -696,7 +700,11 @@ class Unit(AbstractUnit):
         if value:
             self.state = FUZZY
         elif self.state <= FUZZY:
-            if filter(None, self.target_f.strings):
+            # filter() returns an iterator under Python 3,
+            # which is always truthy regardless of whether it
+            # actually has any matches. Phase 1 Python 3
+            # port; see PORTING.md.
+            if any(filter(None, self.target_f.strings)):
                 self.state = TRANSLATED
             else:
                 self.state = UNTRANSLATED
@@ -718,7 +726,9 @@ class Unit(AbstractUnit):
         if self.state > OBSOLETE:
             return
 
-        if filter(None, self.target_f.strings):
+        # See markfuzzy()'s comment on filter()'s Python 3
+        # truthiness change.
+        if any(filter(None, self.target_f.strings)):
             # when Unit toggles its OBSOLETE state the number of translated
             # words or fuzzy words also changes
             if is_fuzzy:

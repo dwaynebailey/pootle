@@ -63,7 +63,12 @@ def handle_unit_pre_save(**kwargs):
     if unit.source_updated:
         # update source related fields
         wc = unit.counter.count_words(unit.source_f.strings)
-        if not wc and not bool(filter(None, unit.target_f.strings)):
+        # filter() returns an iterator under Python 3, which is
+        # always truthy regardless of whether it actually has any
+        # matches - bool()/an implicit truth test on it needs an
+        # actual emptiness check instead. Phase 1 Python 3 port; see
+        # PORTING.md.
+        if not wc and not any(filter(None, unit.target_f.strings)):
             # auto-translate untranslated strings
             unit.target = unit.source
             unit.state = FUZZY
@@ -73,7 +78,8 @@ def handle_unit_pre_save(**kwargs):
         unit.target_wordcount = unit.counter.count_words(
             unit.target_f.strings)
         unit.target_length = len(unit.target_f)
-        if filter(None, unit.target_f.strings):
+        # See the filter()-truthiness comment above.
+        if any(filter(None, unit.target_f.strings)):
             if unit.state == UNTRANSLATED:
                 unit.state = TRANSLATED
         else:

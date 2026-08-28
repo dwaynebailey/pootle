@@ -74,7 +74,11 @@ HEADING_CHOICES = [
 
 def get_table_headings(choices):
     """Filters the list of available table headings to the given `choices`."""
-    return filter(lambda x: x['id'] in choices, HEADING_CHOICES)
+    # filter() returns an iterator under Python 3 (a list under
+    # Python 2); callers put this straight into a template/JSON
+    # context, which may need to iterate more than once or serialize
+    # it. Phase 1 Python 3 port; see PORTING.md.
+    return list(filter(lambda x: x['id'] in choices, HEADING_CHOICES))
 
 
 def make_generic_item(path_obj, **kwargs):
