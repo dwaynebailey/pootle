@@ -18,8 +18,8 @@ class UnitStem(models.Model):
     class Meta(AbstractStem.Meta):
         unique_together = ["stem", "unit"]
 
-    stem = models.ForeignKey("Stem")
-    unit = models.ForeignKey(Unit)
+    stem = models.ForeignKey("Stem", on_delete=models.CASCADE)
+    unit = models.ForeignKey(Unit, on_delete=models.CASCADE)
 
 
 class Stem(AbstractStem):

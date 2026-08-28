@@ -32,7 +32,7 @@ def test_unit_terminology_instance(terminology_units, terminology0):
     assert term.text == unit.source_f
     assert (
         term.split(term.text)
-        == re.split(u"[^\w'-]+", term.text))
+        == re.split(r"[^\w'-]+", term.text))
     assert (
         term.tokens
         == [t.lower()

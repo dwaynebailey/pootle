@@ -19,7 +19,7 @@ def pytest_generate_tests(metafunc):
         term_file = os.path.join(
             os.path.dirname(pytest_pootle.__file__),
             *("data", "po", "terminology.po"))
-        with open(term_file) as f:
+        with open(term_file, "rb") as f:
             _terms = [x.source for x in getclass(f)(f.read()).units[1:]]
         metafunc.parametrize("terminology_units", _terms)
 

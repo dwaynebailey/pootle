@@ -30,3 +30,14 @@ RUN bash docker/py3/patch-django-six.sh
 
 COPY . /src
 RUN pip install --no-cache-dir -q -e .
+
+# See sitecustomize.py's own comment for why this has to be a
+# site-wide startup hook rather than living solely in pootle/__init__.py
+# or a conftest.py. pootle_py3_compat.py is copied alongside it (not
+# just relied on via the editable install's own sys.path setup): the
+# `site` module imports sitecustomize.py before it's finished
+# processing the editable-install .pth file that would otherwise make
+# the repo root (and pootle_py3_compat.py within it) importable.
+RUN SITE_PACKAGES="$(python3 -c 'import site; print(site.getsitepackages()[0])')" \
+    && cp docker/py3/sitecustomize.py "$SITE_PACKAGES/" \
+    && cp pootle_py3_compat.py "$SITE_PACKAGES/"

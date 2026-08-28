@@ -135,7 +135,7 @@ def test_store_fs_path_filtered(glob):
 def test_fs_path_filter_path_regex(glob):
     assert (
         PathFilter().path_regex(glob)
-        == translate(glob).replace("\Z(?ms)", "$"))
+        == translate(glob).replace(r"\Z(?ms)", "$"))
 
 
 @pytest.mark.django_db

@@ -9,7 +9,7 @@
 
 import os
 
-from mock import PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 
 import pytest
 

@@ -50,7 +50,10 @@ makeyfile==0.0.2
 # (pathlib since 3.4, os.walk incorporating scandir's C-acceleration
 # since 3.5) - removed for the Python 3 port; see pootle/core/paths.py
 # and pootle/apps/pootle_fs/finder.py.
-python-dateutil==2.7.2
+# 2.7.2 uses datetime.utcfromtimestamp(), deprecated by Python (a hard
+# failure under filterwarnings=error). Small, stable API - no reason to
+# hunt for a minimal bump here, just took current.
+python-dateutil==2.9.0.post0
 # python-levenshtein==0.12.0 was Python-2-only (and separately: yanked
 # from PyPI as insecure, see requirements/base.lock.txt). Levenshtein is
 # the actively maintained continuation under the rapidfuzz org, same
