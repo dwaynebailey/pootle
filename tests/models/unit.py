@@ -35,11 +35,11 @@ def _sync_translations(db_unit):
     plugin = FSPlugin(project)
     plugin.fetch()
     plugin.sync()
-    file_store = db_unit.store.deserialize(
-        open(os.path.join(
+    with open(os.path.join(
             plugin.fs_url,
             language.code,
-            store.name)).read())
+            store.name), "rb") as f:
+        file_store = db_unit.store.deserialize(f.read())
     file_unit = file_store.findid(db_unit.getid())
     return file_store, file_unit
 
