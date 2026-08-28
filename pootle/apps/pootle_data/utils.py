@@ -446,8 +446,14 @@ class RelatedStoresDataTool(DataTool):
                         or last_created["creation_time"] > last_created_unit_time):
                     latest["last_created_unit"] = last_created
                     last_created_unit_time = last_created["creation_time"]
-            if (last_submission_pk is None
-                    or child["last_submission__pk"] > last_submission_pk):
+            # child["last_submission__pk"] is None for a child with no
+            # submissions at all - such a child should never become
+            # the new max, just as last_submission_pk being None (no
+            # winner yet) should never block a real value from
+            # winning. Phase 1 Python 3 port; see PORTING.md.
+            if (child["last_submission__pk"] is not None
+                    and (last_submission_pk is None
+                         or child["last_submission__pk"] > last_submission_pk)):
                 latest['last_submission'] = child["last_submission"]
                 last_submission_pk = child["last_submission__pk"]
             del child["last_submission__pk"]
