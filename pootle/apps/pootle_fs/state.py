@@ -111,12 +111,13 @@ class FSItemState(ItemState):
     def __gt__(self, other):
         if isinstance(other, self.__class__):
             return self.pootle_path > other.pootle_path
-        # object.__gt__() takes (self, value) - missing `self` here
-        # meant the fallback path always raised TypeError once called
-        # (Python 2's message was less obviously wrong: "unbound
-        # method... must be called with instance as first argument").
-        # Phase 1 Python 3 port; see PORTING.md.
-        return object.__gt__(self, other)
+        if other is None:
+            # Callers (see tests/pootle_fs/fs_state.py) rely on any
+            # real item sorting after None, matching Python 2's
+            # cross-type ordering (`x > None` was always True for
+            # non-None x). Phase 1 Python 3 port; see PORTING.md.
+            return True
+        return NotImplemented
 
 
 class ProjectFSState(State):
