@@ -507,7 +507,7 @@ def test_config_no_append(no_config_env):
 @pytest.mark.django_db
 def test_config_site_util(no_config_env):
     conf = SiteConfig()
-    assert conf.items() == conf.values() == conf.keys() == []
+    assert list(conf.items()) == list(conf.values()) == list(conf.keys()) == []
     # keys are returned order by key
     other_dict = OrderedDict()
     other_dict["foo.a"] = "bar"
@@ -517,9 +517,9 @@ def test_config_site_util(no_config_env):
     conf["foo.b"] = dict(bar=23)
     conf["foo.c"] = [1, 2, 3]
     assert conf.items() == other_dict.items()
-    assert conf.values() == other_dict.values()
+    assert list(conf.values()) == list(other_dict.values())
     assert conf.keys() == other_dict.keys()
-    assert [x for x in conf] == other_dict.keys()
+    assert [x for x in conf] == list(other_dict.keys())
     assert all(x in conf for x in other_dict)
     assert all(conf[k] == v for k, v in other_dict.items())
     assert all(conf.get(k) == v for k, v in other_dict.items())
@@ -528,9 +528,9 @@ def test_config_site_util(no_config_env):
     with pytest.raises(KeyError):
         conf["DOESNOTEXIST"]
     assert SiteConfig().items() == other_dict.items()
-    assert SiteConfig().values() == other_dict.values()
+    assert list(SiteConfig().values()) == list(other_dict.values())
     assert SiteConfig().keys() == other_dict.keys()
-    assert [x for x in SiteConfig()] == other_dict.keys()
+    assert [x for x in SiteConfig()] == list(other_dict.keys())
     assert all(x in SiteConfig() for x in other_dict)
     assert all(SiteConfig()[k] == v for k, v in other_dict.items())
     assert all(SiteConfig().get(k) == v for k, v in other_dict.items())
@@ -543,7 +543,7 @@ def test_config_site_util(no_config_env):
 @pytest.mark.django_db
 def test_config_model_util(no_config_env):
     conf = ModelConfig(Project)
-    assert conf.items() == conf.values() == conf.keys() == []
+    assert list(conf.items()) == list(conf.values()) == list(conf.keys()) == []
     # keys are returned order by key
     other_dict = OrderedDict()
     other_dict["foo.a"] = "bar"
@@ -553,9 +553,9 @@ def test_config_model_util(no_config_env):
     conf["foo.b"] = dict(bar=23)
     conf["foo.c"] = [1, 2, 3]
     assert conf.items() == other_dict.items()
-    assert conf.values() == other_dict.values()
+    assert list(conf.values()) == list(other_dict.values())
     assert conf.keys() == other_dict.keys()
-    assert [x for x in conf] == other_dict.keys()
+    assert [x for x in conf] == list(other_dict.keys())
     assert all(x in conf for x in other_dict)
     assert all(conf[k] == v for k, v in other_dict.items())
     assert all(conf.get(k) == v for k, v in other_dict.items())
@@ -564,9 +564,9 @@ def test_config_model_util(no_config_env):
     with pytest.raises(KeyError):
         conf["DOESNOTEXIST"]
     assert ModelConfig(Project).items() == other_dict.items()
-    assert ModelConfig(Project).values() == other_dict.values()
+    assert list(ModelConfig(Project).values()) == list(other_dict.values())
     assert ModelConfig(Project).keys() == other_dict.keys()
-    assert [x for x in ModelConfig(Project)] == other_dict.keys()
+    assert [x for x in ModelConfig(Project)] == list(other_dict.keys())
     assert all(x in ModelConfig(Project) for x in other_dict)
     assert all(ModelConfig(Project)[k] == v for k, v in other_dict.items())
     assert all(ModelConfig(Project).get(k) == v for k, v in other_dict.items())
@@ -580,7 +580,7 @@ def test_config_model_util(no_config_env):
 def test_config_object_util(no_config_env):
     project = Project.objects.first()
     conf = ObjectConfig(project)
-    assert conf.items() == conf.values() == conf.keys() == []
+    assert list(conf.items()) == list(conf.values()) == list(conf.keys()) == []
     # keys are returned order by key
     other_dict = OrderedDict()
     other_dict["foo.a"] = "bar"
@@ -590,9 +590,9 @@ def test_config_object_util(no_config_env):
     conf["foo.b"] = dict(bar=23)
     conf["foo.c"] = [1, 2, 3]
     assert conf.items() == other_dict.items()
-    assert conf.values() == other_dict.values()
+    assert list(conf.values()) == list(other_dict.values())
     assert conf.keys() == other_dict.keys()
-    assert [x for x in conf] == other_dict.keys()
+    assert [x for x in conf] == list(other_dict.keys())
     assert all(x in conf for x in other_dict)
     assert all(conf[k] == v for k, v in other_dict.items())
     assert all(conf.get(k) == v for k, v in other_dict.items())
@@ -601,9 +601,9 @@ def test_config_object_util(no_config_env):
     with pytest.raises(KeyError):
         conf["DOESNOTEXIST"]
     assert ObjectConfig(project).items() == other_dict.items()
-    assert ObjectConfig(project).values() == other_dict.values()
+    assert list(ObjectConfig(project).values()) == list(other_dict.values())
     assert ObjectConfig(project).keys() == other_dict.keys()
-    assert [x for x in ObjectConfig(project)] == other_dict.keys()
+    assert [x for x in ObjectConfig(project)] == list(other_dict.keys())
     assert all(x in ObjectConfig(project) for x in other_dict)
     assert all(ObjectConfig(project)[k] == v for k, v in other_dict.items())
     assert all(ObjectConfig(project).get(k) == v for k, v in other_dict.items())
