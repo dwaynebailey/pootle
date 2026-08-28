@@ -245,6 +245,15 @@ def test_fs():
         def open(self, paths, *args, **kwargs):
             if isinstance(paths, (list, tuple)):
                 paths = os.path.join(*paths)
+            if not args and "mode" not in kwargs:
+                # Most callers read these fixture files straight into
+                # translate-toolkit's getclass(f)(f.read()) pattern,
+                # which needs bytes. Python 2's default text mode
+                # happened to still yield str==bytes; Python 3's
+                # doesn't. No caller relied on text mode (checked),
+                # so default to bytes here rather than fix every call
+                # site. Phase 1 Python 3 port; see PORTING.md.
+                kwargs["mode"] = "rb"
             return open(self.path(paths), *args, **kwargs)
 
     return TestFs()

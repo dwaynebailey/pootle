@@ -93,6 +93,15 @@ class FSPlugin(object):
     def __eq__(self, other):
         return self.plugin.__eq__(other)
 
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__; Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it - and __getattr__ isn't consulted
+    # for implicit dunder lookups like hash(), so it has to be
+    # explicit here too, delegating like __eq__ does. Phase 1 Python
+    # 3 port; see PORTING.md.
+    def __hash__(self):
+        return self.plugin.__hash__()
+
     def __str__(self):
         return str(self.plugin)
 

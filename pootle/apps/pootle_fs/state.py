@@ -111,7 +111,12 @@ class FSItemState(ItemState):
     def __gt__(self, other):
         if isinstance(other, self.__class__):
             return self.pootle_path > other.pootle_path
-        return object.__gt__(other)
+        # object.__gt__() takes (self, value) - missing `self` here
+        # meant the fallback path always raised TypeError once called
+        # (Python 2's message was less obviously wrong: "unbound
+        # method... must be called with instance as first argument").
+        # Phase 1 Python 3 port; see PORTING.md.
+        return object.__gt__(self, other)
 
 
 class ProjectFSState(State):

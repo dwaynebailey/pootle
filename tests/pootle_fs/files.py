@@ -76,7 +76,7 @@ def test_wrap_store_fs(valid_mock, settings, tmpdir):
     testdict[fs_file] = "foo"
     testdict[FSFile(store_fs)] = "bar"
     assert len(testdict.keys()) == 1
-    assert testdict.values()[0] == "bar"
+    assert list(testdict.values())[0] == "bar"
 
 
 @patch("pootle_fs.files.FSFile._validate_store_fs")

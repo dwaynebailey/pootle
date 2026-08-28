@@ -35,7 +35,7 @@ def _import_file(file_name, file_dir=None,
             os.path.dirname(pytest_pootle.__file__),
             "data/po/tutorial/en")
 
-    with open(os.path.join(file_dir, file_name), "r") as f:
+    with open(os.path.join(file_dir, file_name), "rb") as f:
         import_file(
             SimpleUploadedFile(file_name, f.read(), content_type),
             user=user)
@@ -80,7 +80,7 @@ def test_import_new_file(project0_nongnu, import_tps, site_users):
     from import_export.exceptions import FileImportError
     with pytest.raises(FileImportError):
         import_file(SimpleUploadedFile("import_new_file.po",
-                                       str(filestore),
+                                       bytes(filestore),
                                        "text/x-gettext-translation"), user)
 
 
@@ -94,7 +94,7 @@ def test_import_to_empty(project0_nongnu, import_tps, site_users):
     filestore = create_store(store.pootle_path, "0",
                              [("Unit Source", "Unit Target", False)])
     import_file(SimpleUploadedFile(store.name,
-                                   str(filestore),
+                                   bytes(filestore),
                                    "text/x-gettext-translation"), user)
 
     allow_add_and_obsolete = ((tp.project.checkstyle == 'terminology'
@@ -127,7 +127,7 @@ def test_import_add_and_obsolete_units(project0_nongnu, import_tps,
         "0",
         [(unit.source_f + " REPLACED", unit.target_f + " REPLACED", False)])
     import_file(SimpleUploadedFile("import_add_and_obsolete.po",
-                                   str(filestore),
+                                   bytes(filestore),
                                    "text/x-gettext-translation"), user)
 
     allow_add_and_obsolete = ((tp.project.checkstyle == 'terminology'

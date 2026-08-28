@@ -18,7 +18,7 @@ from pootle_project.models import Project
 
 
 def _repr_value(value):
-    if not isinstance(value, (str, unicode)):
+    if not isinstance(value, str):
         value_class = type(value).__name__
         return (
             "%s(%s)"

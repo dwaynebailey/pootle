@@ -50,17 +50,17 @@ def test_schema_tool():
     assert set(defaults.keys()) == TEST_MYSQL_SCHEMA_PARAM_NAMES['defaults']
     for app_label in schema_tool.app_configs:
         for table in schema_tool.get_app_tables(app_label):
-            row = schema_tool.get_table_fields(table).values()[0]
+            row = list(schema_tool.get_table_fields(table).values())[0]
             assert (
                 set([x.lower() for x in row.keys()]).issubset(
                     TEST_MYSQL_SCHEMA_PARAM_NAMES['tables']['fields'])
             )
-            row = schema_tool.get_table_indices(table).values()[0]
+            row = list(schema_tool.get_table_indices(table).values())[0]
             assert (
                 set([x.lower() for x in row.keys()]).issubset(
                     TEST_MYSQL_SCHEMA_PARAM_NAMES['tables']['indices'])
             )
-            row = schema_tool.get_table_constraints(table).values()[0]
+            row = list(schema_tool.get_table_constraints(table).values())[0]
             assert (
                 set([x.lower() for x in row.keys()]).issubset(
                     TEST_MYSQL_SCHEMA_PARAM_NAMES['tables']['constraints'])

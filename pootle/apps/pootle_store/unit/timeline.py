@@ -329,7 +329,7 @@ class EventGroup(object):
         if event is not None:
             return event
         if len(self.log_events) > 0:
-            return self.log_events.values()[0]
+            return list(self.log_events.values())[0]
 
         return None
 

@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.core.cache import cache
 from django.shortcuts import render
 
-from django_rq.queues import get_failed_queue, get_queue
+from django_rq.queues import get_queue
 from django_rq.workers import Worker
 
 from pootle.core.decorators import admin_required
@@ -45,7 +45,12 @@ def server_stats():
 
 def rq_stats():
     queue = get_queue()
-    failed_queue = get_failed_queue()
+    # rq 1.0 (bumped from 0.10.0; see requirements/base.txt) dropped
+    # the dedicated failed-jobs Queue and get_failed_queue() in favour
+    # of a per-queue FailedJobRegistry, which offers the same
+    # .count/.get_job_ids()/.requeue() surface this code needs. Phase
+    # 1 Python 3 port; see PORTING.md.
+    failed_queue = queue.failed_job_registry
     try:
         workers = Worker.all(queue.connection)
     except ConnectionError:
