@@ -259,7 +259,11 @@ class StoreDiff(object):
         # Phase 1 Python 3 port; see PORTING.md.
         if (self.source_revision is not None
                 and self.source_revision >= self.target_revision):
-            return self.source_units.keys()
+            # difflib.SequenceMatcher (see opcodes below) needs an
+            # indexable sequence; dict.keys() is a list under Python
+            # 2 but an unindexable view under Python 3. Phase 1
+            # Python 3 port; see PORTING.md.
+            return list(self.source_units.keys())
 
         # These units are kept as they have been updated since source_revision
         # but do not appear in the file
