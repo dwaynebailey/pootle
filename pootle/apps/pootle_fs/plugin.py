@@ -578,8 +578,12 @@ class Plugin(object):
                         save=False)
                     fs_to_update[store_fs.id] = store_fs
         if fs_to_update:
+            # bulk_update() (bulk_update.helper) indexes its first arg
+            # (objs[0]) - dict.values() is a list under Python 2 but
+            # an unindexable view under Python 3. Phase 1 Python 3
+            # port; see PORTING.md.
             bulk_update(
-                fs_to_update.values(),
+                list(fs_to_update.values()),
                 update_fields=[
                     "last_sync_revision", "last_sync_hash",
                     "resolve_conflict", "staged_for_merge"])

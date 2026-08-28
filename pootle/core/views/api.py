@@ -271,7 +271,11 @@ class APIView(View):
             if self.config:
                 self.serialize_config(info, item)
         return {
-            'models': result.values(),
+            # dict.values() is a list under Python 2 but an
+            # unserializable view under Python 3 - this feeds
+            # straight into JsonResponse. Phase 1 Python 3 port; see
+            # PORTING.md.
+            'models': list(result.values()),
             'count': queryset.count()}
 
     def qs_to_values(self, queryset, single_object=False):
