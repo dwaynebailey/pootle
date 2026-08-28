@@ -457,10 +457,14 @@ class Unit(AbstractUnit):
             or (len(self.target.strings)
                 != stringcount(unit.target)))
         if update_target:
-            notempty = filter(None, self.target_f.strings)
+            # filter() returns an iterator under Python 3, which is
+            # always truthy regardless of whether it actually has any
+            # matches - the check below needs actual emptiness
+            # checks. Phase 1 Python 3 port; see PORTING.md.
+            notempty = any(filter(None, self.target_f.strings))
             self.target = unit.target
 
-            if filter(None, self.target_f.strings) or notempty:
+            if any(filter(None, self.target_f.strings)) or notempty:
                 # FIXME: we need to do this cause we discard nplurals for empty
                 # plurals
                 changed = True

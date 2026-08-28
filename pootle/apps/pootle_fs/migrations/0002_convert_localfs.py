@@ -53,12 +53,16 @@ def _detect_treestyle_and_path(Config, Language, project, proj_trans_path):
             "value", flat=True).first()
     if lang_mapping_config:
         languages |= set(json.loads(lang_mapping_config).keys())
-    has_subdirs = filter(
+    # filter() returns an iterator under Python 3, which is always
+    # truthy regardless of whether it actually has any matches - the
+    # `if has_subdirs:` below needs an actual emptiness check.
+    # Phase 1 Python 3 port; see PORTING.md.
+    has_subdirs = list(filter(
         (lambda dirname: (
             (dirname == 'templates'
              or langcode_re.match(dirname))
             and dirname in languages)),
-        dirnames)
+        dirnames))
     if has_subdirs:
         return "nongnu", None
 
