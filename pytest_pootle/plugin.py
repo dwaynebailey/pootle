@@ -66,7 +66,7 @@ def pytest_configure(config):
 
 
 def pytest_runtest_setup(item):
-    marker = item.get_marker("pootle_memusage")
+    marker = item.get_closest_marker("pootle_memusage")
     skip_memtests = (
         (marker is not None
          and not (item.config.getoption("--memusage")

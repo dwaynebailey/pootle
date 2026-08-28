@@ -59,7 +59,17 @@ class CastOnAssignDescriptor(object):
     def __get__(self, obj, type=None):
         if obj is None:
             return self
-        return obj.__dict__[self.field.name]
+        # models.py's Unit.__init__() probes deferred fields with
+        # hasattr(self, "source_f"). Python 2's hasattr() swallowed
+        # any exception; Python 3's only swallows AttributeError, so
+        # a bare KeyError here used to fail silently and now
+        # propagates as a real error. Raise AttributeError instead,
+        # which is also the descriptor protocol's actual contract for
+        # "not set yet". Phase 1 Python 3 port; see PORTING.md.
+        try:
+            return obj.__dict__[self.field.name]
+        except KeyError:
+            raise AttributeError(self.field.name)
 
     def __set__(self, obj, value):
         obj.__dict__[self.field.name] = self.field.to_python(value)

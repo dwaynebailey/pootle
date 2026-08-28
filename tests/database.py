@@ -14,4 +14,10 @@ def test_backend_db():
     from django.db import connection, connections
 
     if connection.vendor == "sqlite":
-        assert connections.databases["default"]["NAME"] == ":memory:"
+        # Newer pytest-django (test tooling, bumped in the Phase 1
+        # Python 3 port; see PORTING.md) opens sqlite's in-memory DB
+        # via a shared-cache URI (file:memorydb_default?mode=memory&
+        # cache=shared) rather than the bare ":memory:" name - same
+        # in-memory DB, different spelling. Accept either.
+        db_name = connections.databases["default"]["NAME"]
+        assert db_name == ":memory:" or "mode=memory" in db_name

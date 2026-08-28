@@ -57,6 +57,15 @@ class Plugin(object):
             and self.project == other.project
             and self.name == other.name)
 
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__. Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it, making instances unhashable - and
+    # get_fs_path() below is memoized with @lru_cache, which hashes
+    # `self`. Consistent with __eq__: same (project, name) hashes the
+    # same. Phase 1 Python 3 port; see PORTING.md.
+    def __hash__(self):
+        return hash((self.project, self.name))
+
     def __str__(self):
         return "<%s(%s)>" % (self.__class__.__name__, self.project)
 

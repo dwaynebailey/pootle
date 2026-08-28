@@ -249,7 +249,16 @@ class StoreDiff(object):
     def new_unit_list(self):
         # If source_revision is gte than the target_revision then new unit list
         # will be exactly what is in the file
-        if self.source_revision >= self.target_revision:
+        #
+        # source_revision defaults to None (see StoreDiff.__init__/
+        # StoreUpdater._update()'s store_revision=None default).
+        # target_revision is always an int (get_target_revision() ors
+        # with 0). Python 2's cross-type ordering made `None >= int`
+        # always False; Python 3 raises TypeError instead, so the
+        # None case is made explicit here to keep the same behaviour.
+        # Phase 1 Python 3 port; see PORTING.md.
+        if (self.source_revision is not None
+                and self.source_revision >= self.target_revision):
             return self.source_units.keys()
 
         # These units are kept as they have been updated since source_revision

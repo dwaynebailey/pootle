@@ -55,7 +55,15 @@ class StoreSerialization(object):
             max_unit_revision = self.max_unit_revision or 0
             store.updateheader(add=True, X_Pootle_Path=self.pootle_path)
             store.updateheader(add=True, X_Pootle_Revision=max_unit_revision)
-        return str(store)
+        # translate-toolkit's TranslationStore.__str__() only proxies
+        # to its serializing __bytes__() under Python 2 (kept "for
+        # compatibility purpose", per its own docstring) - under
+        # Python 3 str(store) falls through to plain object.__str__()
+        # and doesn't serialize at all. bytes(store) is the real,
+        # version-independent serialization entry point; downstream
+        # (deserialize.py's io.BytesIO(data)) already expects bytes.
+        # Phase 1 Python 3 port; see PORTING.md.
+        return bytes(store)
 
     def pipeline(self, data):
         if not self.serializers:

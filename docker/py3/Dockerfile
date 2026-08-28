@@ -22,8 +22,16 @@ RUN mkdir -p /wheels \
     && bash docker/py3/patch-allauth.sh \
     && bash docker/py3/patch-sortedm2m.sh
 
-COPY requirements/base.txt requirements/
-RUN pip install --no-cache-dir -q -r requirements/base.txt --find-links /wheels
+# _es_5.txt is needed even for DB-only test runs: saving a unit fires a
+# post_save receiver that instantiates SearchBroker(), which imports
+# every configured search backend module - including elasticsearch.py,
+# whose top-level `Elasticsearch = None` ImportError fallback turns
+# into a plain TypeError the moment a test actually saves a unit.
+# Mirrors docker/ci/Dockerfile's Python 2 baseline (see its own
+# comment); verified elasticsearch~=5.0 installs and imports cleanly
+# under Python 3.12. Phase 1 Python 3 port; see PORTING.md.
+COPY requirements/base.txt requirements/_es_5.txt requirements/
+RUN pip install --no-cache-dir -q -r requirements/base.txt -r requirements/_es_5.txt --find-links /wheels
 
 COPY docker/py3/patch-django-six.sh docker/py3/
 RUN bash docker/py3/patch-django-six.sh

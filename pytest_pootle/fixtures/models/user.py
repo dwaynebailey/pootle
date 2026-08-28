@@ -10,8 +10,6 @@ import copy
 
 import pytest
 
-from .language import language0
-
 
 TEST_USERS = {
     'nobody': dict(
@@ -31,7 +29,12 @@ TEST_USERS = {
     'member': dict(
         fullname='Member',
         password='member',
-        alt_src_lang=language0),
+        # Language code, not the `language0` fixture itself: modern
+        # pytest hard-errors on calling a @pytest.fixture-decorated
+        # function directly (see _require_user() below), which is
+        # what alt_src_lang() used to do with the fixture function
+        # as a plain callable. Phase 1 Python 3 port; see PORTING.md.
+        alt_src_lang='language0'),
     'member2': dict(
         fullname='Member2',
         password='member2')}
@@ -80,7 +83,9 @@ def _require_user(username, fullname, password=None,
         if email:
             verify_user(user)
     if alt_src_lang is not None:
-        user.alt_src_langs.add(alt_src_lang())
+        from pootle_language.models import Language
+
+        user.alt_src_langs.add(Language.objects.get(code=alt_src_lang))
 
     return user
 
