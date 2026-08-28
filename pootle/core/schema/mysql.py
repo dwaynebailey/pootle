@@ -10,7 +10,7 @@ from django.db import connection
 
 
 def type_cast(value):
-    if isinstance(value, long):
+    if isinstance(value, int):
         return int(value)
     return value
 

@@ -60,10 +60,10 @@ def url_trim(html):
         new_link_text = trim_url(el.text_content())
         el.text = new_link_text
 
-    return mark_safe(tostring(fragment, encoding=unicode))
+    return mark_safe(tostring(fragment, encoding=str))
 
 
-LANGUAGE_LINK_RE = re.compile(ur'/xx/', re.IGNORECASE)
+LANGUAGE_LINK_RE = re.compile(r'/xx/', re.IGNORECASE)
 
 
 @register.filter

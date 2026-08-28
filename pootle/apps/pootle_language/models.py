@@ -144,7 +144,7 @@ class Language(models.Model, TreeItem):
         self.specialchars = u"".join(
             OrderedDict([
                 ((specialchar
-                  if isinstance(specialchar, unicode)
+                  if isinstance(specialchar, str)
                   else specialchar.decode("unicode_escape")),
                  None)
                 for specialchar

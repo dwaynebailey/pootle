@@ -6,6 +6,8 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+from functools import cmp_to_key
+
 import posixpath
 
 from django.contrib import messages
@@ -186,7 +188,7 @@ class ProjectBrowseView(ProjectMixin, PootleBrowseView):
         ]
 
         items = self.add_child_stats(items)
-        items.sort(cmp_by_last_activity)
+        items.sort(key=cmp_to_key(cmp_by_last_activity))
         return items
 
 
@@ -408,7 +410,7 @@ class ProjectsBrowseView(ProjectsMixin, PootleBrowseView):
             for project
             in self.object.children]
         items = self.add_child_stats(items)
-        items.sort(cmp_by_last_activity)
+        items.sort(key=cmp_to_key(cmp_by_last_activity))
         return items
 
     @property

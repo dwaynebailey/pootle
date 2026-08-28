@@ -17,7 +17,7 @@ from argparse import SUPPRESS, ArgumentParser
 from django.conf import settings
 from django.core import management
 
-import syspath_override  # noqa
+from . import syspath_override  # noqa
 from pootle.core.cache import PERSISTENT_STORES
 from pootle.core.log import cmd_log
 
@@ -213,7 +213,7 @@ def set_sync_mode(noinput=False):
                 exit(2)
 
     # Update settings to set queues to ASYNC = False.
-    for q in settings.RQ_QUEUES.itervalues():
+    for q in settings.RQ_QUEUES.values():
         q['ASYNC'] = False
 
 

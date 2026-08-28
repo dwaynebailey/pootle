@@ -6,13 +6,21 @@ Django~=1.11.12  # rq.filter: <1.12
 
 # Django apps
 django-allauth==0.35.0
-django-assets==0.12
+# 0.12 imports the stdlib `imp` module, removed in Python 3.12. 2.0 is
+# django-assets' own next release after 0.12 (a large jump in version
+# number, not in real API distance) and fixes this. Found running
+# Phase 1's install probe.
+django-assets==2.0
 django-bulk-update==2.2.0
 django-contact-form==1.5
 django-contrib-comments==1.7.3,!=1.8.0  # rq.filter: !=1.8.0
 django-overextends==0.4.3
 django-redis==4.10.0
-django-rq==1.0.1
+# 1.0.1 pairs with rq==0.10.0 below - see that pin's note. django-rq
+# 2.1.0 is the last release still declaring `django>=1.8.0` (2.2.0+
+# requires django>=2.0) - picked deliberately to not drag Django along,
+# unlike an initial looser-range attempt that did.
+django-rq==2.1.0
 django-sortedm2m==1.5.0
 django-statici18n==1.7.0
 
@@ -49,7 +57,16 @@ python-dateutil==2.7.2
 # `import Levenshtein` - no code changes needed.
 Levenshtein>=0.20,<1.0
 pytz==2018.3
-rq==0.10.0
+# 0.10.0 has a function parameter literally named `async=True` - a
+# reserved keyword since Python 3.7, a hard SyntaxError just importing
+# the module. 1.0 is the release that renamed it (to is_async); paired
+# with django-rq==2.1.0 above. Found running Phase 1's install probe.
+rq==1.0
+# Not a direct runtime dependency of our own code as such - pulled in
+# explicitly because pootle/syspath_override.py uses it to work around
+# Django 1.11's own vendored six copy breaking under Python 3.12; see
+# that file's comments.
+six
 stemming==1.0.1
 pycountry==18.2.23
 

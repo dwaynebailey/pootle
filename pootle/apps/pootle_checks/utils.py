@@ -117,7 +117,7 @@ class UnitQualityCheck(object):
         """
         updated = False
         new_checks = []
-        for name in self.check_failures.iterkeys():
+        for name in self.check_failures.keys():
             if name in self.original_checks:
                 # if the check is valid remove from the list and continue
                 del self.original_checks[name]
@@ -414,7 +414,7 @@ def get_category_code(cid):
 
 
 def get_category_name(code):
-    return unicode(CATEGORY_NAMES.get(code))
+    return str(CATEGORY_NAMES.get(code))
 
 
 def run_given_filters(checker, unit, check_names=None):
@@ -469,7 +469,7 @@ def run_given_filters(checker, unit, check_names=None):
             filterresult = checker.run_test(filterfunction, unit)
         except checks.FilterFailure as e:
             filterresult = False
-            filtermessage = unicode(e)
+            filtermessage = str(e)
         except Exception as e:
             if checker.errorhandler is None:
                 raise ValueError("error in filter %s: %r, %r, %s" %

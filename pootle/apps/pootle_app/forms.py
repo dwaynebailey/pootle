@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 import re
-import urlparse
+import urllib.parse as urlparse
 from collections import OrderedDict
 
 from django import forms
@@ -139,7 +139,7 @@ class ProjectForm(forms.ModelForm):
             default=self.cleaned_data["fs_mapping"])
         lang_mapping = dict(
             (v, k) for k, v
-            in project.config.get("pootle.core.lang_mapping", {}).iteritems())
+            in project.config.get("pootle.core.lang_mapping", {}).items())
         if self.cleaned_data["template_name"] in ["templates", ""]:
             if "templates" in lang_mapping:
                 del lang_mapping["templates"]
@@ -147,7 +147,7 @@ class ProjectForm(forms.ModelForm):
             lang_mapping["templates"] = self.cleaned_data["template_name"]
         project.config["pootle.core.lang_mapping"] = dict(
             (v, k) for k, v
-            in lang_mapping.iteritems())
+            in lang_mapping.items())
         return project
 
 

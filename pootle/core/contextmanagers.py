@@ -8,7 +8,7 @@
 
 import threading
 import types
-from contextlib import contextmanager, nested
+from contextlib import ExitStack, contextmanager
 
 from django.dispatch import Signal, receiver
 
@@ -77,7 +77,9 @@ def keep_data(keep=True, signals=None, suppress=None):
             update_revisions,
             update_scores))
     if keep:
-        with nested(*[suppress_signal(s, suppress) for s in signals]):
+        with ExitStack() as stack:
+            for cm in (suppress_signal(s, suppress) for s in signals):
+                stack.enter_context(cm)
             yield
     else:
         yield
@@ -201,5 +203,7 @@ def bulk_context(model=None, **kwargs):
 def bulk_operations(model=None, models=None, **kwargs):
     if models is None and model is not None:
         models = [model]
-    with nested(*(bulk_context(m, **kwargs) for m in models)):
+    with ExitStack() as stack:
+        for cm in (bulk_context(m, **kwargs) for m in models):
+            stack.enter_context(cm)
         yield

@@ -8,6 +8,7 @@
 
 import json
 import operator
+from functools import reduce
 
 from django.db.models import ObjectDoesNotExist, ProtectedError, Q
 from django.forms.models import modelform_factory

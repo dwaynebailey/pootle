@@ -18,7 +18,7 @@ from .delegate import fs_plugins
 class PathFilter(object):
 
     def path_regex(self, path):
-        return translate(path).replace("\Z(?ms)", "$")
+        return translate(path).replace(r"\Z(?ms)", "$")
 
 
 class StorePathFilter(PathFilter):

@@ -384,7 +384,7 @@ CHARACTERS_NAMES = OrderedDict(
     )
 )
 
-CHARACTERS = u"".join([unichr(index) for index in CHARACTERS_NAMES.keys()])
+CHARACTERS = u"".join([chr(index) for index in CHARACTERS_NAMES.keys()])
 
 
 class UnitEditJSON(PootleUnitJSON):

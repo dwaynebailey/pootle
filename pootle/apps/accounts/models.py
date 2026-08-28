@@ -56,7 +56,7 @@ class User(AbstractBaseUser):
         help_text=_('Required. 30 characters or fewer. Letters, numbers and '
                     '@/./+/-/_ characters'),
         validators=[
-            RegexValidator(re.compile('^[\w.@+-]+$', re.UNICODE),
+            RegexValidator(re.compile(r'^[\w.@+-]+$', re.UNICODE),
                            _('Enter a valid username.'),
                            'invalid')
         ],
