@@ -193,6 +193,7 @@ class Submission(models.Model):
     def __unicode__(self):
         return u"%s (%s)" % (self.creation_time.strftime("%Y-%m-%d %H:%M"),
                              str(self.submitter))
+    __str__ = __unicode__
 
     def get_submission_info(self):
         """Returns a dictionary describing the submission.

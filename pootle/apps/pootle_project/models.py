@@ -381,6 +381,7 @@ class Project(models.Model, CachedTreeItem, ProjectURLMixin):
 
     def __unicode__(self):
         return self.fullname
+    __str__ = __unicode__
 
     def save(self, *args, **kwargs):
         self.fullname = self.fullname.strip()

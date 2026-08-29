@@ -139,6 +139,7 @@ class User(AbstractBaseUser):
 
     def __unicode__(self):
         return self.username
+    __str__ = __unicode__
 
     def save(self, *args, **kwargs):
         old_email = (None

@@ -65,6 +65,7 @@ class AbstractPage(models.Model):
 
     def __unicode__(self):
         return self.virtual_path
+    __str__ = __unicode__
 
     def save(self, **kwargs):
         # Update the `modified_on` timestamp only when specific fields change.
@@ -159,6 +160,7 @@ class Agreement(models.Model):
 
     def __unicode__(self):
         return u'%s (%s@%s)' % (self.document, self.user, self.agreed_on)
+    __str__ = __unicode__
 
     def save(self, **kwargs):
         # When updating always explicitly renew agreement date

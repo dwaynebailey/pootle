@@ -37,3 +37,4 @@ class Stem(AbstractStem):
             "\"%s\", units: %s"
             % (self.root,
                list(self.units.values_list("id", flat=True))))
+    __str__ = __unicode__

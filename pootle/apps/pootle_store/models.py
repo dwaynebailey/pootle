@@ -74,6 +74,7 @@ class QualityCheck(AbstractQualityCheck):
 
     def __unicode__(self):
         return self.name
+    __str__ = __unicode__
 
     @property
     def display_name(self):
@@ -143,6 +144,7 @@ class Suggestion(AbstractSuggestion):
 
     def __unicode__(self):
         return str(self.target)
+    __str__ = __unicode__
 
 
 # # # # # # # # Unit # # # # # # # # # #

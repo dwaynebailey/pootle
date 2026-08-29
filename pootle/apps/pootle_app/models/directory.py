@@ -111,6 +111,7 @@ class Directory(models.Model, CachedTreeItem):
 
     def __unicode__(self):
         return self.pootle_path
+    __str__ = __unicode__
 
     def __init__(self, *args, **kwargs):
         super(Directory, self).__init__(*args, **kwargs)

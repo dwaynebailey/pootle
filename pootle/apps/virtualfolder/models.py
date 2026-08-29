@@ -79,6 +79,7 @@ class VirtualFolder(models.Model):
 
     def __unicode__(self):
         return self.name
+    __str__ = __unicode__
 
     def save(self, *args, **kwargs):
         # Force validation of fields.

@@ -147,6 +147,7 @@ class PermissionSet(models.Model):
     def __unicode__(self):
         return "%s : %s" % (self.user.username,
                             self.directory.pootle_path)
+    __str__ = __unicode__
 
     def to_dict(self):
         permissions_iterator = self.positive_permissions.iterator()
