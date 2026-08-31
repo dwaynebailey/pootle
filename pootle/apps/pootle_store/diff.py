@@ -279,9 +279,14 @@ class StoreDiff(object):
 
     @cached_property
     def obsoleted_target_units(self):
+        # self.source_revision defaults to None; Python 2's cross-type
+        # ordering made `int > None` always True (matching "no
+        # baseline yet, so everything counts"). Phase 1 Python 3
+        # port; see PORTING.md.
         return [unitid for unitid, unit in self.target_units.items()
                 if (unit['state'] == OBSOLETE
-                    and unit["revision"] > self.source_revision)]
+                    and (self.source_revision is None
+                         or unit["revision"] > self.source_revision))]
 
     @cached_property
     def opcodes(self):
@@ -292,8 +297,10 @@ class StoreDiff(object):
 
     @cached_property
     def updated_target_units(self):
+        # See obsoleted_target_units() above for why the None check.
         return [unitid for unitid, unit in self.target_units.items()
-                if (unit['revision'] > self.source_revision
+                if ((self.source_revision is None
+                     or unit['revision'] > self.source_revision)
                     and unit["state"] != OBSOLETE)]
 
     def diff(self):

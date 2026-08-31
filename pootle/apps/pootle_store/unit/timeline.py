@@ -6,6 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+import functools
 from collections import OrderedDict
 from itertools import groupby
 
@@ -246,9 +247,23 @@ class Timeline(object):
         return groups
 
 
+@functools.total_ordering
 class ComparableUnitTimelineLogEvent(BaseProxy):
     _special_names = (x for x in BaseProxy._special_names
                       if x not in ["__lt__", "__gt__"])
+
+    # __cmp__ was Python 2's three-way comparison protocol - removed
+    # entirely in Python 3. Called as
+    # ComparableUnitTimelineLogEvent.__cmp__(self, other), not
+    # self.__cmp__(other): see pootle_log/utils.py's
+    # ComparableLogEvent for why (BaseProxy.__getattribute__
+    # redirects every instance attribute lookup to the wrapped
+    # object). Phase 1 Python 3 port; see PORTING.md.
+    def __lt__(self, other):
+        return ComparableUnitTimelineLogEvent.__cmp__(self, other) < 0
+
+    def __eq__(self, other):
+        return ComparableUnitTimelineLogEvent.__cmp__(self, other) == 0
 
     def __cmp__(self, other):
         # valuable revisions are authoritative
