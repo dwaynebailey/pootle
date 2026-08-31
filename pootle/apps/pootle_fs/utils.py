@@ -18,7 +18,17 @@ from .delegate import fs_plugins
 class PathFilter(object):
 
     def path_regex(self, path):
-        return translate(path).replace(r"\Z(?ms)", "$")
+        # fnmatch.translate()'s output format changed: Python 2 ended
+        # every pattern with the literal suffix "\Z(?ms)" (an anchor
+        # plus trailing inline flags); Python 3.6+ instead wraps the
+        # whole body in a scoped "(?s:...)" group and ends with just
+        # "\Z". Callers of path_regex() strip trailing anchors
+        # themselves (see _tp_path_regex() below) so they can append
+        # their own suffix - stripping the old Python 2 string here
+        # was always a no-op replace under Python 3, silently leaving
+        # a stray mid-pattern "\Z" that made every match impossible.
+        # Phase 1 Python 3 port; see PORTING.md.
+        return translate(path).replace(r"\Z", "$")
 
 
 class StorePathFilter(PathFilter):

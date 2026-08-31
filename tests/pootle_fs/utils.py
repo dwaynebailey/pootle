@@ -133,9 +133,14 @@ def test_store_fs_path_filtered(glob):
 @pytest.mark.parametrize(
     "glob", ["/foo", "/bar/*", "*.baz", "[abc]", "[!xyz]", "language?"])
 def test_fs_path_filter_path_regex(glob):
+    # This test's own reference computation had the same
+    # fnmatch.translate()-output-format assumption as path_regex()
+    # itself (see PathFilter.path_regex()'s comment) - kept in sync
+    # with the same fix rather than independently re-deriving it.
+    # Phase 1 Python 3 port; see PORTING.md.
     assert (
         PathFilter().path_regex(glob)
-        == translate(glob).replace(r"\Z(?ms)", "$"))
+        == translate(glob).replace(r"\Z", "$"))
 
 
 @pytest.mark.django_db
