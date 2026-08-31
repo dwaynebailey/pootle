@@ -386,21 +386,70 @@ about if more turn up during Phase 2:
   app code itself.
 
 **Current state** (full suite, sqlite, `pytest tests -q`, as of
-`2039b616e`): **2133 passed / 266 failed / 102 errors / 10 skipped /
+`7e87189d6`): **2218 passed / 189 failed / 94 errors / 10 skipped /
 1 xfailed**, out of 2512 collected — up from complete infrastructure
 failure (2510 errors, one universal `get_marker()` bug) at the start
-of execution work, and up from 1766/565/170 a few commits earlier.
-Compare against the **Python 2 baseline**: 2286 passed / 123 failed /
-94 error (sqlite) out of ~2503 collected (see stream B/C above) —
-close to parity now, and closing further follows the same pattern:
-rerun the full suite, frequency-rank the failure log, fix the
-highest-leverage cause, repeat. Several single fixes this phase
-cascaded into 50-120 passing tests each because they sat in shared
-fixture setup or a widely-used utility (`unit/search.py`'s offset
-check, `FSItemState.__gt__`, `bulk_update()` on `dict.values()`) —
+of execution work, and up from 1766/565/170 and then 2133/266/102 a
+number of commits earlier. Compare against the **Python 2 baseline**:
+2286 passed / 123 failed / 94 error (sqlite) out of ~2503 collected
+(see stream B/C above) — very close to parity now (errors are already
+tied at 94; failed is 189 vs 123, most of which is the ~93 webassets
+BundleError cluster, itself not a Phase 1 target). Closing further
+follows the same pattern: rerun the full suite, frequency-rank the
+failure log, fix the highest-leverage cause, repeat. Several single
+fixes this phase cascaded into 10-120 passing tests each because they
+sat in shared fixture setup or a widely-used utility (`unit/search.py`'s
+offset check, `FSItemState.__gt__`, `bulk_update()` on
+`dict.values()`, the two `Comparable*LogEvent.__cmp__` classes) —
 worth re-checking that pattern (one early, universal cause behind a
 pile of unrelated-looking failures) before assuming remaining
 failures are all independent.
+
+More bug shapes found in the push from 2133 to 2218, beyond the ones
+already listed above:
+- **`__unicode__` without `__str__`**: 19 classes across 14 files
+  defined Django/Python 2's primary string-conversion hook but not
+  Python 3's. Found systematically via an AST sweep (not just
+  grep) rather than one at a time - `str(instance)`/`repr(instance)`
+  fell through to Django's own default `"ClassName object"` instead
+  of the class's real one, which is worth checking for again if any
+  new model classes get added carrying only `__unicode__` during
+  Phase 2.
+- **`__cmp__` (Python 2's three-way comparison protocol) with no
+  `__lt__`/`__eq__` fallback**: removed entirely in Python 3. Fixed
+  by adding `__lt__`/`__eq__` delegating to the existing `__cmp__`
+  logic, `@functools.total_ordering` for the rest. One non-obvious
+  wrinkle on classes built via `pootle/core/proxy.py`'s `BaseProxy`:
+  `self.__cmp__(other)` from inside the new `__lt__` doesn't work -
+  `BaseProxy.__getattribute__` redirects *every* instance attribute
+  lookup, including from the class's own methods, to the wrapped
+  object. Had to call `ClassName.__cmp__(self, other)` instead,
+  looking the method up on the class directly.
+- **Session-scoped pytest fixtures doing real DB access without
+  `django_db_blocker`**: worked under the Python 2 baseline's older
+  pytest-django (3.1.2); the bumped 4.8.0 (requirements/tests.txt)
+  enforces the db-access block more strictly outside a test's own
+  `django_db`-marked scope. Same fix pattern already used by
+  `pytest_pootle/fixtures/site.py`'s `post_db_setup`: depend on
+  `django_db_setup` + `django_db_blocker`, wrap the query in
+  `django_db_blocker.unblock()`.
+- **Mutating a dict while iterating `.items()`**: a live view under
+  Python 3 (a list snapshot under Python 2) - `for k, v in
+  d.items(): ... del d[k]` now raises `RuntimeError: dictionary
+  changed size during iteration`. Wrap the `.items()` call in
+  `list()`.
+- **`pkg_resources` needs `setuptools<81`**: unrelated to app code -
+  `bleach==2.1.3` (a dependency already flagged in stream G's
+  security audit as due for a real upgrade) still imports
+  `pkg_resources`, which recent setuptools versions split out of the
+  default install ahead of removing it outright. Pinned in
+  `docker/py3/Dockerfile`.
+- **stdlib/tooling message-wording changes, not Pootle bugs**:
+  argparse's "too few arguments" (Python 2) became "the following
+  arguments are required: ..." (Python 3.3+); pytest's
+  `ExceptionInfo.__str__()` format changed between pytest 3.3.0 and
+  7.4.4. Several `tests/commands/*.py` assertions hardcoded the old
+  wording.
 
 More recurring bug shapes found in this later stretch, beyond the
 ones already listed above:
