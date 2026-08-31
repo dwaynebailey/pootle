@@ -386,47 +386,56 @@ about if more turn up during Phase 2:
   app code itself.
 
 **Current state** (full suite, sqlite, `pytest tests -q`, as of
-`07dbd949f`): **2264 passed / 143 failed / 94 errors / 10 skipped /
-1 xfailed**, out of 2512 collected — up from complete infrastructure
-failure (2510 errors, one universal `get_marker()` bug) at the start
-of execution work, through 1766/565/170, 2133/266/102, and 2218/189/94
-at earlier checkpoints. Compare against the **Python 2 baseline**:
-2286 passed / 123 failed / 94 error (sqlite) out of ~2503 collected
-(see stream B/C above) — **22 passed short of parity**, errors already
-tied at 94. Of the 143 failed, ~93 is the webassets BundleError
-cluster (not a Phase 1 target, see above); most of the rest is now
-individually narrow/singular failures rather than clusters. Closing
-further follows the same pattern: rerun the full suite,
-frequency-rank the failure log, fix the highest-leverage cause,
-repeat. Several single fixes this phase cascaded into 10-120 passing
-tests each because they sat in shared fixture setup or a widely-used
-utility (`unit/search.py`'s offset check, `FSItemState.__gt__`,
-`bulk_update()` on `dict.values()`, the two `Comparable*LogEvent.__cmp__`
-classes, `FSFile._sync_from_pootle()`'s `str(store)` bug) — worth
-re-checking that pattern (one early, universal cause behind a pile of
-unrelated-looking failures) before assuming remaining failures are
-all independent.
+`8d081bb4f`): **2290 passed / 117 failed / 94 errors / 10 skipped /
+1 xfailed**, out of 2512 collected — **past the Python 2 baseline's
+2286 passed** for the first time (baseline: 2286 passed / 123 failed
+/ 94 error, sqlite, out of ~2503 - see stream B/C above), errors
+still tied at 94. Progression: complete infrastructure failure (2510
+errors, one universal `get_marker()` bug) → 1766/565/170 →
+2133/266/102 → 2218/189/94 → 2264/143/94 → 2290/117/94. Of the 117
+failed, ~93 is the webassets BundleError cluster (not a Phase 1
+target, see above); **all but ~9 of the rest are now fixed** - the
+remainder is down to one likely-flaky test and one genuine
+infra-dependent cluster, detailed below, neither of which yields to
+more code changes. Several single fixes this phase cascaded into
+10-120 passing tests each because they sat in shared fixture setup or
+a widely-used utility (`unit/search.py`'s offset check,
+`FSItemState.__gt__`, `bulk_update()` on `dict.values()`, the two
+`Comparable*LogEvent.__cmp__` classes, `FSFile._sync_from_pootle()`'s
+`str(store)` bug, `pootle_fs/management/commands/fs.py`'s
+`no_style.cache_clear()`) — worth re-checking that pattern (one
+early, universal cause behind a pile of unrelated-looking failures)
+before assuming remaining failures are all independent.
 
-**Known remaining non-webassets items, not yet fixed:**
-- ~8 tests in `tests/commands/import.py` fail only when the full
-  suite (or at least all of `tests/commands/`) runs together, not in
-  isolation: `capfd`-captured stderr contains the (expected, given no
-  live ES in this environment) Elasticsearch connection-error log
-  lines but is missing the command's own expected `[update] added N
-  units...` INFO-level log line entirely - not just visually crowded
-  out (checked with `-vv` for the untruncated capture). Most likely
-  an earlier test in the suite mutates global logging state (a
-  logger's level, disabling propagation, etc.) that isn't reset
-  between tests, filtering out INFO-level messages for the rest of
-  the session while ERROR-level ones still get through - not
-  confirmed, and plausibly a pre-existing test-isolation issue rather
-  than something Python 3-specific. Deprioritized: narrow (8 tests),
-  and the diagnosis needed to fix it with confidence (rather than
-  guessing) goes beyond frequency-ranking a failure log.
-- A handful of true one-offs remain (single AttributeError/TypeError/
-  ConnectionError, a couple of PO-content string mismatches) - next
-  in line whenever this resumes, same rerun-and-diagnose loop as
-  everything else above.
+**Remaining non-webassets items - not code bugs, need an infra or
+policy decision rather than more porting work:**
+- **8 tests touching Elasticsearch** (`tests/commands/import.py`'s
+  `test_import_onefile*` family, `tests/commands/update_tmserver.py`'s
+  `test_update_tmserver_files`) fail because there is no live
+  Elasticsearch service in this validation environment (by design -
+  see the Dockerfile's own header comment) - not new to Phase 1, and
+  not fixable by more code changes. What *is* worth flagging: a full
+  suite run that reaches these tests takes dramatically longer than
+  expected (one single-test run of `test_update_tmserver_files`, which
+  actually talks to the (unreachable) ES client rather than having the
+  error caught and logged, took **15+ minutes** - the `elasticsearch`
+  Python client's retry/backoff logic compounds with what appears to
+  be a slow DNS-negative-response timeout in this Docker environment
+  for the nonexistent `elasticsearch` hostname). A full-suite run
+  observed at 55 minutes (vs the usual ~4) traces directly to this.
+  Options going forward: stand up a real (or stubbed) Elasticsearch
+  container on the validation network (mirrors what streams B/D
+  already do for other services), or mark these tests
+  `@pytest.mark.skipif`/xfail with a clear reason if ES coverage isn't
+  a Phase 1 concern - a decision for whoever picks this back up, not
+  something to guess at unilaterally.
+- **1 likely-flaky test**: `tests/pootle_score/updater.py::
+  test_score_user_updater_refresh` failed once in a full-suite run
+  (`assert 65.6 == 51.199999999999996`) but passes cleanly in
+  isolation - smells like test-order/shared-state sensitivity (some
+  earlier test leaving extra scored data behind) rather than a Python
+  3 bug, but not confirmed either way. Worth a second look if it
+  recurs.
 
 More bug shapes found in the push from 2133 to 2218, beyond the ones
 already listed above:
@@ -519,6 +528,46 @@ More bug shapes found in the push from 2218 to 2264:
   split; grepped for other implicit-stringification call sites on
   `Unit`/`Store` and found none more, but this is exactly the kind of
   gap that won't announce itself with an exception if more turn up.
+  **Follow-up, a few commits later**: an initial fix (making
+  `Store.__str__`/`Unit.__str__` correctly serialize the *full*
+  content, i.e. actually doing what they were trying to do under
+  Python 2) turned out to be the wrong direction - it collided with
+  Django's `Model.__repr__`, which always calls `str(self)`, so
+  `repr(store)`/`repr(unit)` started dumping entire serialized files
+  instead of a short summary. Reversed to `__str__ = __unicode__` for
+  both (the short form, matching every other model this phase), and
+  moved the "full serialized content" test assertions onto `bytes()`
+  directly rather than asking `__str__` to mean two different things.
+- **`django.core.management.color.no_style()` is cached forever**
+  (`@lru_cache`), and `color_style()` falls back to it whenever
+  `supports_color()` is False (any non-tty stdout, e.g. under
+  pytest). `pootle_fs/management/commands/fs.py` patches
+  `django.utils.termcolors.PALETTES` with custom `FS_*` color roles
+  at module-import time, banking on being imported early - but
+  nothing guarantees that against whichever management command
+  happens to be instantiated *first* in the whole process, from
+  anywhere. An initial fix (having a test file explicitly import
+  `fs.py` so the patch runs at collection time) was insufficient -
+  still reproducible in isolation. The real fix: call
+  `no_style.cache_clear()` right after the `PALETTES` patches, so the
+  *next* call rebuilds fresh - not import-order-sensitive, unlike an
+  import-order workaround.
+- **Python 2's `/` on two ints floor-divided**; Python 3's is true
+  division. Turned up twice more as hand-rolled pagination/median-
+  index math (`tests/core/forms.py`'s ceiling-division page-count
+  formula, `tests/statistics/stats_utils.py`'s median-index lookup) -
+  worth grepping for `/ 2]` or similar index expressions if more
+  surface.
+
+**Environment note, not a code bug**: a full suite run can take
+dramatically longer than the usual ~4 minutes (one observed run took
+55 minutes) when it reaches the ~8 tests that actually touch
+Elasticsearch (see "remaining items" above) - the `elasticsearch`
+Python client's retry/backoff compounds with a slow DNS-negative-
+response timeout in this Docker environment for the nonexistent
+`elasticsearch` hostname, observed taking 15+ minutes for a single
+such test. Don't be alarmed by a slow run; it's not evidence of a new
+regression.
 
 More recurring bug shapes found in this later stretch, beyond the
 ones already listed above:
