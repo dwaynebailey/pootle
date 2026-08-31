@@ -13,7 +13,15 @@ RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
       default-libmysqlclient-dev libpq-dev \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir -q --upgrade pip setuptools wheel
+# setuptools<81: bleach==2.1.3 (requirements/base.txt) still does
+# `from pkg_resources import parse_version` - pkg_resources was split
+# out of setuptools's default install starting around 81 and is
+# slated for removal outright. bleach is already flagged in stream
+# G's dependency audit (10 known advisories against this exact pin)
+# as due for a real upgrade later; pinning setuptools here is the
+# narrow, in-scope fix to keep it importable under Python 3.12 for
+# now. Phase 1 Python 3 port; see PORTING.md.
+RUN pip install --no-cache-dir -q --upgrade pip 'setuptools<81' wheel
 
 WORKDIR /src
 
