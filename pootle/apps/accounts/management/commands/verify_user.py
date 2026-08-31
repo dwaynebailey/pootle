@@ -42,7 +42,13 @@ class Command(UserCommand):
                     utils.verify_user(user)
                     self.stdout.write("Verified user '%s'" % user.username)
                 except (ValueError, ValidationError) as e:
-                    self.stderr.write(e[0])
+                    # e[0] indexed straight into the exception, which
+                    # Python 2 supported (deprecated) and Python 3
+                    # doesn't. str(e) works uniformly for both
+                    # ValueError and Django's ValidationError (whose
+                    # message may be wrapped in a list). Phase 1
+                    # Python 3 port; see PORTING.md.
+                    self.stderr.write(str(e))
 
         if options['user']:
             for user in options['user']:
@@ -50,4 +56,4 @@ class Command(UserCommand):
                     utils.verify_user(self.get_user(user))
                     self.stdout.write("User '%s' has been verified" % user)
                 except (ValueError, ValidationError) as e:
-                    self.stderr.write(e[0])
+                    self.stderr.write(str(e))

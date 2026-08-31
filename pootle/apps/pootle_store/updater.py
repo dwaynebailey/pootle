@@ -365,8 +365,12 @@ class StoreUpdater(object):
             # accumulate the list of cache attributes to clear
             # in the parent Store object
             added_since_sync = not bool(old_store.findid(unit.getid()))
+            # update.store_revision defaults to None; Python 2's
+            # cross-type ordering made `int > None` always True.
+            # Phase 1 Python 3 port; see PORTING.md.
             pootle_wins = (
-                (unit.revision > update.store_revision or 0)
+                (update.store_revision is None
+                 or unit.revision > update.store_revision)
                 and update.resolve_conflict == POOTLE_WINS)
             if added_since_sync or pootle_wins:
                 continue

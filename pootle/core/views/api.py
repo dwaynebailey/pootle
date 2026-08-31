@@ -210,7 +210,11 @@ class APIView(View):
                 obj.delete()
                 return JsonResponse(output)
             except ProtectedError as e:
-                return self.status_msg(e[0], status=405)
+                # e[0] indexed straight into the exception (its
+                # .args[0], the message) - Python 2 supported this
+                # (deprecated), Python 3 doesn't. Phase 1 Python 3
+                # port; see PORTING.md.
+                return self.status_msg(e.args[0], status=405)
 
         raise Http404
 

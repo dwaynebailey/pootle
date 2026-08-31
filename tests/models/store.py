@@ -323,7 +323,7 @@ def test_update_set_last_sync_revision(project0_nongnu, tp0, store0,
     orig = store0.deserialize(store0.serialize())
     orig.units[2].target = "SOMETHING ELSE"
     with open(file_path, "wb") as targetf:
-        targetf.write(str(orig))
+        targetf.write(bytes(orig))
     _sync_store(settings, store0, resolve="fs_wins", update="pootle")
     fs.refresh_from_db()
     assert fs.last_sync_revision == next_revision
