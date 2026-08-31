@@ -386,24 +386,47 @@ about if more turn up during Phase 2:
   app code itself.
 
 **Current state** (full suite, sqlite, `pytest tests -q`, as of
-`7e87189d6`): **2218 passed / 189 failed / 94 errors / 10 skipped /
+`07dbd949f`): **2264 passed / 143 failed / 94 errors / 10 skipped /
 1 xfailed**, out of 2512 collected — up from complete infrastructure
 failure (2510 errors, one universal `get_marker()` bug) at the start
-of execution work, and up from 1766/565/170 and then 2133/266/102 a
-number of commits earlier. Compare against the **Python 2 baseline**:
+of execution work, through 1766/565/170, 2133/266/102, and 2218/189/94
+at earlier checkpoints. Compare against the **Python 2 baseline**:
 2286 passed / 123 failed / 94 error (sqlite) out of ~2503 collected
-(see stream B/C above) — very close to parity now (errors are already
-tied at 94; failed is 189 vs 123, most of which is the ~93 webassets
-BundleError cluster, itself not a Phase 1 target). Closing further
-follows the same pattern: rerun the full suite, frequency-rank the
-failure log, fix the highest-leverage cause, repeat. Several single
-fixes this phase cascaded into 10-120 passing tests each because they
-sat in shared fixture setup or a widely-used utility (`unit/search.py`'s
-offset check, `FSItemState.__gt__`, `bulk_update()` on
-`dict.values()`, the two `Comparable*LogEvent.__cmp__` classes) —
-worth re-checking that pattern (one early, universal cause behind a
-pile of unrelated-looking failures) before assuming remaining
-failures are all independent.
+(see stream B/C above) — **22 passed short of parity**, errors already
+tied at 94. Of the 143 failed, ~93 is the webassets BundleError
+cluster (not a Phase 1 target, see above); most of the rest is now
+individually narrow/singular failures rather than clusters. Closing
+further follows the same pattern: rerun the full suite,
+frequency-rank the failure log, fix the highest-leverage cause,
+repeat. Several single fixes this phase cascaded into 10-120 passing
+tests each because they sat in shared fixture setup or a widely-used
+utility (`unit/search.py`'s offset check, `FSItemState.__gt__`,
+`bulk_update()` on `dict.values()`, the two `Comparable*LogEvent.__cmp__`
+classes, `FSFile._sync_from_pootle()`'s `str(store)` bug) — worth
+re-checking that pattern (one early, universal cause behind a pile of
+unrelated-looking failures) before assuming remaining failures are
+all independent.
+
+**Known remaining non-webassets items, not yet fixed:**
+- ~8 tests in `tests/commands/import.py` fail only when the full
+  suite (or at least all of `tests/commands/`) runs together, not in
+  isolation: `capfd`-captured stderr contains the (expected, given no
+  live ES in this environment) Elasticsearch connection-error log
+  lines but is missing the command's own expected `[update] added N
+  units...` INFO-level log line entirely - not just visually crowded
+  out (checked with `-vv` for the untruncated capture). Most likely
+  an earlier test in the suite mutates global logging state (a
+  logger's level, disabling propagation, etc.) that isn't reset
+  between tests, filtering out INFO-level messages for the rest of
+  the session while ERROR-level ones still get through - not
+  confirmed, and plausibly a pre-existing test-isolation issue rather
+  than something Python 3-specific. Deprioritized: narrow (8 tests),
+  and the diagnosis needed to fix it with confidence (rather than
+  guessing) goes beyond frequency-ranking a failure log.
+- A handful of true one-offs remain (single AttributeError/TypeError/
+  ConnectionError, a couple of PO-content string mismatches) - next
+  in line whenever this resumes, same rerun-and-diagnose loop as
+  everything else above.
 
 More bug shapes found in the push from 2133 to 2218, beyond the ones
 already listed above:
@@ -450,6 +473,52 @@ already listed above:
   `ExceptionInfo.__str__()` format changed between pytest 3.3.0 and
   7.4.4. Several `tests/commands/*.py` assertions hardcoded the old
   wording.
+
+More bug shapes found in the push from 2218 to 2264:
+- **Indexing straight into a caught exception** (`e[0]`): Python 2
+  allowed this (deprecated), Python 3 doesn't. `e.args[0]` or `str(e)`
+  (the latter also works uniformly across exception types whose
+  message shape differs, e.g. Django's `ValidationError`).
+- **hashlib/base64 needing bytes, not str**: `pootle/core/forms.py`'s
+  captcha token generation chained `base64.urlsafe_b64encode()` and
+  `hashlib.sha1()` on plain `str` - worked under Python 2 (str was
+  bytes), needs explicit `.encode('utf-8')` under Python 3. The
+  second of the two had never actually been reached before the fix,
+  since the first one crashed first.
+- **`fnmatch.translate()`'s output format changed** (Python 3.6+):
+  Python 2 always ended a translated pattern with the literal string
+  `\Z(?ms)`; Python 3 wraps the body in a scoped `(?s:...)` group and
+  ends with just `\Z`. `pootle_fs/utils.py`'s `PathFilter.path_regex()`
+  stripped the old Python-2-only trailing string so callers could
+  append their own suffix - under Python 3 that string-replace became
+  a silent no-op, leaving a stray end-of-string anchor in the *middle*
+  of the assembled regex once a caller's suffix got appended, making
+  every match silently impossible. No exception anywhere - this is
+  the same "stdlib changed its output shape, nothing crashes, matching
+  just stops working" pattern as the dict-view and filter()-truthiness
+  bugs, just from a different stdlib module. Caution found while
+  fixing it: a test in the same file re-derived the expected regex
+  inline using the *same* outdated assumption instead of calling the
+  real implementation, so fixing path_regex() alone was a net
+  regression until that test's own reference computation got the
+  same fix.
+- **A class's `__str__()` and `__unicode__()` deliberately returning
+  different things** (pre-existing design, not something this port
+  introduced): `pootle_store/models.py`'s `Unit` and `Store` both do
+  this - `__unicode__` gives a short display form, `__str__` gives
+  the full file-format-serialized content via `.convert()`. Under
+  Python 2 this was a genuine, working distinction (`unicode(x)` vs
+  `str(x)` are different calls); Python 3 only has one string
+  protocol, so any code that used to rely on the *implicit* Python 2
+  conversion (e.g. Django's `truncatechars` template filter, which
+  calls `force_text`/`unicode()`) now silently gets the *other* one
+  (`__str__`, "give me the full serialized content") instead of what
+  it actually wanted. Fixed the one exercised call site
+  (`pootle_statistics/models.py`'s `get_submission_info()`) by using
+  `.source` explicitly rather than relying on the str()/unicode()
+  split; grepped for other implicit-stringification call sites on
+  `Unit`/`Store` and found none more, but this is exactly the kind of
+  gap that won't announce itself with an exception if more turn up.
 
 More recurring bug shapes found in this later stretch, beyond the
 ones already listed above:
