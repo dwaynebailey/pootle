@@ -205,8 +205,18 @@ class Submission(models.Model):
         result = {}
 
         if self.unit is not None:
+            # Unit.__str__() and __unicode__() deliberately differ:
+            # __unicode__ gives the plain source text, __str__ gives
+            # the full file-format-serialized unit (via convert()).
+            # Under Python 2 that's exactly what let truncatechars()
+            # (which implicitly does unicode(self.unit) via
+            # force_text) get the short source text here; under
+            # Python 3 there's only str(), so it silently started
+            # returning the serialized form instead. Use .source
+            # explicitly rather than relying on that distinction.
+            # Phase 1 Python 3 port; see PORTING.md.
             result.update({
-                'unit_source': truncatechars(self.unit, 50),
+                'unit_source': truncatechars(str(self.unit.source), 50),
                 'unit_url': self.unit.get_translate_url(),
             })
 

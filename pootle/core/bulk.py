@@ -153,8 +153,11 @@ class BulkCRUD(object):
         if not objects:
             common_updates = self.all_updates_common(updates)
             if common_updates:
+                # dict.keys() is a list under Python 2; wrap in
+                # list() so callers get the same list they always
+                # did. Phase 1 Python 3 port; see PORTING.md.
                 return self.update_common_objects(
-                    updates.keys(),
+                    list(updates.keys()),
                     common_updates)
         if to_fetch is not None:
             extra_fields = set(
