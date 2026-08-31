@@ -218,8 +218,19 @@ class Unit(AbstractUnit):
         # FIXME: consider using unit id instead?
         return str(self.source)
 
-    def __str__(self):
-        return str(self.convert())
+    # Used to deliberately differ from __unicode__ (returning the
+    # full file-format-serialized unit via convert(), vs the plain
+    # source text) - a working, intentional split under Python 2's
+    # separate str()/unicode() protocols. Under Python 3 there's only
+    # one, and Django's own Model.__repr__ always calls str(self), so
+    # keeping __str__ as the "full serialized content" version meant
+    # repr(unit) (logging, debugger output, admin, ...) silently
+    # started dumping entire serialized units instead of a short
+    # summary - nothing in this codebase actually relied on str(unit)
+    # giving the serialized form (checked). Aliased to __unicode__
+    # instead, matching every other model in this codebase. Phase 1
+    # Python 3 port; see PORTING.md.
+    __str__ = __unicode__
 
     def __init__(self, *args, **kwargs):
         super(Unit, self).__init__(*args, **kwargs)
@@ -851,14 +862,15 @@ class Store(AbstractStore):
     def __unicode__(self):
         return str(self.pootle_path)
 
-    def __str__(self):
-        # str(a translate-toolkit store) only serializes under
-        # Python 2 (see store/serialize.py's tostring() for the same
-        # issue) - under Python 3 it falls through to plain
-        # object.__str__() (memory-address repr) instead. __str__
-        # must return str, not the bytes bytes() gives, so decode
-        # explicitly. Phase 1 Python 3 port; see PORTING.md.
-        return bytes(self.syncer.convert()).decode('utf-8')
+    # Same __str__-vs-__unicode__ divergence as Unit above (full
+    # serialized content via convert(), vs the short pootle_path) -
+    # aliased to __unicode__ for the same reason: Django's
+    # Model.__repr__ always calls str(self), so keeping the full-
+    # content version broke repr(store) under Python 3's single
+    # string protocol, and nothing in this codebase relied on
+    # str(store) giving the serialized form (checked). Phase 1
+    # Python 3 port; see PORTING.md.
+    __str__ = __unicode__
 
     def save(self, *args, **kwargs):
         self.pootle_path = self.parent.pootle_path + self.name

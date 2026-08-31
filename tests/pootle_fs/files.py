@@ -167,7 +167,7 @@ def test_wrap_store_fs_pull(store_fs_file):
 @pytest.mark.django_db
 def test_wrap_store_fs_read(store_fs_file):
     fs_file = store_fs_file
-    with open(fs_file.file_path, "r") as src:
+    with open(fs_file.file_path, "rb") as src:
         assert fs_file.read() == src.read()
     fs_file.remove_file()
     assert fs_file.read() is None

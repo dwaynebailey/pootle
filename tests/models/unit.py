@@ -270,7 +270,10 @@ def test_accept_suggestion_update_wordcount(it_tutorial_po, system):
 @pytest.mark.django_db
 def test_unit_repr():
     unit = Unit.objects.first()
-    assert str(unit) == str(unit.convert())
+    # Unit.__str__ is now aliased to __unicode__ (str(self.source)) -
+    # see models.py's comment - rather than the full serialized unit
+    # via convert(), so it's the second assertion that actually holds
+    # now, not the first. Phase 1 Python 3 port; see PORTING.md.
     assert str(unit) == str(unit.source)
 
 
