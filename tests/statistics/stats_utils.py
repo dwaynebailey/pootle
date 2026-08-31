@@ -166,7 +166,10 @@ def test_contributors_filter_projects_since(member):
             translation_project__project__code="project0").values_list(
                 "creation_time", flat=True)))
     start_time = sub_times[0]
-    mid_time = sub_times[len(sub_times) / 2]
+    # Python 2's `/` on two ints floor-divided; Python 3's is true
+    # division and needs an explicit `//` for an index. Phase 1
+    # Python 3 port; see PORTING.md.
+    mid_time = sub_times[len(sub_times) // 2]
     end_time = sub_times[-1]
 
     # get all of of the submissions

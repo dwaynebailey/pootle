@@ -810,7 +810,16 @@ def test_store_file_diff(store_diff_tests):
 @pytest.mark.django_db
 def test_store_repr():
     store = Store.objects.first()
-    assert str(store) == str(store.syncer.convert(store.syncer.file_class))
+    # Store.__str__() now explicitly decodes bytes(self.syncer.
+    # convert()) (see models.py) rather than relying on str() on a
+    # translate-toolkit store, which only serializes under Python 2 -
+    # under Python 3 it falls through to plain object.__str__()
+    # (memory-address repr), so two different objects' str() could
+    # never match there. Decode the right side the same way for a
+    # real content comparison. Phase 1 Python 3 port; see PORTING.md.
+    assert (
+        str(store)
+        == bytes(store.syncer.convert(store.syncer.file_class)).decode('utf-8'))
     assert repr(store) == u"<Store: %s>" % store.pootle_path
 
 

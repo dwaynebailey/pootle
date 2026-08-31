@@ -138,10 +138,10 @@ def test_state_properties():
 
     context = DummyContext()
     state = ContextualState(context, baz=[1, 2])
-    assert state["foo"][0].kwargs.items() == [("foo1", 1)]
-    assert state["foo"][1].kwargs.items() == [("foo2", 2)]
-    assert state["bar"][0].kwargs.items() == [("bar1", 1)]
-    assert state["bar"][1].kwargs.items() == [("bar2", 2)]
+    assert list(state["foo"][0].kwargs.items()) == [("foo1", 1)]
+    assert list(state["foo"][1].kwargs.items()) == [("foo2", 2)]
+    assert list(state["bar"][0].kwargs.items()) == [("bar1", 1)]
+    assert list(state["bar"][1].kwargs.items()) == [("bar2", 2)]
 
 
 def test_state_item_kwargs():
@@ -159,16 +159,16 @@ def test_state_item_kwargs():
 
     context = DummyContext()
     state = ContextualState(context, baz=[1, 2])
-    assert state["foo"][0].kwargs.items() == [("foo1", 1)]
+    assert list(state["foo"][0].kwargs.items()) == [("foo1", 1)]
     assert state["foo"][0].foo1 == 1
     assert not hasattr(state["foo"][0], "foo2")
-    assert state["foo"][1].kwargs.items() == [("foo2", 2)]
+    assert list(state["foo"][1].kwargs.items()) == [("foo2", 2)]
     assert state["foo"][1].foo2 == 2
     assert not hasattr(state["foo"][1], "foo3")
-    assert state["bar"][0].kwargs.items() == [("bar1", 1)]
+    assert list(state["bar"][0].kwargs.items()) == [("bar1", 1)]
     assert state["bar"][0].bar1 == 1
     assert not hasattr(state["bar"][0], "bar2")
-    assert state["bar"][1].kwargs.items() == [("bar2", 2)]
+    assert list(state["bar"][1].kwargs.items()) == [("bar2", 2)]
     assert state["bar"][1].bar2 == 2
     assert not hasattr(state["bar"][1], "bar3")
 

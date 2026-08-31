@@ -187,7 +187,10 @@ class FSFile(object):
     def read(self):
         if not self.file_exists:
             return
-        with open(self.file_path) as f:
+        # "rb": matches serialize()'s bytes (store.serialize() ->
+        # bytes(ttk), see store/serialize.py) - callers compare the
+        # two directly. Phase 1 Python 3 port; see PORTING.md.
+        with open(self.file_path, "rb") as f:
             return f.read()
 
     def remove_file(self):
@@ -198,7 +201,10 @@ class FSFile(object):
         if not create and not self.file_exists:
             return
         if self.file_exists:
-            with open(self.file_path) as f:
+            # "rb": getclass(f)(f.read()) (below) needs bytes, like
+            # every other translate-toolkit parser call site fixed
+            # this phase. Phase 1 Python 3 port; see PORTING.md.
+            with open(self.file_path, "rb") as f:
                 f = AttributeProxy(f)
                 f.location_root = self.store_fs.project.local_fs_path
                 store_file = (

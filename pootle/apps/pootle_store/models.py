@@ -852,7 +852,13 @@ class Store(AbstractStore):
         return str(self.pootle_path)
 
     def __str__(self):
-        return str(self.syncer.convert())
+        # str(a translate-toolkit store) only serializes under
+        # Python 2 (see store/serialize.py's tostring() for the same
+        # issue) - under Python 3 it falls through to plain
+        # object.__str__() (memory-address repr) instead. __str__
+        # must return str, not the bytes bytes() gives, so decode
+        # explicitly. Phase 1 Python 3 port; see PORTING.md.
+        return bytes(self.syncer.convert()).decode('utf-8')
 
     def save(self, *args, **kwargs):
         self.pootle_path = self.parent.pootle_path + self.name

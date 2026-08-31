@@ -48,7 +48,7 @@ def test_form_project_tp(tp0):
             language=tp1.language.pk,
             fs_code="foo"))
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_code"]
+    assert list(form.errors.keys()) == ["fs_code"]
     form = TranslationProjectForm(
         instance=tp1,
         data=dict(
@@ -56,7 +56,7 @@ def test_form_project_tp(tp0):
             language=tp1.language.pk,
             fs_code=tp0.language.code))
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_code"]
+    assert list(form.errors.keys()) == ["fs_code"]
     new_language = Language.objects.create(code="foo")
     form = TranslationProjectForm(
         initial=dict(project=project.pk),
@@ -64,7 +64,7 @@ def test_form_project_tp(tp0):
             project=tp1.project.pk,
             language=new_language.pk))
     assert not form.is_valid()
-    assert form.errors.keys() == ["language"]
+    assert list(form.errors.keys()) == ["language"]
     form = TranslationProjectForm(
         instance=tp0,
         data=dict(

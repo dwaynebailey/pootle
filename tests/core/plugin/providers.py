@@ -280,5 +280,5 @@ def test_provider_caching_no_receiver():
     def provider_for_test(sender, *args, **kwargs):
         return dict(foo="bar")
 
-    assert provider_test.gather(NotSender).keys() == []
-    assert provider_test.gather(NotSender).keys() == []
+    assert list(provider_test.gather(NotSender).keys()) == []
+    assert list(provider_test.gather(NotSender).keys()) == []

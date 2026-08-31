@@ -167,11 +167,11 @@ def test_form_project_fs_url(format_registry):
     form_data["fs_url"] = "foo/bar/baz"
     form = ProjectForm(form_data)
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_url"]
+    assert list(form.errors.keys()) == ["fs_url"]
     form_data["fs_url"] = ""
     form = ProjectForm(form_data)
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_url"]
+    assert list(form.errors.keys()) == ["fs_url"]
 
 
 @pytest.mark.django_db
