@@ -55,9 +55,15 @@ def test_cmd_create_existing_project(settings):
             "create_project",
             "foo0",
             "--preset-mapping=gnu")
-    assert (
-        "'code': [u'Project with this Code already exists.'"
-        in str(e))
+    # pytest's own ExceptionInfo.__str__() format changed between the
+    # old pytest 3.3.0 baseline and the bumped 7.4.4 (see
+    # requirements/tests.txt) - was "ExceptionType: message", now
+    # "<ExceptionInfo ExceptionType(args) tblen=N>". Match just the
+    # core message text, which is present in both, rather than the
+    # old wrapping (also drops the Python 2 unicode-repr `u'...'`
+    # prefix, gone under Python 3). Phase 1 Python 3 port; see
+    # PORTING.md.
+    assert "Project with this Code already exists." in str(e)
 
 
 @pytest.mark.cmd
@@ -89,9 +95,9 @@ def test_cmd_create_project_checkstyle(capfd):
             "foo1",
             "--preset-mapping=gnu",
             "--checkstyle=DOESNOTEXIST")
-    assert (
-        "Error: argument --checkstyle: invalid choice: u'DOESNOTEXIST'"
-        in str(e))
+    # See the comment on the "Project with this Code..." assertion
+    # above for why this just checks the core message.
+    assert "invalid choice: 'DOESNOTEXIST'" in str(e)
 
 
 @pytest.mark.cmd
@@ -121,9 +127,9 @@ def test_cmd_create_project_filetypes(capfd):
             "foo2",
             "--preset-mapping=gnu",
             "--filetype=DOESNOTEXIST")
-    assert (
-        "Error: argument --filetype: invalid choice: u'DOESNOTEXIST'"
-        in str(e))
+    # See the comment on the "Project with this Code..." assertion
+    # above for why this just checks the core message.
+    assert "invalid choice: 'DOESNOTEXIST'" in str(e)
 
 
 @pytest.mark.cmd
@@ -143,9 +149,9 @@ def test_cmd_create_project_report_email(capfd):
             "foo0",
             "--report-email=foo@bar",
             "--preset-mapping=gnu")
-    assert (
-        "CommandError: [u'Enter a valid email address.']"
-        in str(e))
+    # See the comment on the "Project with this Code..." assertion
+    # above for why this just checks the core message.
+    assert "Enter a valid email address." in str(e)
 
 
 @pytest.mark.cmd
@@ -165,9 +171,9 @@ def test_cmd_create_project_source_language(language0):
             "foo0",
             "--preset-mapping=gnu",
             "--source-language=DOESNOTEXIST")
-    assert (
-        "CommandError: Source language DOESNOTEXIST does not exist"
-        in str(e))
+    # See the comment on the "Project with this Code..." assertion
+    # above for why this just checks the core message.
+    assert "Source language DOESNOTEXIST does not exist" in str(e)
 
 
 @pytest.mark.cmd

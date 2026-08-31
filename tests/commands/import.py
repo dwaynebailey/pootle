@@ -21,7 +21,9 @@ def test_import_user_nofile():
     """Missing 'file' positional argument."""
     with pytest.raises(CommandError) as e:
         call_command('import')
-    assert "too few arguments" in str(e)
+    assert (
+        "too few arguments" in str(e)
+        or "arguments are required" in str(e))
 
 
 @pytest.mark.cmd
