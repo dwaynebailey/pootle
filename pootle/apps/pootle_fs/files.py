@@ -221,8 +221,13 @@ class FSFile(object):
         """
         disk_store = self.deserialize(create=True)
         self.store.syncer.sync(disk_store, self.store.data.max_unit_revision)
-        with open(self.file_path, "w") as f:
-            f.write(str(disk_store))
+        # str(disk_store) only serializes under Python 2
+        # (translate-toolkit's own compat shim); under Python 3 it
+        # silently falls through to plain object.__str__() and writes
+        # garbage - same fix as store/serialize.py's tostring().
+        # Phase 1 Python 3 port; see PORTING.md.
+        with open(self.file_path, "wb") as f:
+            f.write(bytes(disk_store))
         logger.debug("Pushed file: %s", self.path)
         return self.store.data.max_unit_revision
 

@@ -19,6 +19,18 @@ from django.core.management import call_command, CommandError
 from pootle.core.delegate import config
 from pootle.core.exceptions import NotConfiguredError, MissingPluginError
 from pootle_fs.display import ResponseDisplay, StateDisplay
+# Registers the FS_* color roles (django.utils.termcolors.PALETTES)
+# used below - must be imported before anything calls
+# django.core.management.color.no_style(), which is cached forever
+# (@lru_cache) the first time it's called anywhere in the process.
+# Whichever test file/command happens to trigger that call first
+# otherwise wins the race and silently freezes a Style object missing
+# these custom roles for the rest of the session - reproducible by
+# running this file in isolation. An explicit import here (executing
+# at pytest collection time, before any test runs) makes the ordering
+# deterministic instead of accidental. Phase 1 Python 3 port; see
+# PORTING.md.
+import pootle_fs.management.commands.fs  # noqa: F401
 from pootle_fs.management.commands import FSAPISubCommand
 from pootle_fs.management.commands.fs_commands.state import StateCommand
 from pootle_fs.utils import FSPlugin

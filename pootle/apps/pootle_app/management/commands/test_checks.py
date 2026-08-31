@@ -76,8 +76,12 @@ class Command(BaseCommand):
             except Unit.DoesNotExist as e:
                 raise CommandError(e)
         else:
-            source = options['source'].decode('utf-8')
-            target = options['target'].decode('utf-8')
+            # argparse's option values are already str (text) under
+            # Python 3, not the bytes they were in Python 2 -
+            # .decode() doesn't exist on them and isn't needed. Phase
+            # 1 Python 3 port; see PORTING.md.
+            source = options['source']
+            target = options['target']
 
         checkers = [checker() for checker in projectcheckers.values()]
 
