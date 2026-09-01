@@ -151,7 +151,7 @@ def convert_to_localfs(apps, schema_editor):
         if project.disabled:
             continue
         if not os.path.exists(proj_trans_path):
-            logger.warn(
+            logger.warning(
                 "Missing project ('%s') translation directory '%s', "
                 "skipped adding tracking",
                 project.code,
@@ -169,7 +169,7 @@ def convert_to_localfs(apps, schema_editor):
                     proj_trans_path,
                     filepath.lstrip("/")))
             if not os.path.exists(fullpath):
-                logger.warn(
+                logger.warning(
                     "No file found at '%s', not adding tracking",
                     fullpath)
                 continue

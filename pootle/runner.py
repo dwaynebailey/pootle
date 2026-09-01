@@ -184,7 +184,7 @@ def init_command(parser, args):
                           % config_path)
 
     if args.db in ['mysql', 'postgresql']:
-        logger.warn(
+        logger.warning(
             "Configuration file created at %r. Your database password is "
             "not currently set . You may want to update the database "
             "settings now",
@@ -205,7 +205,7 @@ def set_sync_mode(noinput=False):
                          "It is safer to stop any workers before using "
                          "synchronous commands.\n\n")
         if noinput:
-            logger.warn(redis_warning)
+            logger.warning(redis_warning)
         else:
             resp = input("%sDo you wish to proceed? [Ny] " % redis_warning)
             if resp not in ("y", "yes"):
@@ -247,7 +247,7 @@ def configure_app(project, config_paths, django_settings_module, runner_name):
             for config_path
             in _config_paths))
     if not config_paths:
-        logger.warn(
+        logger.warning(
             u"%r environment variable has not been set.\n",
             settings_envvar)
     elif missing_config:

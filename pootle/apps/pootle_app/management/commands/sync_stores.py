@@ -48,13 +48,13 @@ class Command(PootleCommand):
             help="This option has been removed.")
 
     def handle(self, **options):
-        logger.warn(
+        logger.warning(
             "The sync_stores command is deprecated, use pootle fs instead")
         if options["force"]:
-            logger.warn(
+            logger.warning(
                 "The force option no longer has any affect on this command")
         if options["overwrite"]:
-            logger.warn(
+            logger.warning(
                 "The overwrite option no longer has any affect on this command")
         super(Command, self).handle(**options)
 
@@ -65,7 +65,7 @@ class Command(PootleCommand):
         if translation_project.project.pk not in self.warn_on_conflict:
             state = plugin.state()
             if any(k in state for k in ["conflict", "conflict_untracked"]):
-                logger.warn(
+                logger.warning(
                     "The project '%s' has conflicting changes in the database "
                     "and translation files. Use `pootle fs resolve` to tell "
                     "pootle how to merge",

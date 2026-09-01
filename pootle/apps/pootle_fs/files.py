@@ -243,7 +243,7 @@ class FSFile(object):
         """
         tmp_store = self.deserialize()
         if not tmp_store:
-            logger.warn("File staged for sync has disappeared: %s", self.path)
+            logger.warning("File staged for sync has disappeared: %s", self.path)
             return
         if pootle_wins is None:
             resolve_conflict = (

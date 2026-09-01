@@ -47,6 +47,19 @@ RUN bash docker/py3/patch-django-six.sh
 COPY . /src
 RUN pip install --no-cache-dir -q -e .
 
+# requirements/tests.txt pins pytest==3.3.0 and friends for the
+# Python 2 control channel (docker/ci/Dockerfile) - none of that runs
+# under Python 3 (pytest 3.3.0 imports the removed stdlib `imp`
+# module, among other things). tests_py3.txt is the separate,
+# current-compatible pin for this image. Baked into the image itself,
+# not left as a runtime `pip install` tacked onto CMD/command: a
+# container command override (`docker run pootle-py3 pytest ...`,
+# `docker-compose run test pytest ...`) replaces the whole command,
+# so anything installed only at runtime would silently vanish. Phase
+# 1 Python 3 port; see PORTING.md.
+COPY requirements/tests_py3.txt requirements/
+RUN pip install --no-cache-dir -q -r requirements/tests_py3.txt
+
 # See sitecustomize.py's own comment for why this has to be a
 # site-wide startup hook rather than living solely in pootle/__init__.py
 # or a conftest.py. pootle_py3_compat.py is copied alongside it (not

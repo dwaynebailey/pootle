@@ -79,10 +79,10 @@ class Command(PootleCommand):
                 project=project)
 
     def handle_all(self, **options):
-        logger.warn(
+        logger.warning(
             "The update_stores command is deprecated, use pootle fs instead")
         if options["force"]:
-            logger.warn(
+            logger.warning(
                 "The force option no longer has any affect on this command")
         projects = (
             Project.objects.filter(code__in=self.projects)

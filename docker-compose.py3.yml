@@ -24,10 +24,13 @@ services:
     depends_on:
       - redis
       - elasticsearch
-    command: >
-      bash -c "
-      pip install -q 'pytest==7.4.4' 'pytest-django==4.8.0' 'pytest-cov==4.1.0' 'factory-boy==3.3.0' pytest-mock &&
-      pytest tests -q"
+    # requirements/tests_py3.txt is baked into the image itself (see
+    # docker/py3/Dockerfile), so this is a plain, overridable default
+    # - `docker-compose -f docker-compose.py3.yml run --rm test
+    # pytest tests/some_file.py -q` works as expected instead of
+    # silently dropping the pip install a runtime-only command would
+    # need.
+    command: ["pytest", "tests", "-q"]
 
   redis:
     image: redis:7-alpine
