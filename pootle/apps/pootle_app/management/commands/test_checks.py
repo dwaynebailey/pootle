@@ -53,7 +53,20 @@ class Command(BaseCommand):
             3: logging.DEBUG
         }
         debug_level = debug_levels.get(options['verbosity'], logging.DEBUG)
-        logging.getLogger().setLevel(debug_level)
+        # Root logger level is process-global and was never restored
+        # after this command finished, silencing INFO-level logging
+        # for everything run afterwards in the same process (same
+        # bug as management/commands/__init__.py's PootleCommand).
+        # Phase 1 Python 3 port; see PORTING.md.
+        root_logger = logging.getLogger()
+        previous_level = root_logger.level
+        root_logger.setLevel(debug_level)
+        try:
+            self._handle_checks(**options)
+        finally:
+            root_logger.setLevel(previous_level)
+
+    def _handle_checks(self, **options):
         self.name = self.__class__.__module__.split('.')[-1]
 
         if ((options['unit'] is not None

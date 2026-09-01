@@ -134,28 +134,41 @@ class PootleCommand(BaseCommand):
             2: logging.INFO,
             3: logging.DEBUG
         }
-        logging.getLogger().setLevel(
+        root_logger = logging.getLogger()
+        # Was never restored after the command finished - the root
+        # logger's level is process-global, so one command run with
+        # the (Django default) verbosity=1 permanently silenced
+        # INFO-level logging for every command/test running later in
+        # the same process. Save/restore it around this command's own
+        # run instead of leaking the change. Phase 1 Python 3 port;
+        # see PORTING.md (this bug is version-agnostic, but more of
+        # the test suite now runs far enough to trigger it than
+        # before the port).
+        previous_level = root_logger.level
+        root_logger.setLevel(
             debug_levels.get(options['verbosity'], logging.DEBUG)
         )
+        try:
+            # reduce size of parse pool early on
+            self.name = self.__class__.__module__.split('.')[-1]
+            self.projects = options.pop('projects', [])
+            self.languages = options.pop('languages', [])
+            if self.projects:
+                self.check_projects(self.projects)
+            if self.languages:
+                self.check_languages(self.languages)
 
-        # reduce size of parse pool early on
-        self.name = self.__class__.__module__.split('.')[-1]
-        self.projects = options.pop('projects', [])
-        self.languages = options.pop('languages', [])
-        if self.projects:
-            self.check_projects(self.projects)
-        if self.languages:
-            self.check_languages(self.languages)
+            # info start
+            start = datetime.datetime.now()
+            logger.info('[pootle] Running: %s', self.name)
 
-        # info start
-        start = datetime.datetime.now()
-        logger.info('[pootle] Running: %s', self.name)
+            self.handle_all(**options)
 
-        self.handle_all(**options)
-
-        # info finish
-        end = datetime.datetime.now()
-        logging.info('[pootle] Complete: %s in %s', self.name, end - start)
+            # info finish
+            end = datetime.datetime.now()
+            logging.info('[pootle] Complete: %s in %s', self.name, end - start)
+        finally:
+            root_logger.setLevel(previous_level)
 
     def handle_all(self, **options):
         if options["no_rq"]:
