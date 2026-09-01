@@ -385,57 +385,82 @@ about if more turn up during Phase 2:
   fixing in `pytest_pootle/`'s fixture machinery, independent of the
   app code itself.
 
-**Current state** (full suite, sqlite, `pytest tests -q`, as of
-`8d081bb4f`): **2290 passed / 117 failed / 94 errors / 10 skipped /
+**Current state** (full suite, sqlite, `pytest tests -q`, against the
+real-Elasticsearch stack in `docker-compose.py3.yml`, as of
+`6412e57b7`): **2298 passed / 109 failed / 94 errors / 10 skipped /
 1 xfailed**, out of 2512 collected — **past the Python 2 baseline's
-2286 passed** for the first time (baseline: 2286 passed / 123 failed
-/ 94 error, sqlite, out of ~2503 - see stream B/C above), errors
-still tied at 94. Progression: complete infrastructure failure (2510
-errors, one universal `get_marker()` bug) → 1766/565/170 →
-2133/266/102 → 2218/189/94 → 2264/143/94 → 2290/117/94. Of the 117
-failed, ~93 is the webassets BundleError cluster (not a Phase 1
-target, see above); **all but ~9 of the rest are now fixed** - the
-remainder is down to one likely-flaky test and one genuine
-infra-dependent cluster, detailed below, neither of which yields to
-more code changes. Several single fixes this phase cascaded into
+2286 passed** (baseline: 2286 passed / 123 failed / 94 error, sqlite,
+out of ~2503 - see stream B/C above), errors still tied at 94.
+Progression: complete infrastructure failure (2510 errors, one
+universal `get_marker()` bug) → 1766/565/170 → 2133/266/102 →
+2218/189/94 → 2264/143/94 → 2290/117/94 → 2298/109/94. **Of the 109
+failed, 108 is the webassets BundleError cluster** (confirmed not a
+regression, see above - not a Phase 1 target); **the other 1 is a
+single likely-flaky timing-boundary test** (passes cleanly in
+isolation - see below). Several single fixes this phase cascaded into
 10-120 passing tests each because they sat in shared fixture setup or
 a widely-used utility (`unit/search.py`'s offset check,
 `FSItemState.__gt__`, `bulk_update()` on `dict.values()`, the two
 `Comparable*LogEvent.__cmp__` classes, `FSFile._sync_from_pootle()`'s
 `str(store)` bug, `pootle_fs/management/commands/fs.py`'s
-`no_style.cache_clear()`) — worth re-checking that pattern (one
-early, universal cause behind a pile of unrelated-looking failures)
-before assuming remaining failures are all independent.
+`no_style.cache_clear()`, `PootleCommand._handle()`'s leaked root
+logger level below) — worth re-checking that pattern (one early,
+universal cause behind a pile of unrelated-looking failures) before
+assuming a new batch of failures are all independent.
 
-**Remaining non-webassets items - not code bugs, need an infra or
-policy decision rather than more porting work:**
-- **8 tests touching Elasticsearch** (`tests/commands/import.py`'s
-  `test_import_onefile*` family, `tests/commands/update_tmserver.py`'s
-  `test_update_tmserver_files`) fail because there is no live
-  Elasticsearch service in this validation environment (by design -
-  see the Dockerfile's own header comment) - not new to Phase 1, and
-  not fixable by more code changes. What *is* worth flagging: a full
-  suite run that reaches these tests takes dramatically longer than
-  expected (one single-test run of `test_update_tmserver_files`, which
-  actually talks to the (unreachable) ES client rather than having the
-  error caught and logged, took **15+ minutes** - the `elasticsearch`
-  Python client's retry/backoff logic compounds with what appears to
-  be a slow DNS-negative-response timeout in this Docker environment
-  for the nonexistent `elasticsearch` hostname). A full-suite run
-  observed at 55 minutes (vs the usual ~4) traces directly to this.
-  Options going forward: stand up a real (or stubbed) Elasticsearch
-  container on the validation network (mirrors what streams B/D
-  already do for other services), or mark these tests
-  `@pytest.mark.skipif`/xfail with a clear reason if ES coverage isn't
-  a Phase 1 concern - a decision for whoever picks this back up, not
-  something to guess at unilaterally.
-- **1 likely-flaky test**: `tests/pootle_score/updater.py::
-  test_score_user_updater_refresh` failed once in a full-suite run
-  (`assert 65.6 == 51.199999999999996`) but passes cleanly in
-  isolation - smells like test-order/shared-state sensitivity (some
-  earlier test leaving extra scored data behind) rather than a Python
-  3 bug, but not confirmed either way. Worth a second look if it
-  recurs.
+**Elasticsearch is now real, not absent**, via `docker-compose.py3.yml`
+(new this phase - see its own comments for the full rationale/
+gotchas): `docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3`,
+the same image this repo's own `docker-compose.yml` already pairs
+with the `elasticsearch~=5.0` client (`requirements/_es_5.txt`) -
+verified directly (indices.exists/create/index/search all
+round-tripped real results) rather than assumed compatible. Chosen
+over a stub after hands-on testing: `tests/settings.py` hardcodes
+`'elasticsearch'` as the default TM server host for the *entire* test
+suite (not just the tests that obviously touch it), so a working
+server clears connection-error log noise out of virtually every
+DB-touching test's captured output - a stub would need to cover that
+same surface for no real savings in effort. Two Docker-on-Apple-
+Silicon gotchas found and fixed, both documented inline in the
+compose file: this image generation predates Elastic's arm64 builds
+(pinned `platform: linux/amd64`, fine under emulation), and JVM
+startup can hang indefinitely on entropy-starved `/dev/random`
+without `-Djava.security.egd=file:/dev/./urandom` (observed directly
+- one cold start took 24s, another sat at 0 log lines/100% CPU for
+7+ minutes before being killed). Net effect on full-suite runtime was
+positive, not negative: 25min with a working ES vs ~55min when
+`elasticsearch` resolved to nothing and every command retried against
+a slow DNS-negative-response timeout instead.
+
+Finally having ES noise out of the way surfaced the real bug behind
+the ~8 previously-ES-blamed `tests/commands/import.py`/
+`update_tmserver.py` failures: `err` was genuinely empty, not just
+crowded out. Root cause: `pootle/apps/pootle_app/management/commands/
+__init__.py`'s `PootleCommand._handle()` (and `test_checks.py`'s
+`Command.handle()`, same shape) call `logging.getLogger().setLevel(...)`
+to honour the command's own `-v`/`--verbosity` flag, but never
+restored the previous level afterwards. The root logger's level is
+process-global, so any earlier test in the same pytest process
+invoking a `PootleCommand`-derived command via `call_command()`
+(Django's default verbosity=1 maps to `WARNING`) permanently silenced
+`INFO`-level logging for everything run afterwards in the same
+process - including the `import` command's own `"[update] added N
+units..."` message these tests asserted on. Not a new Python 3 bug
+(the code is version-agnostic) - more of the suite now runs far
+enough to actually trigger it than before this phase's other fixes
+landed. Fixed both call sites with save/restore-in-`finally` around
+the command's own run.
+
+**The one remaining failure**: `tests/accounts/models.py::
+test_model_user_last_event` (`assert '1 isekhondi' == '2 amasekhondi'`
+- a "N seconds ago" pluralized-string check) failed once in a
+full-suite run but passes cleanly in isolation - a real-time
+boundary flake (the test's actual elapsed wall-clock time crossed
+from "1 second" to "2 seconds" between event creation and assertion),
+plausibly made more likely now that unit saves route through a real
+(if emulated-and-slower) Elasticsearch call. Not confirmed as
+pre-existing under the Python 2 baseline or not; worth a second look
+if it recurs, not chased further as a one-off.
 
 More bug shapes found in the push from 2133 to 2218, beyond the ones
 already listed above:
@@ -559,15 +584,19 @@ More bug shapes found in the push from 2218 to 2264:
   worth grepping for `/ 2]` or similar index expressions if more
   surface.
 
-**Environment note, not a code bug**: a full suite run can take
-dramatically longer than the usual ~4 minutes (one observed run took
-55 minutes) when it reaches the ~8 tests that actually touch
-Elasticsearch (see "remaining items" above) - the `elasticsearch`
-Python client's retry/backoff compounds with a slow DNS-negative-
-response timeout in this Docker environment for the nonexistent
-`elasticsearch` hostname, observed taking 15+ minutes for a single
-such test. Don't be alarmed by a slow run; it's not evidence of a new
-regression.
+**Environment note, since resolved**: full suite runs used to take
+dramatically longer than the ~4 minute baseline (one observed run
+took 55 minutes) whenever they reached the tests touching
+Elasticsearch, which had no live server on the network - the
+`elasticsearch` Python client's retry/backoff compounded with a slow
+DNS-negative-response timeout for the nonexistent `elasticsearch`
+hostname (one single test measured 15+ minutes alone). Fixed by wiring
+up a real Elasticsearch via `docker-compose.py3.yml` - see the
+"Current state" section above for the full writeup. Runtime with a
+working ES (~16-25 min) is *lower* than the no-ES-at-all baseline
+(~55 min when the hostname timed out), even though higher than the
+old fast-fail case where `elasticsearch` wasn't even a resolvable
+network alias.
 
 More recurring bug shapes found in this later stretch, beyond the
 ones already listed above:
