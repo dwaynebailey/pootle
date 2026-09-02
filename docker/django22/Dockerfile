@@ -100,3 +100,23 @@ RUN bash docker/django22/patch-overextends.sh
 # script's own comment. Phase 2 rung 1; see PORTING.md.
 COPY docker/django22/patch-dj-subcommand.sh docker/django22/
 RUN bash docker/django22/patch-dj-subcommand.sh
+
+# Phase 1's postgres fix carries over unchanged: Django 2.2's
+# django/db/backends/postgresql/utils.py has the exact same
+# `if offset != 0:` bug patch-django-postgres-tz.sh already fixes for
+# 1.11 (checked directly - byte-identical file), so every postgres
+# query still fails "database connection isn't set to UTC" without
+# it. Has to run after the django22.txt override above, same reason
+# as the six.py patch. Found running Phase 2 rung 1's postgres
+# validation pass.
+#
+# Phase 1's mysql encoders fix is NOT needed here though -
+# django.db.backends.mysql.base.DatabaseWrapper.get_new_connection()
+# under Django 2.2 is just `return Database.connect(**conn_params)`,
+# with the whole conn.encoders[SafeText] = ... block that needed
+# patching in 1.11 gone entirely (checked directly) - Django fixed
+# this itself somewhere between 1.11 and 2.2, same underlying change
+# patch-django-mysql-encoders.sh backports. Deliberately not included
+# here. See PORTING.md.
+COPY docker/py3/patch-django-postgres-tz.sh docker/py3/
+RUN bash docker/py3/patch-django-postgres-tz.sh

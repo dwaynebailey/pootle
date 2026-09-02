@@ -1032,15 +1032,58 @@ directory chain under Django 2.2's ORM, or has something made it
 touch siblings too), but not chased further this pass. One test,
 reproducible, isolated - not blocking the rung.
 
+### Validating rung 1 against postgres
+
+`docker/django22/Dockerfile` already installed the postgres/mysql
+drivers (Phase 1's `_db_postgresql_py3.txt`/`_db_mysql_py3.txt`) but
+was missing Phase 1's two Django-source patches for them
+(`patch-django-postgres-tz.sh`, `patch-django-mysql-encoders.sh`) -
+never added when this rung's Dockerfile was first written, since that
+work was all sqlite-only at the time. First postgres run: **725/725
+errors** in the `pootle_fs`/`vfolders`/`database.py` sanity subset,
+same `AssertionError: database connection isn't set to UTC` as Phase
+1's very first postgres attempt - Django 2.2's `django/db/backends/
+postgresql/utils.py` turns out to be byte-identical to 1.11's copy
+(checked directly), same `if offset != 0:` bug, same fix. Added
+`patch-django-postgres-tz.sh` to this Dockerfile (after the
+`django22.txt` override, same reason as the six.py patch). **Not**
+adding `patch-django-mysql-encoders.sh` though: Django 2.2's mysql
+backend `get_new_connection()` is just `return Database.connect(
+**conn_params)` (checked directly) - the whole `conn.encoders[
+SafeText] = ...` block that needed patching under 1.11 is gone
+entirely, so Django itself already fixed this between 1.11 and 2.2 and
+there's nothing left to patch for this rung.
+
+With that one patch added, the sanity subset (database.py,
+pootle_fs/, vfolders/path_matcher.py - the tests Phase 1's own regex-
+portability fixes in `pootle_fs/utils.py` target) passed clean: 725/
+725. Full suite: **2297 passed / 110 failed / 94 errors / 10 skipped /
+1 xfailed**, one worse each way than the sqlite rung-1 number (2298/
+109/94) - diffed directly against that same run's failure list (not
+eyeballed): every failing/erroring test here except one is already in
+it. The one exception, `tests/commands/update_tmserver.py::
+test_update_tmserver_files`, is **not a Django-2.2 or postgres bug** -
+traced to the elasticsearch container itself dying under host memory
+pressure mid-validation (`docker ps` showed `Exited (137)` - SIGKILL,
+consistent with an OOM kill - immediately after each restart attempt,
+correlating directly with `vm_stat` showing under 100MB free and
+`uptime` load averages of 13-14 at the time). Restarting ES and
+retrying twice reproduced the same crash both times rather than
+clearing it, so this is host-level contention exactly matching the
+"Operational note on Elasticsearch-under-emulation reliability"
+already documented in Phase 1's own section above, not a new failure
+mode - noted here rather than chased as a regression, since the
+underlying cause and its signature are already on record.
+
+**Net: rung 1 is validated against postgres at the same level of
+parity sqlite already has.** Mariadb not yet run for this rung.
+
 **Not yet done, still on `django-ladder`:**
 
 - Root-cause and fix `test_contextmanager_update_tp_after_suggestion`
   (see above), or confirm it's pre-existing/out-of-scope like the
   webassets cluster.
-- Validate rung 1 against postgres and mariadb (only sqlite run so
-  far this rung - Phase 1's own postgres/mariadb fixes, being in
-  application code rather than Django/driver internals, should mostly
-  carry over unchanged, but this hasn't been checked).
+- Validate rung 1 against mariadb (postgres now done, see above).
 - `requirements/base.txt`'s own pins (`Django~=1.11.12`,
   `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
   `django-allauth==0.35.0`) haven't moved - `django22.txt` is
