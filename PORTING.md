@@ -386,18 +386,20 @@ about if more turn up during Phase 2:
   app code itself.
 
 **Current state** (full suite, sqlite, `pytest tests -q`, against the
-real-Elasticsearch stack in `docker-compose.py3.yml`, as of
-`6412e57b7`): **2298 passed / 109 failed / 94 errors / 10 skipped /
-1 xfailed**, out of 2512 collected — **past the Python 2 baseline's
-2286 passed** (baseline: 2286 passed / 123 failed / 94 error, sqlite,
-out of ~2503 - see stream B/C above), errors still tied at 94.
-Progression: complete infrastructure failure (2510 errors, one
-universal `get_marker()` bug) → 1766/565/170 → 2133/266/102 →
-2218/189/94 → 2264/143/94 → 2290/117/94 → 2298/109/94. **Of the 109
-failed, 108 is the webassets BundleError cluster** (confirmed not a
-regression, see above - not a Phase 1 target); **the other 1 is a
-single likely-flaky timing-boundary test** (passes cleanly in
-isolation - see below). Several single fixes this phase cascaded into
+real-Elasticsearch stack in `docker-compose.py3.yml`, **with
+`filterwarnings=error` actually enforced** - no `-p no:warnings`
+bypass, see below - as of `07580f377`): **2299 passed / 108 failed /
+94 errors / 10 skipped / 1 xfailed**, out of 2512 collected — **past
+the Python 2 baseline's 2286 passed** (baseline: 2286 passed / 123
+failed / 94 error, sqlite, out of ~2503 - see stream B/C above),
+errors still tied at 94. Progression: complete infrastructure failure
+(2510 errors, one universal `get_marker()` bug) → 1766/565/170 →
+2133/266/102 → 2218/189/94 → 2264/143/94 → 2290/117/94 → 2298/109/94 →
+2299/108/94. **Of the 108 failed, 107 is the webassets BundleError
+cluster** (confirmed not a regression, see above - not a Phase 1
+target); **the other 1 is a single likely-flaky timing-boundary
+test** (passes cleanly in isolation - see below). Several single
+fixes this phase cascaded into
 10-120 passing tests each because they sat in shared fixture setup or
 a widely-used utility (`unit/search.py`'s offset check,
 `FSItemState.__gt__`, `bulk_update()` on `dict.values()`, the two
@@ -461,6 +463,78 @@ plausibly made more likely now that unit saves route through a real
 (if emulated-and-slower) Elasticsearch call. Not confirmed as
 pre-existing under the Python 2 baseline or not; worth a second look
 if it recurs, not chased further as a one-off.
+
+**Two more things found and fixed getting to this final number, both
+worth remembering:**
+
+1. **`docker-compose.py3.yml`'s `test` service silently dropped its
+   own test tooling on any command override.** Its `command:` used to
+   be a `bash -c "pip install ... && pytest ..."` wrapper - fine for
+   the default invocation, but `docker-compose run test pytest
+   tests/some_file.py` *replaces* the whole command rather than
+   appending to it, so the pip install step vanished and pytest
+   wasn't even on `PATH`. Fixed by giving Phase 1 its own pinned test
+   tooling (`requirements/tests_py3.txt` - `requirements/tests.txt`
+   stays untouched, still pinning pytest 3.3.0 etc. for the Python 2
+   control channel) baked into `docker/py3/Dockerfile` itself, so the
+   compose `command:` is just `["pytest", "tests", "-q"]` and safely
+   overridable.
+
+2. **Every full-suite run this phase, until this point, had actually
+   been running with `-p no:warnings`** - a flag that disables
+   pytest's warnings plugin outright, which `setup.cfg`'s
+   `filterwarnings = error` policy depends on to do anything at all.
+   Found while fixing (1) above and finally running the suite through
+   its real, unmodified configuration. Running properly dropped the
+   count from ~2298 passed to 2198 - a real, if narrow, gap, not a
+   phantom one:
+   - `setup.cfg`'s `SyntaxWarning` rule only matched "invalid escape
+     sequence" messages; `django-allauth`'s `if scope is '':` (a
+     *different* `SyntaxWarning`, "is with a literal") was escalating
+     to a hard `SyntaxError` once enough of the suite exercised code
+     importing its templatetags. Broadened the rule to match any
+     `SyntaxWarning` message (keeping the same "not pootle" module
+     scope) rather than adding message text one at a time - the whole
+     point of scoping by module is that it shouldn't matter *which*
+     message a third-party dependency happens to trigger.
+   - No equivalent rule existed for third-party `DeprecationWarning`
+     at all; `django_rq`'s templatetags call
+     `distutils.version.LooseVersion()` directly, deprecated by
+     Python. Added the same shape of rule.
+   - The one warning that legitimately *should* have been fatal,
+     and correctly was: 12 call sites across 6 files
+     (`pootle/runner.py`, `pootle_fs/files.py`, two migrations,
+     `sync_stores.py`, `update_stores.py`) called `logger.warn(...)`
+     - Python's own deprecated alias for `logger.warning()`. Not
+     covered by the third-party-only filterwarnings scope since it's
+     genuinely our code - fixed all 12. One follow-up:
+     `tests/commands/sync_stores.py` mocks the module's logger and
+     asserted on the literal method name called
+     (`logger_mock.warn.call_args`) - updated to `.warning` to match.
+
+Net effect of both fixes together: 2198 → 2299 passed with
+`filterwarnings` properly active - matching (and, after the
+`sync_stores.py` mock fix, slightly exceeding) the earlier
+`-p no:warnings`-masked number. The true state of the port was being
+accurately reported all along, just for the wrong reason - worth
+remembering if a future session's numbers ever look implausibly good
+or bad: check what flags actually ran, not just what the last commit
+message claimed.
+
+**Operational note on Elasticsearch-under-emulation reliability**:
+across this phase's work, ES startup time under `platform:
+linux/amd64` emulation ranged from a reliable ~16-24s (typical) to
+one observed 7+ minute hang (entropy starvation, since fixed) and,
+separately, one stalled *mid-test-run* for over an hour with 0% CPU
+in the test container - which turned out to correlate with the whole
+host machine being under heavy load (`uptime` load averages of
+12-20+, 10GB+ in the memory compressor) from the accumulated
+containers/builds of a very long session, not a Docker or ES-specific
+fault. Restarting fresh once host load actually dropped (`uptime`
+back under ~8) fixed it immediately - a full clean run then took under
+5 minutes. If a future session sees ES (or anything containerized)
+mysteriously hang, check `uptime`/`docker stats` for host-level
+contention before assuming a code or container regression.
 
 More bug shapes found in the push from 2133 to 2218, beyond the ones
 already listed above:
