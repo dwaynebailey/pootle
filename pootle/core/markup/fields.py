@@ -62,9 +62,14 @@ class Markup(object):
             return mark_safe(clean_html(self.rendered))
         except ParserError:
             return u''
+    __str__ = __unicode__
 
     def __nonzero__(self):
         return self.raw.strip() != '' and self.raw is not None
+    # __nonzero__ is Python 2's name for the boolean-coercion hook;
+    # Python 3 only looks for __bool__. Phase 1 Python 3 port; see
+    # PORTING.md.
+    __bool__ = __nonzero__
 
 
 class MarkupDescriptor(object):

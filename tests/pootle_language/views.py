@@ -6,6 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+import functools
 import json
 
 import pytest
@@ -43,7 +44,7 @@ def _test_view_language_children(view, obj):
     for item in items:
         if item["code"] in stats["children"]:
             item["stats"] = stats["children"][item["code"]]
-    items.sort(cmp_by_last_activity)
+    items.sort(key=functools.cmp_to_key(cmp_by_last_activity))
     stats = StatsDisplay(obj, stats=stats).stats
     assert stats == view.stats
     assert view.object_children == items

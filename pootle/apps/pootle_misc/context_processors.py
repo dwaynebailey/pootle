@@ -16,8 +16,12 @@ from staticpages.models import LegalPage
 def _agreement_context(request):
     """Returns whether the agreement box should be displayed or not."""
     request_path = request.META['PATH_INFO']
-    nocheck = filter(lambda x: request_path.startswith(x),
-                     settings.POOTLE_LEGALPAGE_NOCHECK_PREFIXES)
+    # filter() returns an iterator under Python 3, which is always
+    # truthy regardless of whether it actually has any matches - the
+    # `not nocheck` check below needs an actual emptiness check.
+    # Phase 1 Python 3 port; see PORTING.md.
+    nocheck = list(filter(lambda x: request_path.startswith(x),
+                          settings.POOTLE_LEGALPAGE_NOCHECK_PREFIXES))
 
     if (request.user.is_authenticated and not nocheck and
         LegalPage.objects.has_pending_agreement(request.user)):

@@ -6,7 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
-from mock import patch
+from unittest.mock import patch
 
 import pytest
 
@@ -18,7 +18,9 @@ from django.core.management.base import CommandError
 def test_cmd_purge_user_nouser():
     with pytest.raises(CommandError) as e:
         call_command('purge_user')
-    assert "too few arguments" in str(e)
+    assert (
+        "too few arguments" in str(e)
+        or "arguments are required" in str(e))
 
 
 @pytest.mark.cmd

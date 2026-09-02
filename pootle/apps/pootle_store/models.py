@@ -74,6 +74,7 @@ class QualityCheck(AbstractQualityCheck):
 
     def __unicode__(self):
         return self.name
+    __str__ = __unicode__
 
     @property
     def display_name(self):
@@ -142,7 +143,8 @@ class Suggestion(AbstractSuggestion):
     # # # # # # # # # # # # # #  Methods # # # # # # # # # # # # # # # # # # #
 
     def __unicode__(self):
-        return unicode(self.target)
+        return str(self.target)
+    __str__ = __unicode__
 
 
 # # # # # # # # Unit # # # # # # # # # #
@@ -214,10 +216,21 @@ class Unit(AbstractUnit):
 
     def __unicode__(self):
         # FIXME: consider using unit id instead?
-        return unicode(self.source)
+        return str(self.source)
 
-    def __str__(self):
-        return str(self.convert())
+    # Used to deliberately differ from __unicode__ (returning the
+    # full file-format-serialized unit via convert(), vs the plain
+    # source text) - a working, intentional split under Python 2's
+    # separate str()/unicode() protocols. Under Python 3 there's only
+    # one, and Django's own Model.__repr__ always calls str(self), so
+    # keeping __str__ as the "full serialized content" version meant
+    # repr(unit) (logging, debugger output, admin, ...) silently
+    # started dumping entire serialized units instead of a short
+    # summary - nothing in this codebase actually relied on str(unit)
+    # giving the serialized form (checked). Aliased to __unicode__
+    # instead, matching every other model in this codebase. Phase 1
+    # Python 3 port; see PORTING.md.
+    __str__ = __unicode__
 
     def __init__(self, *args, **kwargs):
         super(Unit, self).__init__(*args, **kwargs)
@@ -340,7 +353,7 @@ class Unit(AbstractUnit):
         return (
             "%s%s"
             % (self.store.get_translate_url(),
-               '#unit=%s' % unicode(self.id)))
+               '#unit=%s' % str(self.id)))
 
     def get_search_locations_url(self):
         (proj_code, dir_path,
@@ -457,10 +470,14 @@ class Unit(AbstractUnit):
             or (len(self.target.strings)
                 != stringcount(unit.target)))
         if update_target:
-            notempty = filter(None, self.target_f.strings)
+            # filter() returns an iterator under Python 3, which is
+            # always truthy regardless of whether it actually has any
+            # matches - the check below needs actual emptiness
+            # checks. Phase 1 Python 3 port; see PORTING.md.
+            notempty = any(filter(None, self.target_f.strings))
             self.target = unit.target
 
-            if filter(None, self.target_f.strings) or notempty:
+            if any(filter(None, self.target_f.strings)) or notempty:
                 # FIXME: we need to do this cause we discard nplurals for empty
                 # plurals
                 changed = True
@@ -503,7 +520,7 @@ class Unit(AbstractUnit):
 
         # this is problematic - it compares getid, but then sets getid *or* source
         if self.unitid != unit.getid():
-            self.unitid = unicode(unit.getid()) or unicode(unit.source)
+            self.unitid = str(unit.getid()) or str(unit.source)
             self.unitid_hash = md5(force_bytes(self.unitid)).hexdigest()
             changed = True
 
@@ -540,7 +557,7 @@ class Unit(AbstractUnit):
         checker = self.store.translation_project.checker
         qc_failures = checker.run_filters(self, categorised=True)
         checks_to_add = []
-        for name in qc_failures.iterkeys():
+        for name in qc_failures.keys():
             if name in existing:
                 # keep false-positive checks if check is active
                 if (existing[name]['false_positive'] and
@@ -670,7 +687,11 @@ class Unit(AbstractUnit):
     def getlocations(self):
         if self.locations is None:
             return []
-        return filter(None, self.locations.split('\n'))
+        # filter() returns an iterator under Python 3 (a list under
+        # Python 2); callers (e.g. translate-toolkit's addlocations())
+        # iterate this more than once / index into individual
+        # elements. Phase 1 Python 3 port; see PORTING.md.
+        return list(filter(None, self.locations.split('\n')))
 
     def addlocation(self, location):
         if self.locations is None:
@@ -692,7 +713,11 @@ class Unit(AbstractUnit):
         if value:
             self.state = FUZZY
         elif self.state <= FUZZY:
-            if filter(None, self.target_f.strings):
+            # filter() returns an iterator under Python 3,
+            # which is always truthy regardless of whether it
+            # actually has any matches. Phase 1 Python 3
+            # port; see PORTING.md.
+            if any(filter(None, self.target_f.strings)):
                 self.state = TRANSLATED
             else:
                 self.state = UNTRANSLATED
@@ -714,7 +739,9 @@ class Unit(AbstractUnit):
         if self.state > OBSOLETE:
             return
 
-        if filter(None, self.target_f.strings):
+        # See markfuzzy()'s comment on filter()'s Python 3
+        # truthiness change.
+        if any(filter(None, self.target_f.strings)):
             # when Unit toggles its OBSOLETE state the number of translated
             # words or fuzzy words also changes
             if is_fuzzy:
@@ -833,10 +860,17 @@ class Store(AbstractStore):
         super(Store, self).__init__(*args, **kwargs)
 
     def __unicode__(self):
-        return unicode(self.pootle_path)
+        return str(self.pootle_path)
 
-    def __str__(self):
-        return str(self.syncer.convert())
+    # Same __str__-vs-__unicode__ divergence as Unit above (full
+    # serialized content via convert(), vs the short pootle_path) -
+    # aliased to __unicode__ for the same reason: Django's
+    # Model.__repr__ always calls str(self), so keeping the full-
+    # content version broke repr(store) under Python 3's single
+    # string protocol, and nothing in this codebase relied on
+    # str(store) giving the serialized form (checked). Phase 1
+    # Python 3 port; see PORTING.md.
+    __str__ = __unicode__
 
     def save(self, *args, **kwargs):
         self.pootle_path = self.parent.pootle_path + self.name
@@ -913,7 +947,7 @@ class Store(AbstractStore):
 
     def findid_bulk(self, ids, unit_set=None):
         chunks = 200
-        for i in xrange(0, len(ids), chunks):
+        for i in range(0, len(ids), chunks):
             units = (unit_set or self.unit_set).filter(id__in=ids[i:i+chunks])
             for unit in units.iterator():
                 yield unit

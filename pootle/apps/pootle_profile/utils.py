@@ -104,7 +104,10 @@ class UserMembership(object):
 
     @property
     def teams(self):
-        return self.teams_and_permissions.keys()
+        # dict.keys() is a list under Python 2; keep this public
+        # property returning one for consistency. Phase 1 Python 3
+        # port; see PORTING.md.
+        return list(self.teams_and_permissions.keys())
 
     def get_permission_set(self):
         return self.user.permissionset_set.filter(

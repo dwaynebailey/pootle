@@ -6,7 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
-import urllib
+import urllib.parse as urllib
 
 from django import template
 from django.conf import settings

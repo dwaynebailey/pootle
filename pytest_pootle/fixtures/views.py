@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 import functools
-import urllib
+import urllib.parse as urllib
 from collections import OrderedDict
 from datetime import timedelta
 
@@ -381,7 +381,7 @@ def tp_uploads(request, client):
     updated_store = create_store(store.pootle_path, "0", updated_units)
     uploaded_file = SimpleUploadedFile(
         store.name,
-        str(updated_store),
+        bytes(updated_store),
         "text/x-gettext-translation"
     )
     response = client.post(

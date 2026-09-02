@@ -64,14 +64,14 @@ def po_directory(request, po_test_dir, settings):
 def tests_use_db(request):
     return bool(
         [item for item in request.node.items
-         if item.get_marker('django_db')])
+         if item.get_closest_marker('django_db')])
 
 
 @pytest.fixture(scope='session')
 def tests_use_vfolders(request):
     return bool(
         [item for item in request.node.items
-         if item.get_marker('pootle_vfolders')])
+         if item.get_closest_marker('pootle_vfolders')])
 
 
 @pytest.fixture(scope='session')
@@ -81,7 +81,7 @@ def tests_use_migration(request, tests_use_db):
         force_migration
         or (tests_use_db
             and [item for item in request.node.items
-                 if item.get_marker('django_migration')]))
+                 if item.get_closest_marker('django_migration')]))
 
 
 @pytest.fixture(autouse=True, scope='session')
@@ -245,6 +245,15 @@ def test_fs():
         def open(self, paths, *args, **kwargs):
             if isinstance(paths, (list, tuple)):
                 paths = os.path.join(*paths)
+            if not args and "mode" not in kwargs:
+                # Most callers read these fixture files straight into
+                # translate-toolkit's getclass(f)(f.read()) pattern,
+                # which needs bytes. Python 2's default text mode
+                # happened to still yield str==bytes; Python 3's
+                # doesn't. No caller relied on text mode (checked),
+                # so default to bytes here rather than fix every call
+                # site. Phase 1 Python 3 port; see PORTING.md.
+                kwargs["mode"] = "rb"
             return open(self.path(paths), *args, **kwargs)
 
     return TestFs()

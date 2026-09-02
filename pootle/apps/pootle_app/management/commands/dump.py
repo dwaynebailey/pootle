@@ -8,9 +8,12 @@
 
 
 import os
-import sys
-reload(sys)
-sys.setdefaultencoding('utf-8')
+
+# Python 2's default str encoding was ASCII, so this module used to
+# force UTF-8 via reload(sys); sys.setdefaultencoding('utf-8') - a
+# CPython-internal hack removed from Python 3 entirely, and
+# unnecessary there anyway since Python 3's default encoding is
+# always UTF-8. Phase 1 Python 3 port; see PORTING.md.
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'pootle.settings'
 

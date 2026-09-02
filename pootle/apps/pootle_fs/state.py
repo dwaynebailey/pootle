@@ -100,7 +100,7 @@ class FSItemState(ItemState):
     @cached_property
     def store_fs(self):
         store_fs = self.kwargs.get("store_fs")
-        if isinstance(store_fs, (int, long)):
+        if isinstance(store_fs, int):
             return StoreFS.objects.filter(pk=store_fs).first()
         return store_fs
 
@@ -111,7 +111,13 @@ class FSItemState(ItemState):
     def __gt__(self, other):
         if isinstance(other, self.__class__):
             return self.pootle_path > other.pootle_path
-        return object.__gt__(other)
+        if other is None:
+            # Callers (see tests/pootle_fs/fs_state.py) rely on any
+            # real item sorting after None, matching Python 2's
+            # cross-type ordering (`x > None` was always True for
+            # non-None x). Phase 1 Python 3 port; see PORTING.md.
+            return True
+        return NotImplemented
 
 
 class ProjectFSState(State):

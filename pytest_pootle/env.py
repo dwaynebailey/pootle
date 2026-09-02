@@ -43,7 +43,7 @@ class PootleTestEnv(object):
         po_file = os.path.join(
             os.path.dirname(pytest_pootle.__file__),
             *("data", "po", "complex.po"))
-        with open(po_file) as f:
+        with open(po_file, "rb") as f:
             ttk = getclass(f)(f.read())
 
         tp = TranslationProject.objects.get(
@@ -327,7 +327,7 @@ class PootleTestEnv(object):
         term_file = os.path.join(
             os.path.dirname(pytest_pootle.__file__),
             *("data", "po", "terminology.po"))
-        with open(term_file) as f:
+        with open(term_file, "rb") as f:
             term_ttk = getclass(f)(f.read())
         for language in Language.objects.all():
             tp = TranslationProjectFactory(

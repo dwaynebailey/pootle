@@ -10,11 +10,16 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def root():
+def root(django_db_setup, django_db_blocker):
     """Require the root directory."""
     from pootle_app.models import Directory
 
-    return Directory.objects.root
+    # Session-scoped fixture doing real DB access needs
+    # django_db_blocker.unblock() explicitly - see
+    # pytest_pootle/fixtures/models/permission.py's comment for why.
+    # Phase 1 Python 3 port; see PORTING.md.
+    with django_db_blocker.unblock():
+        return Directory.objects.root
 
 
 @pytest.fixture

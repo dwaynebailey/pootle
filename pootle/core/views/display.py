@@ -163,7 +163,7 @@ class StatsDisplay(object):
 
     def localize_stats(self, stats):
         for k in STAT_KEYS:
-            if k in stats and isinstance(stats[k], (int, long, float)):
+            if k in stats and isinstance(stats[k], (int, float)):
                 stats[k + '_display'] = formatter.number(stats[k])
 
     @cached_property

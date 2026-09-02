@@ -24,6 +24,7 @@ class StoreData(AbstractPootleData):
 
     def __unicode__(self):
         return self.store.pootle_path
+    __str__ = __unicode__
 
 
 class StoreChecksData(AbstractPootleChecksData):
@@ -41,6 +42,7 @@ class StoreChecksData(AbstractPootleChecksData):
 
     def __unicode__(self):
         return self.store.pootle_path
+    __str__ = __unicode__
 
 
 class TPData(AbstractPootleData):
@@ -56,6 +58,7 @@ class TPData(AbstractPootleData):
 
     def __unicode__(self):
         return self.tp.pootle_path
+    __str__ = __unicode__
 
 
 class TPChecksData(AbstractPootleChecksData):
@@ -73,3 +76,4 @@ class TPChecksData(AbstractPootleChecksData):
 
     def __unicode__(self):
         return self.tp.pootle_path
+    __str__ = __unicode__

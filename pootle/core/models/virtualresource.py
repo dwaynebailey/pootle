@@ -32,6 +32,7 @@ class VirtualResource(TreeItem):
 
     def __unicode__(self):
         return self.pootle_path
+    __str__ = __unicode__
 
     # # # TreeItem
 

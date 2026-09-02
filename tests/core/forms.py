@@ -84,9 +84,12 @@ def _test_batch(form, units):
     batch = form.batch()
     assert batch.number == form._page_no
     units_count = form.fields["units"].queryset.count()
+    # Python 2's `/` on two ints floor-divided, matching the intended
+    # ceil-division-by-hand formula here; Python 3's is true division.
+    # Phase 1 Python 3 port; see PORTING.md.
     assert (
         batch.paginator.num_pages
-        == ((units_count / form._results_per_page)
+        == ((units_count // form._results_per_page)
             + (1
                if units_count % form._results_per_page
                else 0)))
@@ -113,7 +116,7 @@ def test_form_formtable_bad():
     # now submit the form with units set but no action
     form = DummySearchFormtableForm(data=dict(units=[unit_id]))
     assert not form.is_valid()
-    assert form.errors.keys() == ["actions"]
+    assert list(form.errors.keys()) == ["actions"]
     _test_batch(form, Unit.objects.order_by("id"))
     assert form._page_no == 1
     assert form._results_per_page == 10

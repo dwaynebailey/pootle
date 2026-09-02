@@ -57,6 +57,15 @@ class Plugin(object):
             and self.project == other.project
             and self.name == other.name)
 
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__. Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it, making instances unhashable - and
+    # get_fs_path() below is memoized with @lru_cache, which hashes
+    # `self`. Consistent with __eq__: same (project, name) hashes the
+    # same. Phase 1 Python 3 port; see PORTING.md.
+    def __hash__(self):
+        return hash((self.project, self.name))
+
     def __str__(self):
         return "<%s(%s)>" % (self.__class__.__name__, self.project)
 
@@ -569,8 +578,12 @@ class Plugin(object):
                         save=False)
                     fs_to_update[store_fs.id] = store_fs
         if fs_to_update:
+            # bulk_update() (bulk_update.helper) indexes its first arg
+            # (objs[0]) - dict.values() is a list under Python 2 but
+            # an unindexable view under Python 3. Phase 1 Python 3
+            # port; see PORTING.md.
             bulk_update(
-                fs_to_update.values(),
+                list(fs_to_update.values()),
                 update_fields=[
                     "last_sync_revision", "last_sync_hash",
                     "resolve_conflict", "staged_for_merge"])

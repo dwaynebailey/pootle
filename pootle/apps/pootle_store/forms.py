@@ -70,7 +70,7 @@ class MultiStringWidgetMixin(object):
             return [string for string in value.strings]
         elif isinstance(value, list):
             return value
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             return [value]
 
         raise ValueError
@@ -87,7 +87,7 @@ class MultiStringWidget(MultiStringWidgetMixin, forms.MultiWidget):
         else:
             widget = forms.TextInput
 
-        widgets = [widget(attrs=attrs) for i_ in xrange(nplurals)]
+        widgets = [widget(attrs=attrs) for i_ in range(nplurals)]
         super(MultiStringWidget, self).__init__(widgets, attrs)
 
     def format_output(self, rendered_widgets):
@@ -109,7 +109,7 @@ class HiddenMultiStringWidget(MultiStringWidgetMixin, forms.MultiWidget):
     """Uses hidden input instead of textareas."""
 
     def __init__(self, attrs=None, nplurals=1):
-        widgets = [forms.HiddenInput(attrs=attrs) for i_ in xrange(nplurals)]
+        widgets = [forms.HiddenInput(attrs=attrs) for i_ in range(nplurals)]
         super(HiddenMultiStringWidget, self).__init__(widgets, attrs)
 
     def format_output(self, rendered_widgets):

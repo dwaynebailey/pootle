@@ -26,6 +26,11 @@ class BaseProxy(object):
 
     def __nonzero__(self):
         return bool(object.__getattribute__(self, "_obj"))
+    # __nonzero__ is Python 2's name for the boolean-coercion hook;
+    # Python 3 only looks for __bool__. Not in _special_names (so not
+    # dynamically proxied per-subclass either) - needs its own alias
+    # here. Phase 1 Python 3 port; see PORTING.md.
+    __bool__ = __nonzero__
 
     def __str__(self):
         return str(object.__getattribute__(self, "_obj"))

@@ -8,6 +8,7 @@
 
 import json
 import operator
+from functools import reduce
 
 from django.db.models import ObjectDoesNotExist, ProtectedError, Q
 from django.forms.models import modelform_factory
@@ -66,8 +67,13 @@ class APIView(View):
         methods = [m for m in self.http_method_names if hasattr(self, m)]
 
         if self.restrict_to_methods is not None:
-            restricted_to = map(lambda x: x.lower(), self.restrict_to_methods)
-            methods = filter(lambda x: x in restricted_to, methods)
+            # map()/filter() return one-shot iterators under Python 3.
+            # `x in restricted_to` inside the filter() lambda would
+            # exhaust restricted_to after the first membership test,
+            # silently treating every later method as excluded.
+            # Phase 1 Python 3 port; see PORTING.md.
+            restricted_to = [x.lower() for x in self.restrict_to_methods]
+            methods = [x for x in methods if x in restricted_to]
 
         return methods
 
@@ -204,7 +210,11 @@ class APIView(View):
                 obj.delete()
                 return JsonResponse(output)
             except ProtectedError as e:
-                return self.status_msg(e[0], status=405)
+                # e[0] indexed straight into the exception (its
+                # .args[0], the message) - Python 2 supported this
+                # (deprecated), Python 3 doesn't. Phase 1 Python 3
+                # port; see PORTING.md.
+                return self.status_msg(e.args[0], status=405)
 
         raise Http404
 
@@ -265,7 +275,11 @@ class APIView(View):
             if self.config:
                 self.serialize_config(info, item)
         return {
-            'models': result.values(),
+            # dict.values() is a list under Python 2 but an
+            # unserializable view under Python 3 - this feeds
+            # straight into JsonResponse. Phase 1 Python 3 port; see
+            # PORTING.md.
+            'models': list(result.values()),
             'count': queryset.count()}
 
     def qs_to_values(self, queryset, single_object=False):

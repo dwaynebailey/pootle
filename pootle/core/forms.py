@@ -76,7 +76,7 @@ class MathCaptchaForm(forms.Form):
     http://www.mysoftparade.com/blog/improved-mathematical-captcha/
     """
 
-    A_RE = re.compile("^(\d+)$")
+    A_RE = re.compile(r"^(\d+)$")
 
     captcha_answer = forms.CharField(
         max_length=2, required=True,
@@ -122,14 +122,26 @@ class MathCaptchaForm(forms.Form):
         return ("%s+%s" % (a, b), a+b)
 
     def _make_token(self, q, a, expires):
-        data = base64.urlsafe_b64encode(jsonify({'q': q, 'expires': expires}))
+        # base64.urlsafe_b64encode() needs bytes, not the str
+        # jsonify() returns; the result is then concatenated with
+        # _sign()'s str (a hexdigest), so decode it straight back to
+        # str (ascii-safe: base64's own alphabet) rather than leaving
+        # a str+bytes mismatch. _parse_token() below slices this same
+        # string by character position, so it needs to stay str
+        # end-to-end. Phase 1 Python 3 port; see PORTING.md.
+        data = base64.urlsafe_b64encode(
+            jsonify({'q': q, 'expires': expires}).encode('utf-8')
+        ).decode('ascii')
         return self._sign(q, a, expires) + data
 
     def _sign(self, q, a, expires):
         plain = [getattr(settings, 'SITE_URL', ''), settings.SECRET_KEY,
                  q, a, expires]
         plain = "".join([str(p) for p in plain])
-        return sha1(plain).hexdigest()
+        # hashlib needs bytes under Python 3, not the str this builds
+        # up (was bytes already under Python 2). Phase 1 Python 3
+        # port; see PORTING.md.
+        return sha1(plain.encode('utf-8')).hexdigest()
 
     @property
     def plain_question(self):

@@ -10,8 +10,6 @@ import fnmatch
 import os
 import re
 
-import scandir
-
 from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
 from django.utils.lru_cache import lru_cache
@@ -22,11 +20,11 @@ from .apps import PootleFSConfig
 
 
 PATH_MAPPING = (
-    (".", "\."),
-    ("<language_code>", "(?P<language_code>[\w\@\-\.]*)"),
-    ("<filename>", "(?P<filename>[\w\-\.]*)"),
+    (r".", r"\."),
+    (r"<language_code>", r"(?P<language_code>[\w\@\-\.]*)"),
+    (r"<filename>", r"(?P<filename>[\w\-\.]*)"),
     ("/<dir_path>/", "/<dir_path>"),
-    ("<dir_path>", "(?P<dir_path>[\w\/\-]*?)"))
+    (r"<dir_path>", r"(?P<dir_path>[\w\/\-]*?)"))
 
 DEFAULT_EXTENSIONS = ("po", "pot")
 
@@ -79,7 +77,7 @@ class TranslationFileFinder(object):
 
     def walk(self):
         """Walk a filesystem"""
-        for root, dirs_, files in scandir.walk(self.file_root):
+        for root, dirs_, files in os.walk(self.file_root):
             for filename in files:
                 yield os.path.join(root, filename)
 
@@ -203,9 +201,9 @@ class TranslationMappingValidator(object):
 
     def validate_path(self):
         if os.path.sep == "\\":
-            bad_chars = re.search("[^\w\\\:\-\.]+", self.stripped_path)
+            bad_chars = re.search(r"[^\w\\:\-\.]+", self.stripped_path)
         else:
-            bad_chars = re.search("[^\w\/\-\.]+", self.stripped_path)
+            bad_chars = re.search(r"[^\w\/\-\.]+", self.stripped_path)
         if bad_chars:
             raise ValidationError(
                 "Invalid character in translation_mapping '%s'"

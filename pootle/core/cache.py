@@ -25,7 +25,7 @@ def make_method_key(model, method, key):
     """
     prefix = 'method-cache'
 
-    if isinstance(model, basestring):
+    if isinstance(model, str):
         name = model
     else:
         name = (model.__name__
@@ -39,7 +39,7 @@ def make_method_key(model, method, key):
 def make_key(*args, **kwargs):
     """Creates a cache key with key-value pairs from a dict."""
     return ':'.join([
-        '%s=%s' % (k, v) for k, v in sorted(kwargs.iteritems())
+        '%s=%s' % (k, v) for k, v in sorted(kwargs.items())
     ])
 
 

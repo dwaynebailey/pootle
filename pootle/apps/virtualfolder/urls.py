@@ -25,5 +25,5 @@ vfolder_urlpatterns = [
 
 
 urlpatterns = [
-    url("^\+\+vfolder/(?P<vfolder_name>[^/]*)/", include(vfolder_urlpatterns)),
-    url("^\+\+vfolder/(?P<vfolder_name>[^/]*)/", include(unit_xhr_urlpatterns))]
+    url(r"^\+\+vfolder/(?P<vfolder_name>[^/]*)/", include(vfolder_urlpatterns)),
+    url(r"^\+\+vfolder/(?P<vfolder_name>[^/]*)/", include(unit_xhr_urlpatterns))]

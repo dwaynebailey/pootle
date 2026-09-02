@@ -27,7 +27,7 @@ def store_fs_file(settings, tmpdir, test_fs):
     fs_file = FSFile(store_fs)
     os.makedirs(os.path.dirname(fs_file.file_path))
     with test_fs.open("data/po/complex.po") as src:
-        with open(fs_file.file_path, "w") as target:
+        with open(fs_file.file_path, "wb") as target:
             data = src.read()
             target.write(data)
     return fs_file

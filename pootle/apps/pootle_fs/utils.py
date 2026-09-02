@@ -18,7 +18,46 @@ from .delegate import fs_plugins
 class PathFilter(object):
 
     def path_regex(self, path):
-        return translate(path).replace("\Z(?ms)", "$")
+        # fnmatch.translate()'s output format changed: Python 2 ended
+        # every pattern with the literal suffix "\Z(?ms)" (an anchor
+        # plus trailing inline flags); Python 3.6+ instead wraps the
+        # whole body in a scoped "(?s:...)" group and ends with just
+        # "\Z". Callers of path_regex() strip trailing anchors
+        # themselves (see _tp_path_regex() below) so they can append
+        # their own suffix - stripping the old Python 2 string here
+        # was always a no-op replace under Python 3, silently leaving
+        # a stray mid-pattern "\Z" that made every match impossible.
+        # Phase 1 Python 3 port; see PORTING.md.
+        pattern = translate(path).replace(r"\Z", "$")
+        # These patterns get sent straight through to the database as
+        # a regex lookup (pootle_path__regex / path__regex), not run
+        # through Python's re module - and "(?s:...)" is Python re's
+        # own syntax for a scoped inline-flags group, not portable:
+        # MySQL/MariaDB's PCRE-based REGEXP accepts it, but
+        # PostgreSQL's regex engine doesn't support the
+        # "(?flags:pattern)" form at all and raises "invalid regular
+        # expression: quantifier operand invalid" on every query that
+        # uses one. None of these glob-derived patterns need DOTALL
+        # (paths don't contain newlines), so it's safe to just unwrap
+        # the group rather than translate it to each backend's own
+        # inline-flag syntax. Found running Phase 1's postgres
+        # validation pass. Phase 1 Python 3 port; see PORTING.md.
+        if pattern.startswith("(?s:") and pattern.endswith(")$"):
+            pattern = pattern[len("(?s:"):-len(")$")] + "$"
+        # Python 3.11+'s fnmatch.translate() also wraps runs of "*"
+        # in an atomic group, "(?>...)", to avoid catastrophic
+        # backtracking on adversarial input - another Perl/PCRE
+        # extension PostgreSQL's regex engine doesn't support (same
+        # "quantifier operand invalid" error as the (?s:...) case
+        # above, just from a group that can appear anywhere in the
+        # pattern rather than only wrapping the whole thing, so it
+        # can't be unwrapped the same way). Downgrading to a plain
+        # non-capturing group is semantically identical for matching
+        # purposes - only the backtracking-safety optimization is
+        # lost, which doesn't matter for these short, bounded,
+        # glob-derived patterns. Phase 1 Python 3 port; see PORTING.md.
+        pattern = pattern.replace("(?>", "(?:")
+        return pattern
 
 
 class StorePathFilter(PathFilter):
@@ -92,6 +131,15 @@ class FSPlugin(object):
 
     def __eq__(self, other):
         return self.plugin.__eq__(other)
+
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__; Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it - and __getattr__ isn't consulted
+    # for implicit dunder lookups like hash(), so it has to be
+    # explicit here too, delegating like __eq__ does. Phase 1 Python
+    # 3 port; see PORTING.md.
+    def __hash__(self):
+        return self.plugin.__hash__()
 
     def __str__(self):
         return str(self.plugin)

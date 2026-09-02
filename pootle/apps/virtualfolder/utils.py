@@ -232,7 +232,10 @@ class DirectoryVFDataTool(RelatedStoresDataTool):
             vf.name: vf
             for vf
             in VirtualFolder.objects.filter(name__in=stats.keys())}
-        for k, v in stats.items():
+        # dict.items() is a live view under Python 3 - deleting from
+        # stats while iterating it directly raises RuntimeError.
+        # Phase 1 Python 3 port; see PORTING.md.
+        for k, v in list(stats.items()):
             vfolder = vfolders.get(k)
             stats[k]["priority"] = vfolder.priority
             stats[k]["isVisible"] = (

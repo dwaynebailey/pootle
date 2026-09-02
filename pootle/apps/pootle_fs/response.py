@@ -125,4 +125,7 @@ class ProjectFSResponse(Response):
 
     @property
     def response_types(self):
-        return FS_RESPONSE.keys()
+        # dict.keys() is a list under Python 2; keep this public
+        # property returning one for consistency. Phase 1 Python 3
+        # port; see PORTING.md.
+        return list(FS_RESPONSE.keys())

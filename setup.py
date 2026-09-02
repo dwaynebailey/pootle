@@ -10,14 +10,17 @@
 import os
 import re
 import sys
+
+# setuptools must be imported before distutils: current setuptools shims
+# `import distutils` to its own vendored copy (stdlib distutils was
+# removed entirely in Python 3.12), and only does so once it's been
+# imported itself first.
+from setuptools import find_packages, setup
+from setuptools.command.test import test as TestCommand
 from distutils import log
 from distutils.command.build import build as DistutilsBuild
 from distutils.core import Command
 from distutils.errors import DistutilsOptionError
-
-from pkg_resources import parse_version, require
-from setuptools import find_packages, setup
-from setuptools.command.test import test as TestCommand
 
 from pootle import __version__
 from pootle.constants import DJANGO_MINIMUM_REQUIRED_VERSION
@@ -27,16 +30,10 @@ from pootle.core.utils import version
 README_FILE = 'README.rst'
 
 
-def check_pep440_versions():
-    if require('setuptools')[0].parsed_version < parse_version('18.5'):
-        exit("setuptools %s is incompatible with Pootle. Please upgrade "
-             "using:\n"
-             "'pip install --upgrade setuptools'"
-             % require('setuptools')[0].version)
-    if require('pip')[0].parsed_version < parse_version('6.0'):
-        exit("pip %s is incompatible with Pootle. Please upgrade "
-             "using:\n"
-             "'pip install --upgrade pip'" % require('pip')[0].version)
+# The old check_pep440_versions() guard here (setuptools>=18.5, pip>=6.0)
+# is long since trivially satisfied by any supported toolchain, and
+# depended on pkg_resources, which current setuptools no longer ships by
+# default - removed rather than replaced. Found porting to Python 3.
 
 
 def parse_requirements(file_name, recurse=False):
@@ -266,7 +263,7 @@ class BuildChecksTemplatesCommand(Command):
             """
             # Provide a header with an anchor to refer to.
             description = ('\n<h3 id="%s">%s</h3>\n\n' %
-                           (name, unicode(CHECK_NAMES[name])))
+                           (name, str(CHECK_NAMES[name])))
 
             # Clean the leading whitespace on each docstring line so it gets
             # properly rendered.
@@ -403,9 +400,6 @@ def parse_long_description(filename, tag=False):
     adjust_installation_command()
     replace_urls()
     return "".join(readme_lines)
-
-
-check_pep440_versions()
 
 
 dependency_links = []

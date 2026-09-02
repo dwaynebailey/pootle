@@ -6,6 +6,8 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+import functools
+
 from django.contrib.auth import get_user_model
 from django.utils.functional import cached_property
 
@@ -29,10 +31,30 @@ class LogEvent(object):
         self.revision = revision
 
 
+@functools.total_ordering
 class ComparableLogEvent(BaseProxy):
 
     _special_names = (x for x in BaseProxy._special_names
                       if x not in ["__lt__", "__gt__", "__call__"])
+
+    # __cmp__ was Python 2's three-way comparison protocol - removed
+    # entirely in Python 3, which only looks for __lt__/__eq__ (etc).
+    # __lt__/__eq__ below delegate to it unchanged, and
+    # @functools.total_ordering derives __le__/__gt__/__ge__ from
+    # those two, so __cmp__'s actual ordering logic didn't need to
+    # change. Phase 1 Python 3 port; see PORTING.md.
+    #
+    # Called as ComparableLogEvent.__cmp__(self, other), not
+    # self.__cmp__(other): BaseProxy.__getattribute__ redirects
+    # *every* instance attribute lookup - including a plain `self.x`
+    # from inside one of this class's own methods - to the wrapped
+    # object, which has no __cmp__ of its own. Looking it up on the
+    # class explicitly bypasses that redirection.
+    def __lt__(self, other):
+        return ComparableLogEvent.__cmp__(self, other) < 0
+
+    def __eq__(self, other):
+        return ComparableLogEvent.__cmp__(self, other) == 0
 
     def __cmp__(self, other):
         # valuable revisions are authoritative

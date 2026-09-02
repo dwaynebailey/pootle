@@ -225,7 +225,11 @@ class FSProjectStateResources(object):
         cache_reload = [
             "context", "pootle_path", "fs_path",
             "cache_key", "sync_revision", "fs_revision"]
-        for k, v_ in self.__dict__.items():
+        # dict.items() is a live view under Python 3 (a list snapshot
+        # under Python 2) - deleting from self.__dict__ while
+        # iterating it directly raises RuntimeError. Phase 1 Python 3
+        # port; see PORTING.md.
+        for k, v_ in list(self.__dict__.items()):
             if k in cache_reload:
                 continue
             del self.__dict__[k]

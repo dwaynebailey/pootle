@@ -8,8 +8,8 @@
 
 import os
 import re
-import urllib
-import urlparse
+import urllib.parse as urllib
+import urllib.parse as urlparse
 
 from django.urls import reverse
 

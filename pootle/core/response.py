@@ -89,7 +89,10 @@ class Response(object):
 
     @property
     def response_types(self):
-        return self.__responses__.keys()
+        # dict.keys() is a list under Python 2; keep this public
+        # property returning one for consistency. Phase 1 Python 3
+        # port; see PORTING.md.
+        return list(self.__responses__.keys())
 
     @property
     def success(self):

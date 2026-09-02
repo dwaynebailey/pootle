@@ -24,4 +24,6 @@ conf_files_path = os.path.join(WORKING_DIR, 'settings', '*.conf')
 conf_files = sorted(glob.glob(conf_files_path))
 
 for f in conf_files:
-    execfile(os.path.abspath(f))
+    conf_path = os.path.abspath(f)
+    with open(conf_path, encoding='utf-8') as conf_fh:
+        exec(compile(conf_fh.read(), conf_path, 'exec'), globals())

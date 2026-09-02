@@ -6,6 +6,8 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+from functools import reduce
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -63,6 +65,7 @@ class AbstractPage(models.Model):
 
     def __unicode__(self):
         return self.virtual_path
+    __str__ = __unicode__
 
     def save(self, **kwargs):
         # Update the `modified_on` timestamp only when specific fields change.
@@ -82,7 +85,7 @@ class AbstractPage(models.Model):
         """Returns the sum of all the highest PKs for each submodel."""
         return reduce(
             lambda x, y: x + y,
-            [int(p.objects.aggregate(Max('pk')).values()[0] or 0)
+            [int(list(p.objects.aggregate(Max('pk')).values())[0] or 0)
              for p in AbstractPage.__subclasses__()],
         )
 
@@ -157,6 +160,7 @@ class Agreement(models.Model):
 
     def __unicode__(self):
         return u'%s (%s@%s)' % (self.document, self.user, self.agreed_on)
+    __str__ = __unicode__
 
     def save(self, **kwargs):
         # When updating always explicitly renew agreement date

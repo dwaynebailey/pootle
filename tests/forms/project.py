@@ -19,7 +19,7 @@ from pootle_project.models import (PROJECT_CHECKERS, RESERVED_PROJECT_CODES,
 def test_clean_code_invalid(reserved_code, format_registry):
     form_data = {
         'code': reserved_code,
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_mapping': "/<language_code>.<ext>",
@@ -36,7 +36,7 @@ def test_clean_code_invalid(reserved_code, format_registry):
 def test_clean_code_blank_invalid(format_registry):
     form_data = {
         'code': '  ',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo",
@@ -53,7 +53,7 @@ def test_clean_code_blank_invalid(format_registry):
 def test_clean_localfiletype_invalid(format_registry):
     form_data = {
         'code': 'foo',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo",
@@ -71,7 +71,7 @@ def test_project_form_bad_filetype_removal(format_registry):
     form_data = {
         'fullname': "Project 0",
         'code': "project0",
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'disabled': False,
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}project0",
@@ -96,7 +96,7 @@ def test_project_form_change_filetypes(format_registry):
     form_data = {
         'fullname': "Project 0",
         'code': "project0",
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'disabled': False,
         'filetypes': filetypes,
         'fs_plugin': "localfs",
@@ -119,7 +119,7 @@ def test_project_form_change_filetypes(format_registry):
 def test_form_project_plugin_missing(format_registry):
     form_data = {
         'code': 'foo0',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo0",
         'fs_mapping': "/<language_code>.<ext>",
@@ -135,7 +135,7 @@ def test_form_project_plugin_missing(format_registry):
 def test_form_project_plugin_invalid(format_registry):
     form_data = {
         'code': 'foo0',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "DOES NOT EXIST",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo0",
@@ -152,7 +152,7 @@ def test_form_project_plugin_invalid(format_registry):
 def test_form_project_fs_url(format_registry):
     form_data = {
         'code': 'foo0',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo0",
@@ -167,18 +167,18 @@ def test_form_project_fs_url(format_registry):
     form_data["fs_url"] = "foo/bar/baz"
     form = ProjectForm(form_data)
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_url"]
+    assert list(form.errors.keys()) == ["fs_url"]
     form_data["fs_url"] = ""
     form = ProjectForm(form_data)
     assert not form.is_valid()
-    assert form.errors.keys() == ["fs_url"]
+    assert list(form.errors.keys()) == ["fs_url"]
 
 
 @pytest.mark.django_db
 def test_form_project_fs_mapping(format_registry):
     form_data = {
         'code': 'foo0',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo0",
@@ -205,7 +205,7 @@ def test_form_project_fs_mapping(format_registry):
 def test_form_project_template_name(format_registry):
     form_data = {
         'code': 'foo0',
-        'checkstyle': PROJECT_CHECKERS.keys()[0],
+        'checkstyle': list(PROJECT_CHECKERS.keys())[0],
         'fullname': 'Foo',
         'fs_plugin': "localfs",
         'fs_url': "{POOTLE_TRANSLATION_DIRECTORY}foo0",

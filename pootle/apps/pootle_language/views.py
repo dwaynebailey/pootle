@@ -6,6 +6,8 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+from functools import cmp_to_key
+
 from django.contrib import messages
 from django.http import Http404
 from django.shortcuts import redirect, render
@@ -83,7 +85,7 @@ class LanguageBrowseView(LanguageMixin, PootleBrowseView):
         items = [make_project_item(tp)
                  for tp in self.object.get_children_for_user(self.request.user)]
         items = self.add_child_stats(items)
-        items.sort(cmp_by_last_activity)
+        items.sort(key=cmp_to_key(cmp_by_last_activity))
         return items
 
     @property

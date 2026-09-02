@@ -100,4 +100,4 @@ def cmp_by_last_activity(x, y):
         val_x = x['stats']['last_submission']['mtime']
     if 'stats' in y and 'last_submission' in y['stats']:
         val_y = y['stats']['last_submission']['mtime']
-    return cmp(val_y, val_x)
+    return (val_y > val_x) - (val_y < val_x)

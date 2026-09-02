@@ -65,7 +65,7 @@ class Command(BaseCommand):
                             except Exception as e:
                                 self.stderr.write("Warning: %s" % (e))
             else:
-                with open(filename, "r") as f:
+                with open(filename, "rb") as f:
                     try:
                         import_file(f, user=user)
                     except Exception as e:

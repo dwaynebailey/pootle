@@ -31,7 +31,7 @@ def test_no_providers():
 
     results = provider_test.gather()
     assert isinstance(results, GatheredDict)
-    assert results.keys() == []
+    assert list(results.keys()) == []
 
 
 def test_provider_with_arg():
@@ -270,8 +270,8 @@ def test_provider_caching_no_receiver():
 
     provider_test = Provider(use_caching=True)
 
-    assert provider_test.gather(Sender).keys() == []
-    assert provider_test.gather(Sender).keys() == []
+    assert list(provider_test.gather(Sender).keys()) == []
+    assert list(provider_test.gather(Sender).keys()) == []
 
     class NotSender(object):
         pass
@@ -280,5 +280,5 @@ def test_provider_caching_no_receiver():
     def provider_for_test(sender, *args, **kwargs):
         return dict(foo="bar")
 
-    assert provider_test.gather(NotSender).keys() == []
-    assert provider_test.gather(NotSender).keys() == []
+    assert list(provider_test.gather(NotSender).keys()) == []
+    assert list(provider_test.gather(NotSender).keys()) == []

@@ -10,7 +10,7 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def submissions():
+def submissions(django_db_setup, django_db_blocker):
     """A dictionary of submission.id, submission for all
     submissions created in test env
 
@@ -20,8 +20,13 @@ def submissions():
 
     select_related = (
         "unit", "quality_check", "submitter", "suggestion")
-    return {
-        s.id: s
-        for s
-        in Submission.objects.select_related(
-            *select_related).iterator()}
+    # Session-scoped fixture doing real DB access needs
+    # django_db_blocker.unblock() explicitly - see
+    # pytest_pootle/fixtures/models/permission.py's comment for why.
+    # Phase 1 Python 3 port; see PORTING.md.
+    with django_db_blocker.unblock():
+        return {
+            s.id: s
+            for s
+            in Submission.objects.select_related(
+                *select_related).iterator()}

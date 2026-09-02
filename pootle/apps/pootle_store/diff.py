@@ -249,8 +249,21 @@ class StoreDiff(object):
     def new_unit_list(self):
         # If source_revision is gte than the target_revision then new unit list
         # will be exactly what is in the file
-        if self.source_revision >= self.target_revision:
-            return self.source_units.keys()
+        #
+        # source_revision defaults to None (see StoreDiff.__init__/
+        # StoreUpdater._update()'s store_revision=None default).
+        # target_revision is always an int (get_target_revision() ors
+        # with 0). Python 2's cross-type ordering made `None >= int`
+        # always False; Python 3 raises TypeError instead, so the
+        # None case is made explicit here to keep the same behaviour.
+        # Phase 1 Python 3 port; see PORTING.md.
+        if (self.source_revision is not None
+                and self.source_revision >= self.target_revision):
+            # difflib.SequenceMatcher (see opcodes below) needs an
+            # indexable sequence; dict.keys() is a list under Python
+            # 2 but an unindexable view under Python 3. Phase 1
+            # Python 3 port; see PORTING.md.
+            return list(self.source_units.keys())
 
         # These units are kept as they have been updated since source_revision
         # but do not appear in the file
@@ -266,9 +279,14 @@ class StoreDiff(object):
 
     @cached_property
     def obsoleted_target_units(self):
+        # self.source_revision defaults to None; Python 2's cross-type
+        # ordering made `int > None` always True (matching "no
+        # baseline yet, so everything counts"). Phase 1 Python 3
+        # port; see PORTING.md.
         return [unitid for unitid, unit in self.target_units.items()
                 if (unit['state'] == OBSOLETE
-                    and unit["revision"] > self.source_revision)]
+                    and (self.source_revision is None
+                         or unit["revision"] > self.source_revision))]
 
     @cached_property
     def opcodes(self):
@@ -279,8 +297,10 @@ class StoreDiff(object):
 
     @cached_property
     def updated_target_units(self):
+        # See obsoleted_target_units() above for why the None check.
         return [unitid for unitid, unit in self.target_units.items()
-                if (unit['revision'] > self.source_revision
+                if ((self.source_revision is None
+                     or unit['revision'] > self.source_revision)
                     and unit["state"] != OBSOLETE)]
 
     def diff(self):

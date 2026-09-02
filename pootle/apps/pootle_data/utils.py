@@ -437,10 +437,23 @@ class RelatedStoresDataTool(DataTool):
                 agg[k] += child[k]
             if child.get("last_created_unit"):
                 last_created = child["last_created_unit"]
-                if last_created["creation_time"] > last_created_unit_time:
+                # Python 2's cross-type ordering made `x > None` True
+                # for any non-None x, which is exactly the "first
+                # real value always wins" behaviour these two
+                # accumulators rely on; Python 3 raises TypeError
+                # instead. Phase 1 Python 3 port; see PORTING.md.
+                if (last_created_unit_time is None
+                        or last_created["creation_time"] > last_created_unit_time):
                     latest["last_created_unit"] = last_created
                     last_created_unit_time = last_created["creation_time"]
-            if child["last_submission__pk"] > last_submission_pk:
+            # child["last_submission__pk"] is None for a child with no
+            # submissions at all - such a child should never become
+            # the new max, just as last_submission_pk being None (no
+            # winner yet) should never block a real value from
+            # winning. Phase 1 Python 3 port; see PORTING.md.
+            if (child["last_submission__pk"] is not None
+                    and (last_submission_pk is None
+                         or child["last_submission__pk"] > last_submission_pk)):
                 latest['last_submission'] = child["last_submission"]
                 last_submission_pk = child["last_submission__pk"]
             del child["last_submission__pk"]

@@ -35,11 +35,14 @@ def _file_belongs_to_project(project, filename):
 
 def _detect_treestyle_and_path(Config, Language, project, proj_trans_path):
     dirlisting = os.walk(proj_trans_path)
-    dirpath_, dirnames, filenames = dirlisting.next()
+    # generator.next() was Python 2's method-call spelling; Python 3
+    # only supports the next(generator) builtin. Phase 1 Python 3
+    # port; see PORTING.md.
+    dirpath_, dirnames, filenames = next(dirlisting)
 
     if not dirnames:
         # No subdirectories
-        if filter(partial(_file_belongs_to_project, project), filenames):
+        if list(filter(partial(_file_belongs_to_project, project), filenames)):
             # Translation files found, assume gnu
             return "gnu", ""
 
@@ -53,19 +56,23 @@ def _detect_treestyle_and_path(Config, Language, project, proj_trans_path):
             "value", flat=True).first()
     if lang_mapping_config:
         languages |= set(json.loads(lang_mapping_config).keys())
-    has_subdirs = filter(
+    # filter() returns an iterator under Python 3, which is always
+    # truthy regardless of whether it actually has any matches - the
+    # `if has_subdirs:` below needs an actual emptiness check.
+    # Phase 1 Python 3 port; see PORTING.md.
+    has_subdirs = list(filter(
         (lambda dirname: (
             (dirname == 'templates'
              or langcode_re.match(dirname))
             and dirname in languages)),
-        dirnames)
+        dirnames))
     if has_subdirs:
         return "nongnu", None
 
     # No language subdirs found, look for any translation file
     # in subdirs
     for dirpath_, dirnames, filenames in os.walk(proj_trans_path):
-        if filter(partial(_file_belongs_to_project, project), filenames):
+        if list(filter(partial(_file_belongs_to_project, project), filenames)):
             return "gnu", dirpath_.replace(proj_trans_path, "")
     # Unsure
     return "nongnu", None
@@ -144,7 +151,7 @@ def convert_to_localfs(apps, schema_editor):
         if project.disabled:
             continue
         if not os.path.exists(proj_trans_path):
-            logger.warn(
+            logger.warning(
                 "Missing project ('%s') translation directory '%s', "
                 "skipped adding tracking",
                 project.code,
@@ -162,7 +169,7 @@ def convert_to_localfs(apps, schema_editor):
                     proj_trans_path,
                     filepath.lstrip("/")))
             if not os.path.exists(fullpath):
-                logger.warn(
+                logger.warning(
                     "No file found at '%s', not adding tracking",
                     fullpath)
                 continue

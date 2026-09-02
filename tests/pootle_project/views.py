@@ -6,6 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+import functools
 import json
 
 import pytest
@@ -60,7 +61,7 @@ def _test_view_project_children(view, project):
     for item in items:
         if item["code"] in stats["children"]:
             item["stats"] = stats["children"][item["code"]]
-    items.sort(cmp_by_last_activity)
+    items.sort(key=functools.cmp_to_key(cmp_by_last_activity))
     assert view.object_children == items
 
 
@@ -122,7 +123,7 @@ def test_view_project_set_children(project0, store0, rf, request_users):
         for project
         in view.object.children]
     view.add_child_stats(items)
-    items.sort(cmp_by_last_activity)
+    items.sort(key=functools.cmp_to_key(cmp_by_last_activity))
     assert view.object_children == items
 
 

@@ -9,7 +9,7 @@
 
 import os
 
-from mock import PropertyMock, patch
+from unittest.mock import PropertyMock, patch
 
 import pytest
 
@@ -76,7 +76,7 @@ def test_wrap_store_fs(valid_mock, settings, tmpdir):
     testdict[fs_file] = "foo"
     testdict[FSFile(store_fs)] = "bar"
     assert len(testdict.keys()) == 1
-    assert testdict.values()[0] == "bar"
+    assert list(testdict.values())[0] == "bar"
 
 
 @patch("pootle_fs.files.FSFile._validate_store_fs")
@@ -167,7 +167,7 @@ def test_wrap_store_fs_pull(store_fs_file):
 @pytest.mark.django_db
 def test_wrap_store_fs_read(store_fs_file):
     fs_file = store_fs_file
-    with open(fs_file.file_path, "r") as src:
+    with open(fs_file.file_path, "rb") as src:
         assert fs_file.read() == src.read()
     fs_file.remove_file()
     assert fs_file.read() is None
@@ -240,11 +240,11 @@ def test_wrap_store_fs_pull_merge_pootle_wins(store_fs_file):
     unit = fs_file.store.units[0]
     unit.target = "FOO"
     unit.save()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     assert fs_file.fs_changed is True
     assert fs_file.pootle_changed is True
@@ -262,11 +262,11 @@ def test_wrap_store_fs_pull_merge_pootle_wins_again(store_fs_file):
     unit = fs_file.store.units[0]
     unit.target = "FOO"
     unit.save()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     assert fs_file.fs_changed is True
     assert fs_file.pootle_changed is True
@@ -282,11 +282,11 @@ def test_wrap_store_fs_pull_merge_fs_wins(store_fs_file):
     unit = fs_file.store.units[0]
     unit.target = "FOO"
     unit.save()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     assert fs_file.fs_changed is True
     assert fs_file.pootle_changed is True
@@ -302,11 +302,11 @@ def test_wrap_store_fs_pull_merge_fs_wins_again(store_fs_file):
     unit = fs_file.store.units[0]
     unit.target = "FOO"
     unit.save()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     assert fs_file.fs_changed is True
     assert fs_file.pootle_changed is True
@@ -322,11 +322,11 @@ def test_wrap_store_fs_pull_merge_default(store_fs_file):
     unit = fs_file.store.units[0]
     unit.target = "FOO"
     unit.save()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     assert fs_file.fs_changed is True
     assert fs_file.pootle_changed is True
@@ -339,11 +339,11 @@ def test_wrap_store_fs_pull_merge_default(store_fs_file):
 def test_wrap_store_fs_pull_submission_type(store_fs_file_store):
     fs_file = store_fs_file_store
     fs_file.push()
-    with open(fs_file.file_path, "r+") as target:
+    with open(fs_file.file_path, "rb+") as target:
         ttk = getclass(target)(target.read())
         target.seek(0)
         ttk.units[1].target = "BAR"
-        target.write(str(ttk))
+        target.write(bytes(ttk))
         target.truncate()
     fs_file.pull()
     assert (

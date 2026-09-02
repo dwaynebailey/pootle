@@ -168,8 +168,7 @@ class VFoldersDataView(object):
         items = [make_vfolder_dict(self.context, *vf)
                  for vf
                  in self.all_stats.items()]
-        items.sort(
-            lambda x, y: cmp(y['stats']['priority'], x['stats']['priority']))
+        items.sort(key=lambda x: x['stats']['priority'], reverse=True)
         return items
 
     @cached_property

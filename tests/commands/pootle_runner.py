@@ -33,9 +33,12 @@ def test_pootle_version(capfd):
     """Display Pootle version info"""
     call(['pootle', '--version'])
     out, err = capfd.readouterr()
-    assert 'Pootle' in err
-    assert 'Django' in err
-    assert 'Translate Toolkit' in err
+    # argparse's --version action (used here) printed to stderr by
+    # default under Python 2; Python 3.4+ changed the default to
+    # stdout. Phase 1 Python 3 port; see PORTING.md.
+    assert 'Pootle' in out
+    assert 'Django' in out
+    assert 'Translate Toolkit' in out
 
 
 @pytest.mark.cmd

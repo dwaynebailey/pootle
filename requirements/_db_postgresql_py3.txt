@@ -1,0 +1,11 @@
+# PostgreSQL Database, Phase 1 (Python 3 port) validation image.
+#
+# requirements/_db_postgresql.txt pins psycopg2>=2.7,<2.8 for the
+# Python 2 baseline (docker/ci/Dockerfile) - that generation's C
+# extension assigns directly to Py_TYPE(), which became a read-only
+# accessor macro in newer CPython ("lvalue required as left operand
+# of assignment"), so it fails to build at all under Python 3.12.
+# Needs a current release; verified 2.9.12 builds and imports cleanly.
+# See PORTING.md.
+
+psycopg2>=2.9,<3.0

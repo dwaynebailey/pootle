@@ -76,7 +76,7 @@ def make_search_form(*args, **kwargs):
 
         if sparams_cookie:
             import json
-            import urllib
+            import urllib.parse as urllib
 
             try:
                 initial_sparams = json.loads(urllib.unquote(sparams_cookie))

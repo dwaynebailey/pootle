@@ -19,7 +19,9 @@ def test_add_vfolders_user_nofile():
     """Missing vfolder argument."""
     with pytest.raises(CommandError) as e:
         call_command('add_vfolders')
-    assert "too few arguments" in str(e)
+    assert (
+        "too few arguments" in str(e)
+        or "arguments are required" in str(e))
 
 
 @pytest.mark.cmd

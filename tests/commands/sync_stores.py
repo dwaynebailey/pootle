@@ -6,7 +6,7 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
-from mock import MagicMock, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -37,7 +37,7 @@ def test_cmd_sync_stores(logger_mock, fs_plugin_mock):
     assert (
         list(fs_plugin_mock.return_value.sync.call_args)
         == [(), {'pootle_path': 'FOO*', 'update': 'fs'}])
-    assert not logger_mock.warn.called
+    assert not logger_mock.warning.called
     assert not fs_plugin_mock.return_value.add.called
     assert command.warn_on_conflict == []
 
@@ -65,7 +65,7 @@ def test_cmd_sync_stores_skip_missing(logger_mock, fs_plugin_mock):
     assert (
         list(fs_plugin_mock.return_value.sync.call_args)
         == [(), {'pootle_path': 'FOO*', 'update': 'fs'}])
-    assert not logger_mock.warn.called
+    assert not logger_mock.warning.called
     assert (
         list(fs_plugin_mock.return_value.add.call_args)
         == [(), {'pootle_path': 'FOO*', 'update': 'fs'}])
@@ -99,7 +99,7 @@ def test_cmd_sync_stores_warn_on_conflict(logger_mock, fs_plugin_mock):
         list(fs_plugin_mock.return_value.sync.call_args)
         == [(), {'pootle_path': 'FOO*', 'update': 'fs'}])
     assert (
-        list(logger_mock.warn.call_args)
+        list(logger_mock.warning.call_args)
         == [("The project '%s' has conflicting changes in the database "
              "and translation files. Use `pootle fs resolve` to tell "
              "pootle how to merge", 7), {}])
@@ -115,7 +115,7 @@ def test_cmd_sync_stores_warn(logger_mock, super_mock):
     kwargs = dict(force=False, overwrite=False, foo='bar')
     command.handle(**kwargs)
     assert (
-        list(logger_mock.warn.call_args)
+        list(logger_mock.warning.call_args)
         == [('The sync_stores command is deprecated, use pootle fs instead',),
             {}])
     assert (
@@ -127,7 +127,7 @@ def test_cmd_sync_stores_warn(logger_mock, super_mock):
     kwargs['force'] = True
     command.handle(**kwargs)
     assert (
-        [list(l) for l in logger_mock.warn.call_args_list]
+        [list(l) for l in logger_mock.warning.call_args_list]
         == [[('The sync_stores command is deprecated, use pootle fs instead',),
              {}],
             [('The force option no longer has any affect on this command',),
@@ -142,7 +142,7 @@ def test_cmd_sync_stores_warn(logger_mock, super_mock):
     kwargs['overwrite'] = True
     command.handle(**kwargs)
     assert (
-        [list(l) for l in logger_mock.warn.call_args_list]
+        [list(l) for l in logger_mock.warning.call_args_list]
         == [[('The sync_stores command is deprecated, use pootle fs instead',),
              {}],
             [('The overwrite option no longer has any affect on this command',),

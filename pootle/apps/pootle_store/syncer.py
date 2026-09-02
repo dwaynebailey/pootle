@@ -272,10 +272,16 @@ class StoreSyncer(object):
         return filter_by
 
     def get_modified_units(self, last_revision):
+        # self.store.last_sync_revision is None on first sync (see
+        # get_revision_filters() above). Python 2's cross-type
+        # ordering made `int > None` always True, matching "sync all
+        # units if first sync"; Python 3 raises TypeError instead.
+        # Phase 1 Python 3 port; see PORTING.md.
         return set(
             Unit.objects.filter(**self.get_revision_filters(last_revision))
                         .values_list('id', flat=True).distinct()
-            if last_revision > self.store.last_sync_revision
+            if (self.store.last_sync_revision is None
+                or last_revision > self.store.last_sync_revision)
             else [])
 
     def get_common_units(self, common_dbids, last_revision, conservative):

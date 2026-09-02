@@ -27,6 +27,17 @@ class ItemState(object):
             and (sorted(self.kwargs.items())
                  == sorted(other.kwargs.items())))
 
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__; Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it. Mirrors __eq__'s own fields.
+    # Phase 1 Python 3 port; see PORTING.md.
+    def __hash__(self):
+        return hash((
+            self.__class__,
+            self.state_type,
+            self.state,
+            tuple(sorted(self.kwargs.items()))))
+
     def __getattr__(self, k):
         if self.__dict__.get("kwargs") and k in self.__dict__["kwargs"]:
             return self.kwargs[k]
@@ -62,6 +73,17 @@ class State(object):
             and self.context == other.context
             and sorted(self.kwargs.items()) == sorted(other.kwargs.items())
             and self.prefix == other.prefix)
+
+    # Python 2 kept the default identity-based __hash__ even when a
+    # class defined __eq__; Python 3 sets __hash__ to None as soon as
+    # __eq__ is defined without it. Mirrors __eq__'s own fields.
+    # Phase 1 Python 3 port; see PORTING.md.
+    def __hash__(self):
+        return hash((
+            self.__class__,
+            self.context,
+            tuple(sorted(self.kwargs.items())),
+            self.prefix))
 
     def __getitem__(self, k):
         return self.__state__[k]

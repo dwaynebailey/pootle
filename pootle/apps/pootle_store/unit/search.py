@@ -148,7 +148,12 @@ class DBSearchBackend(object):
         total = self.results.count()
         start = self.offset
 
-        if start > (total + len(self.previous_uids)):
+        # self.offset defaults to None (no "offset" kwarg supplied).
+        # Python 2's cross-type ordering made `None > int` always
+        # False, which is what let this fall through to the normal
+        # path below; Python 3 raises TypeError instead. Phase 1
+        # Python 3 port; see PORTING.md.
+        if start is not None and start > (total + len(self.previous_uids)):
             return total, total, total, self.results.none()
 
         find_unit = (

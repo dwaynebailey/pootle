@@ -111,6 +111,7 @@ class Directory(models.Model, CachedTreeItem):
 
     def __unicode__(self):
         return self.pootle_path
+    __str__ = __unicode__
 
     def __init__(self, *args, **kwargs):
         super(Directory, self).__init__(*args, **kwargs)
@@ -218,7 +219,7 @@ class Directory(models.Model, CachedTreeItem):
         else:
             start = 1
 
-        for i in xrange(start, len(path_parts)):
+        for i in range(start, len(path_parts)):
             path = '/'.join(path_parts[:i]) + '/'
             parents.append(path)
 

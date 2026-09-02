@@ -71,7 +71,7 @@ class PootleSocialAccountAdapter(DefaultSocialAccountAdapter):
                              exception=None, extra_context=None):
         provider = providers.registry.by_id(provider_id)
         retry_url = provider.get_login_url(request,
-                                           **dict(request.GET.iteritems()))
+                                           **dict(request.GET.items()))
 
         tb = traceback.format_exc()
         log_exception(request, exception, tb)
@@ -81,7 +81,7 @@ class PootleSocialAccountAdapter(DefaultSocialAccountAdapter):
                 'error': error,
                 'exception': {
                     'name': exception.__class__.__name__,
-                    'msg': unicode(exception),
+                    'msg': str(exception),
                 },
                 'provider': provider.name,
                 'retry_url': retry_url,

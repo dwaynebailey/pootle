@@ -174,7 +174,10 @@ class SuggestionsReview(object):
             If the suggestion already exists it's returned as well.
         """
         dont_add = (
-            not filter(None, translation)
+            # filter() returns an iterator under Python 3, which is
+            # always truthy regardless of whether it actually has any
+            # matches. Phase 1 Python 3 port; see PORTING.md.
+            not any(filter(None, translation))
             or translation == unit.target
             or unit.get_suggestions().filter(target_f=translation).exists())
         if dont_add:

@@ -187,7 +187,10 @@ class FSFile(object):
     def read(self):
         if not self.file_exists:
             return
-        with open(self.file_path) as f:
+        # "rb": matches serialize()'s bytes (store.serialize() ->
+        # bytes(ttk), see store/serialize.py) - callers compare the
+        # two directly. Phase 1 Python 3 port; see PORTING.md.
+        with open(self.file_path, "rb") as f:
             return f.read()
 
     def remove_file(self):
@@ -198,7 +201,10 @@ class FSFile(object):
         if not create and not self.file_exists:
             return
         if self.file_exists:
-            with open(self.file_path) as f:
+            # "rb": getclass(f)(f.read()) (below) needs bytes, like
+            # every other translate-toolkit parser call site fixed
+            # this phase. Phase 1 Python 3 port; see PORTING.md.
+            with open(self.file_path, "rb") as f:
                 f = AttributeProxy(f)
                 f.location_root = self.store_fs.project.local_fs_path
                 store_file = (
@@ -221,8 +227,13 @@ class FSFile(object):
         """
         disk_store = self.deserialize(create=True)
         self.store.syncer.sync(disk_store, self.store.data.max_unit_revision)
-        with open(self.file_path, "w") as f:
-            f.write(str(disk_store))
+        # str(disk_store) only serializes under Python 2
+        # (translate-toolkit's own compat shim); under Python 3 it
+        # silently falls through to plain object.__str__() and writes
+        # garbage - same fix as store/serialize.py's tostring().
+        # Phase 1 Python 3 port; see PORTING.md.
+        with open(self.file_path, "wb") as f:
+            f.write(bytes(disk_store))
         logger.debug("Pushed file: %s", self.path)
         return self.store.data.max_unit_revision
 
@@ -232,7 +243,7 @@ class FSFile(object):
         """
         tmp_store = self.deserialize()
         if not tmp_store:
-            logger.warn("File staged for sync has disappeared: %s", self.path)
+            logger.warning("File staged for sync has disappeared: %s", self.path)
             return
         if pootle_wins is None:
             resolve_conflict = (

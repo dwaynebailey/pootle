@@ -14,6 +14,15 @@
 import os
 import sys
 
+# Applies the Python 3 / Django 1.11 compatibility shims - kept in a
+# standalone top-level module rather than inline here or elsewhere
+# under the `pootle` package on purpose; see pootle_py3_compat.py's own
+# docstring for why. docker/py3/sitecustomize.py is the earliest actual
+# entry point for it (needed before some import orderings, e.g.
+# pytest's plugin auto-discovery); this import here is what covers
+# every other entry point (manage.py, gunicorn, ...).
+import pootle_py3_compat  # noqa
+
 
 ROOT_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 POOTLE_DIR = os.path.abspath(os.path.dirname(__file__))

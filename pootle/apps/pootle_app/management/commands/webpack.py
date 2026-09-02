@@ -51,8 +51,11 @@ class Command(BaseCommand):
 
     def handle(self, **options):
         default_static_dir = os.path.join(settings.WORKING_DIR, 'static')
-        custom_static_dirs = filter(lambda x: x != default_static_dir,
-                                    settings.STATICFILES_DIRS)
+        # filter() returns an iterator under Python 3, which has no
+        # .append() (used below). Phase 1 Python 3 port; see
+        # PORTING.md.
+        custom_static_dirs = list(filter(
+            lambda x: x != default_static_dir, settings.STATICFILES_DIRS))
 
         finder = AppDirectoriesFinder()
         for app_name in finder.storages:

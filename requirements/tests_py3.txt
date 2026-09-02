@@ -1,0 +1,14 @@
+# Testing, Phase 1 (Python 3 port) validation image.
+#
+# requirements/tests.txt pins the versions the Python 2 baseline
+# (docker/ci/Dockerfile) needs and must stay untouched for that
+# control channel - pytest==3.3.0 doesn't run under Python 3 at all
+# (imports the removed stdlib `imp` module among other things). This
+# is the separate, current-Python-3-compatible set docker/py3/Dockerfile
+# installs instead. See PORTING.md.
+
+factory-boy==3.3.0
+pytest==7.4.4
+pytest-cov==4.1.0
+pytest-django==4.8.0
+pytest-mock

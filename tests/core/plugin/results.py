@@ -29,10 +29,10 @@ def test_gathered_dict():
     gd = GatheredDict(provider_test)
     [gd.add_result(None, dict((member, )))
      for member in members]
-    assert gd.keys() == memberdict.keys()
-    assert gd.values() == memberdict.values()
-    assert gd.items() == memberdict.items()
-    assert [x for x in gd] == memberdict.keys()
+    assert list(gd.keys()) == list(memberdict.keys())
+    assert gd.values() == list(memberdict.values())
+    assert gd.items() == list(memberdict.items())
+    assert [x for x in gd] == list(memberdict.keys())
     assert all((k in gd) for k in memberdict.keys())
     assert all((gd.get(k) == gd[k]) for k in memberdict.keys())
     assert gd.get("DOES_NOT_EXIST") is None

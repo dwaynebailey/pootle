@@ -9,8 +9,6 @@
 import io
 import os
 
-import six
-
 import pytest
 
 from pytest_pootle.factories import (
@@ -52,7 +50,7 @@ from pootle_translationproject.models import TranslationProject
 def _update_from_upload_file(store, update_file,
                              content_type="text/x-gettext-translation",
                              user=None, submission_type=None):
-    with open(update_file, "r") as f:
+    with open(update_file, "rb") as f:
         upload = SimpleUploadedFile(os.path.basename(update_file),
                                     f.read(),
                                     content_type)
@@ -71,7 +69,10 @@ def _store_as_string(store):
             add=True, X_Pootle_Path=store.pootle_path)
         ttk.updateheader(
             add=True, X_Pootle_Revision=store.get_max_unit_revision())
-    return str(ttk)
+    # str(ttk) only serializes under Python 2 (translate-toolkit's own
+    # compat shim); bytes(ttk) is the real, version-independent
+    # serialization entry point. Phase 1 Python 3 port; see PORTING.md.
+    return bytes(ttk)
 
 
 def _sync_store(settings, store, resolve=None, update="all", force_add=None):
@@ -241,11 +242,12 @@ def test_update_save_changed_units(project0_nongnu, store0, test_fs,
     store.fs.all().delete()
 
     file_path = _sync_store(settings, store0)
-    store.update(store.deserialize(open(file_path).read()))
+    with open(file_path, "rb") as f:
+        store.update(store.deserialize(f.read()))
     unit_list = list(store.units)
     update_file = test_fs.open(
         "data/po/tutorial/ru/update_save_changed_units_updated.po",
-        "r")
+        "rb")
     with update_file as sourcef:
         store.update(
             store.deserialize(sourcef.read()),
@@ -286,7 +288,7 @@ def test_update_set_last_sync_revision(project0_nongnu, tp0, store0,
 
     update_file = test_fs.open(
         "data/po/tutorial/ru/update_set_last_sync_revision_updated.po",
-        "r")
+        "rb")
     with update_file as sourcef:
         with open(file_path, "wb") as targetf:
             targetf.write(sourcef.read())
@@ -321,7 +323,7 @@ def test_update_set_last_sync_revision(project0_nongnu, tp0, store0,
     orig = store0.deserialize(store0.serialize())
     orig.units[2].target = "SOMETHING ELSE"
     with open(file_path, "wb") as targetf:
-        targetf.write(str(orig))
+        targetf.write(bytes(orig))
     _sync_store(settings, store0, resolve="fs_wins", update="pootle")
     fs.refresh_from_db()
     assert fs.last_sync_revision == next_revision
@@ -808,7 +810,19 @@ def test_store_file_diff(store_diff_tests):
 @pytest.mark.django_db
 def test_store_repr():
     store = Store.objects.first()
-    assert str(store) == str(store.syncer.convert(store.syncer.file_class))
+    # Store.__str__ is now aliased to __unicode__ (str(self.
+    # pootle_path)), not the full serialized content, so that
+    # Django's Model.__repr__ (which calls str(self)) gives a short,
+    # useful repr rather than dumping an entire serialized store -
+    # see models.py's comment. The "full serialized content" check
+    # moved to bytes(), the real, version-independent serialization
+    # entry point (same fix as store/serialize.py's tostring()),
+    # bypassing __str__ entirely rather than relying on it to carry
+    # both meanings. Phase 1 Python 3 port; see PORTING.md.
+    assert str(store) == store.pootle_path
+    assert (
+        bytes(store.syncer.convert())
+        == bytes(store.syncer.convert(store.syncer.file_class)))
     assert repr(store) == u"<Store: %s>" % store.pootle_path
 
 
@@ -869,9 +883,12 @@ def test_store_po_serializer_custom(test_fs, store_po):
 
     store_po.serialize()
     assert checker.context == store_po
-    assert (
-        not isinstance(checker.original_data, six.text_type)
-        and isinstance(checker.original_data, str))
+    # This distinguished PY2 unicode from PY2/PY3 str via six.text_type
+    # (== str under Python 3, making the original check a tautological
+    # contradiction there). store.serialize() -> ... -> bytes(ttk)
+    # (see store/serialize.py) actually produces bytes now, which is
+    # what's worth asserting. Phase 1 Python 3 port; see PORTING.md.
+    assert isinstance(checker.original_data, bytes)
     assert checker.original_data == _store_as_string(store_po)
 
 

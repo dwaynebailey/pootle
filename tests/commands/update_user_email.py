@@ -17,7 +17,9 @@ from django.core.management.base import CommandError
 def test_update_user_email_nouser():
     with pytest.raises(CommandError) as e:
         call_command('update_user_email')
-    assert "too few arguments" in str(e)
+    assert (
+        "too few arguments" in str(e)
+        or "arguments are required" in str(e))
 
 
 @pytest.mark.cmd
@@ -25,7 +27,9 @@ def test_update_user_email_nouser():
 def test_update_user_email_noemail_supplied(member):
     with pytest.raises(CommandError) as e:
         call_command('update_user_email', 'member')
-    assert "too few arguments" in str(e)
+    assert (
+        "too few arguments" in str(e)
+        or "arguments are required" in str(e))
 
 
 @pytest.mark.cmd

@@ -37,6 +37,23 @@ PALETTES[NOCOLOR_PALETTE]["FS_ERROR"] = {}
 PALETTES["light"]["FS_ERROR"] = {'fg': 'red', 'opts': ('bold',)}
 PALETTES["dark"]["FS_ERROR"] = {'fg': 'red', 'opts': ('bold',)}
 
+# django.core.management.color.no_style() is cached forever
+# (@lru_cache), and color_style() falls back to it whenever
+# supports_color() is False (true for any non-tty stdout, e.g. under
+# pytest) - so whichever command gets instantiated *first* in the
+# whole process, from anywhere, permanently bakes in whatever
+# PALETTES looked like at that moment. This module being imported
+# "before importing the rest of the Django libs" (see below) doesn't
+# guarantee it also runs before every other management command in
+# the process has ever been touched (test collection order,
+# pytest-django's own setup, etc. can all get there first). Clearing
+# the cache makes the next no_style() call rebuild the Style object
+# from the now-fully-patched PALETTES, regardless of what happened
+# before this module was imported. Phase 1 Python 3 port; see
+# PORTING.md.
+from django.core.management.color import no_style
+no_style.cache_clear()
+
 # This must be run before importing the rest of the Django libs.
 os.environ["DJANGO_COLORS"] = "light"
 os.environ['DJANGO_SETTINGS_MODULE'] = 'pootle.settings'

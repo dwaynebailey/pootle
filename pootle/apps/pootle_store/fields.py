@@ -35,7 +35,7 @@ def to_python(value):
         return multistring("", encoding="UTF-8")
     elif isinstance(value, multistring):
         return value
-    elif isinstance(value, basestring):
+    elif isinstance(value, str):
         return parse_multistring(value)
     elif isinstance(value, dict):
         return multistring([val for __, val in sorted(value.items())],
@@ -59,7 +59,17 @@ class CastOnAssignDescriptor(object):
     def __get__(self, obj, type=None):
         if obj is None:
             return self
-        return obj.__dict__[self.field.name]
+        # models.py's Unit.__init__() probes deferred fields with
+        # hasattr(self, "source_f"). Python 2's hasattr() swallowed
+        # any exception; Python 3's only swallows AttributeError, so
+        # a bare KeyError here used to fail silently and now
+        # propagates as a real error. Raise AttributeError instead,
+        # which is also the descriptor protocol's actual contract for
+        # "not set yet". Phase 1 Python 3 port; see PORTING.md.
+        try:
+            return obj.__dict__[self.field.name]
+        except KeyError:
+            raise AttributeError(self.field.name)
 
     def __set__(self, obj, value):
         obj.__dict__[self.field.name] = self.field.to_python(value)
@@ -86,7 +96,7 @@ class MultiStringField(models.Field):
 
     def get_prep_lookup(self, lookup_type, value):
         if (lookup_type in ('exact', 'iexact') or
-            not isinstance(value, basestring)):
+            not isinstance(value, str)):
             value = self.get_prep_value(value)
         return super(MultiStringField, self).get_prep_lookup(lookup_type,
                                                              value)
