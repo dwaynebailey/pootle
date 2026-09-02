@@ -31,7 +31,19 @@ def _format_translation(message, variables=None):
 
 
 def ugettext(message, variables=None):
-    return _format_translation(_trans.ugettext(message), variables)
+    # Django 2.0+ dropped the u-prefixed names (gettext/ugettext were
+    # unified once Python 2's str/unicode split stopped existing) -
+    # `_trans` (django.utils.translation's internal lazy proxy, not
+    # the public API) only forwards to trans_real's actual attributes
+    # any more, and trans_real itself only defines `gettext`/
+    # `ngettext` under Django 2.2+. Delegating to those instead of the
+    # removed `ugettext`/`ungettext` is correct, not just a
+    # workaround: Python 3 strings are always unicode, so there was
+    # never a real behavioral difference to preserve. This module's
+    # own `ugettext`/`ungettext` names stay as-is - everything else in
+    # the codebase imports *these* wrappers, not Django's directly.
+    # Phase 2 rung 1 (Django 1.11 -> 2.2); see PORTING.md.
+    return _format_translation(_trans.gettext(message), variables)
 
 
 def gettext(message, variables=None):
@@ -39,7 +51,7 @@ def gettext(message, variables=None):
 
 
 def ungettext(singular, plural, number, variables=None):
-    return _format_translation(_trans.ungettext(singular, plural, number),
+    return _format_translation(_trans.ngettext(singular, plural, number),
                                variables)
 
 

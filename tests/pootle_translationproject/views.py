@@ -10,7 +10,7 @@ import json
 
 import pytest
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from pootle.core.browser import make_directory_item, make_store_item
 from pootle.core.forms import PathsSearchForm

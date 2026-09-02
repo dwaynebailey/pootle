@@ -10,7 +10,7 @@ from urllib.parse import quote_plus
 
 import pytest
 
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 
 from pootle.core.delegate import language_team, profile
 from pootle.core.utils.templates import render_as_template

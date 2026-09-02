@@ -827,14 +827,231 @@ mariadb from running at all); worth a closer look if it recurs or
 grows, but not blocking. The rest of the delta, same as sqlite, is
 entirely the known `webassets.exceptions.BundleError` cluster.
 
-**Not yet done, still on the branch:**
+**Phase 1 status: done, merged.** `python3-port` merged into `main`
+with `--no-ff` (merge commit `09bff7d6d`, 174 files) and pushed to
+`origin/main` (`ddc832ab4..09bff7d6d`) on 2026-09-02. `main` is now the
+Python 3 port, validated at parity across sqlite/postgres/mariadb (see
+above). The postgres/mariadb order-dependent failure set
+(`pootle_score`/`pootle_translationproject` tests failing only in a
+full-suite run) is still open if it recurs or grows, but wasn't
+blocking enough to hold up the merge.
 
-- Get sqlite failures down to Python 2 baseline parity (or document
-  remaining deltas as pre-existing/out-of-scope, per the webassets
-  case above).
-- Chase the small postgres/mariadb order-dependent failure set
-  (`pootle_score`/`pootle_translationproject` tests that fail only in
-  a full-suite run, not in isolation) if it recurs or grows - see
-  above.
-- Merge `python3-port` into `main` once the suite is at (or has a
-  documented reason to be below) parity — not done yet.
+## Phase 2: Django upgrade ladder
+
+Ladder: 1.11 → 2.2 → 3.2 → 4.2 → 5.2, one rung at a time, each merged
+to `main` before the next starts (per the working-branch strategy).
+Work happens on `django-ladder`, branched from `main` post-Phase-1-
+merge. Same evidence-driven loop as Phase 1: bump the pin, run the
+suite, frequency-rank the failures, fix the highest-leverage cause,
+repeat - now against a whole framework major-version bump instead of
+a language port, so most fixes are "this exact API was removed/
+changed" rather than syntax.
+
+### Rung 1: Django 1.11 → 2.2
+
+New validation environment, `docker/django22/` + `docker-compose.
+django22.yml`, built directly on top of Phase 1's already-solved
+Python 3.12 problem (same base image, same apt packages, same
+allauth/sortedm2m Python-3-packaging build patches - none of that is
+Django-version-specific) with Django itself overridden to the 2.2 line
+via a new `requirements/django22.txt`, installed as its own separate,
+final `pip install` step rather than alongside `requirements/base.txt`
+in one command - passed together, pip's resolver sees
+`Django~=1.11.12` (`base.txt`, and transitively `pip install -e .`
+re-parsing it for `setup.py`'s own `install_requires`) and
+`Django~=2.2.28` as a real, unsatisfiable conflict in one solve and
+refuses outright. Installing everything else on the 1.11 pin first and
+overriding it afterward in a separate, independent `pip install`
+works fine - pip only *warns* about the now-stale "requires
+Django~=1.11.12" metadata (expected mid-ladder; `base.txt`'s own pin
+only moves once a rung is actually done, not before).
+
+**Eight real Django-1.11-vs-2.2 incompatibilities found and fixed,
+each a genuine "this API changed/was removed" issue, not a language
+port bug:**
+
+1. **`django.core.urlresolvers` fully removed** (deprecated-but-
+   present through 1.x, gone at 2.0): 4 of our own files (1 app file,
+   3 test files) still imported `reverse` from it - swept to
+   `django.urls.reverse`, same single-symbol import everywhere so a
+   uniform sweep was safe. (A same-shaped call inside `django-contact-
+   form==1.5`'s own `views.py` turned out to already be guarded by a
+   `try: from django.urls import reverse / except ImportError:` -
+   nothing to fix there.)
+2. **`django.utils.translation`'s internal `_trans` proxy dropped the
+   `u`-prefixed method names** (`ugettext`/`ungettext` - Django 2.0
+   unified these with `gettext`/`ngettext` once Python 2's str/
+   unicode split stopped existing): our own `pootle/i18n/gettext.py`
+   reaches into that internal proxy directly (not the public,
+   still-aliased `django.utils.translation.ugettext`, which still
+   works fine) - `_trans.ugettext(...)`/`_trans.ungettext(...)` calls
+   switched to `_trans.gettext(...)`/`_trans.ngettext(...)`, which
+   Python 3's always-unicode strings make a correct fix, not just a
+   workaround.
+3. **Django's vendored `django/utils/six.py`** is byte-identical to
+   1.11's copy, same break, same fix: `docker/py3/patch-django-six.sh`
+   reused as-is, just run after the `django22.txt` override (not
+   alongside the other patch steps) since that override reinstalls
+   Django itself and would silently revert the patched file otherwise.
+4. **`django-contrib-comments==1.7.3`** (`base.txt`'s pin) imports
+   `django.core.urlresolvers` at its own module level
+   (`django_comments/__init__.py`) - a third-party instance of (1)
+   above. Bumped to `2.2.0`, the first release requiring Django>=2.2
+   (declared support through 4.0 - deliberately not the narrowest
+   option that would only barely cover this rung).
+5. **`django-sortedm2m==1.5.0`** (`base.txt`'s pin)'s
+   `SortedRelatedManager._add_items()` override doesn't accept
+   `through_defaults`, a kwarg Django 2.2 itself added to the M2M
+   `add()`/`create()` API - the very first test to save a `Project`
+   (`Project.filetypes.add(...)`, hit by any DB-backed test via
+   `ProjectDBFactory`) raised `TypeError: ..._add_items() got an
+   unexpected keyword argument 'through_defaults'`, cascading into
+   2510 setup errors. Bumped to `3.1.1` (first release declaring 2.2
+   support, through 3.2 - covers this rung and the next one too);
+   installs from a real wheel, so Phase 1's `patch-sortedm2m.sh`
+   `UltraMagicString`-in-`setup.py` build patch (needed for 1.5.0
+   specifically) isn't needed for this version.
+6. **`django-overextends==0.4.3`** (abandoned upstream - last release
+   ever was 2015, no maintained fork exists) reimplements Django's
+   `find_template()` against the pre-1.9 loader API
+   (`loader.load_template_source(name, dirs)`), which Django's own
+   built-in loaders kept as a deprecated-but-working shim through 1.11
+   and dropped outright by 2.2. Only one template in this codebase
+   uses `{% overextends %}` (`import_export/templates/browser/
+   index.html`), but it's inherited by enough pages to affect ~40 test
+   cases, all surfacing as `AttributeError: 'Loader' object has no
+   attribute 'load_template_source'`. No version bump available (only
+   ever one release) - `docker/django22/patch-overextends.sh` ports
+   `find_template()` to the modern `get_template_sources()`/
+   `get_contents()`/`Origin`-object API instead, patching the
+   installed package directly (same style as the postgres-tz/mysql-
+   encoders patches from Phase 1's DB work) since there's nothing
+   wrong with the package's own *build*, only runtime code relying on
+   a since-removed API.
+7. **`dj.subcommand==0.0.3`** (also only ever one release, no
+   maintained fork) defines two `CommandParser` subclasses
+   (`SubcommandsParser`, `SubcommandsSubParser`) that never define
+   their own `__init__`, relying entirely on Django 1.11's
+   `CommandParser.__init__(self, cmd, **kwargs)` storing the command
+   instance as `self.cmd`. Django 2.1 made `CommandParser` keyword-
+   only with no `cmd` parameter at all, so the one subcommand-based
+   management command this codebase has (`pootle fs`, exercised by
+   ~70 test cases across it and its own sub-subcommands) started
+   raising `TypeError` from one class then the other in turn as each
+   got fixed. `docker/django22/patch-dj-subcommand.sh` gives both
+   classes back an `__init__` that accepts/stores `cmd` (positionally
+   for `SubcommandsParser`, via `**kwargs` for `SubcommandsSubParser` -
+   that's how argparse's own `add_subparsers()` machinery instantiates
+   it) and forwards the rest to Django's now-keyword-only
+   `CommandParser.__init__`. The same patch also adds a `--force-color`
+   argument to this package's own hand-rolled copy of Django's default
+   command arguments (frozen at whatever Django version it was written
+   against) - Django 2.2 added `--force-color` alongside `--no-color`,
+   and `BaseCommand.execute()` unconditionally reads
+   `options['force_color']`, `KeyError`-ing on any command whose parser
+   doesn't have it.
+8. **`django-allauth==0.35.0`** (`base.txt`'s pin - already flagged in
+   stream G's dependency audit as carrying 6 known advisories against
+   this exact pin, so overdue for a bump regardless)'s
+   `adapter.py` calls `django.utils.http.is_safe_url(url)` with one
+   argument, but Django 2.1 made the second parameter
+   (`allowed_hosts`) required - every login/logout request (the
+   redirect-safety check that adapter method backs runs on every
+   request through allauth) 500'd instead of redirecting. Bumped to
+   `0.42.0` (first release requiring Django>=2.0, declared support
+   through 3.0). Same `convert_path`-removed-from-setuptools build
+   issue as Phase 1's `0.35.0` patch (checked directly - byte-
+   identical `setup.py` line), needing its own re-pointed copy,
+   `docker/django22/patch-allauth.sh` (kept separate from `docker/
+   py3/patch-allauth.sh`, which still needs to keep building 0.35.0
+   for Phase 1's still-active image).
+
+**Two test-expectation fixes** (real, correct behavior changed;
+only the tests' own hardcoded expectations were stale):
+
+- **Form widget rendering dropped its self-closing tag.** Django 2.0
+  rewrote form widget rendering from string formatting to templates
+  and switched void elements from XHTML-style (`<input ... />`) to
+  plain HTML5 (`<input ...>`) - our `TableSelectMultiple` widget
+  (`pootle/core/views/widgets.py`) delegates its checkbox rendering to
+  Django's own `CheckboxInput.render()`, so its *output* correctly
+  changed too. 13 hardcoded `" /></td>"` expectations across 5 test
+  functions in `tests/core/views.py` updated to `"></td>"`.
+- **Every command's parsed options dict gained `force_color`** (see
+  finding 8's `--force-color` addition above) - two test files
+  (`tests/commands/refresh_scores.py`, `tests/commands/
+  update_stores.py`) hardcode a `DEFAULT_OPTIONS` dict they compare
+  the real parsed options against; both updated to include
+  `'force_color': False`.
+- **`django-allauth`'s `LogoutView` started routing AJAX POSTs through
+  the same `_ajax_response()`/adapter mechanism `LoginView` already
+  used**, sometime between 0.35.0 and 0.42.0 - previously logout
+  returned a genuine 302 redirect unconditionally regardless of the
+  `X-Requested-With` header; now an AJAX logout gets the same
+  JSON-with-`location` response our own `PootleAccountAdapter.
+  ajax_response()` override already gives AJAX logins (`tests/
+  accounts/views.py::test_accounts_login` already expected this
+  shape). `test_accounts_logout` updated to match - this is our own
+  adapter's intentional, existing behavior finally applying
+  consistently, not a new one.
+
+**Result after all of the above**, full clean config
+(`filterwarnings=error` active): **2298 passed / 109 failed / 94
+errors / 10 skipped / 1 xfailed**, essentially matching Phase 1's
+sqlite milestone (2299/108/94) - every failing/erroring test id here
+except one is already present in that same baseline list (diffed
+directly, not eyeballed), i.e. the same webassets cluster plus the
+same pre-existing gaps, not a new regression surface from the Django
+bump.
+
+**The one exception, still open:** `tests/pootle_translationproject/
+contextmanagers.py::test_contextmanager_update_tp_after_suggestion`
+fails reproducibly (not order-dependent - fails in isolation too,
+unlike the postgres/mariadb flake set above), with a revision-counter
+assertion off by a large margin (`assert 129 == 6`, i.e. `updated
+["unit_revision"] == original["unit_revision"]`). Traced as far as:
+`pootle_translationproject/contextmanagers.py`'s `_callback_handler`
+suppresses individual `update_revisions` signals during a bulk update
+(via `pootle/core/contextmanagers.py`'s `keep_data`/`suppress_signal`,
+which monkey-patches `Signal.send`/`.connect` per-instance to reroute
+suppressed calls to a throwaway `Signal()`) and batches them into one
+final `update_revisions.send(Directory, paths=updated.revisions,
+keys=["stats", "checks"])` call. Verified directly that
+`suppress_signal`/`keep_data` itself still works correctly in
+isolation under Django 2.2 (a standalone repro: 5 sent, 5 captured
+during suppression, 1 real send after - exactly as expected), which
+rules out the monkey-patch trick itself breaking. That leaves the
+`updated.revisions` *set* ending up with far more distinct store/
+directory paths in it than expected as the likely real cause - i.e.
+something now marks a much wider swath of the tree dirty during a
+single suggestion-accept than it used to, not that the suppression
+mechanism leaks. Not yet root-caused past that point; worth a closer
+look with `pootle_data`'s bulk recalculation path as the next place to
+check (does its scoping still land on just the affected store/
+directory chain under Django 2.2's ORM, or has something made it
+touch siblings too), but not chased further this pass. One test,
+reproducible, isolated - not blocking the rung.
+
+**Not yet done, still on `django-ladder`:**
+
+- Root-cause and fix `test_contextmanager_update_tp_after_suggestion`
+  (see above), or confirm it's pre-existing/out-of-scope like the
+  webassets cluster.
+- Validate rung 1 against postgres and mariadb (only sqlite run so
+  far this rung - Phase 1's own postgres/mariadb fixes, being in
+  application code rather than Django/driver internals, should mostly
+  carry over unchanged, but this hasn't been checked).
+- `requirements/base.txt`'s own pins (`Django~=1.11.12`,
+  `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
+  `django-allauth==0.35.0`) haven't moved - `django22.txt` is
+  currently a bolt-on override, same pattern as Phase 1's `_db_*_py3.
+  txt` files. Whether to fold `django22.txt`'s pins into `base.txt`
+  directly (retiring the override + Phase 1's now-superseded pins
+  outright) or keep every rung's override file around for
+  reference is an open call - lean toward folding in once rung 1 is
+  fully done, since (unlike Phase 1's sqlite/postgres/mariadb split,
+  where all three backends are permanent, parallel targets) there's
+  only ever one "current" Django version on this branch at a time.
+- Merge rung 1 into `main` once it's at (or has a documented reason to
+  be below) parity - not done yet.
+- Rungs 2-4 (2.2 → 3.2 → 4.2 → 5.2) not started.
