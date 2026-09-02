@@ -1,0 +1,15 @@
+# MySQL/MariaDB Database, Phase 1 (Python 3 port) validation image.
+#
+# requirements/_db_mysql.txt pins mysqlclient>=1.3.3,<=1.3.12 for the
+# Python 2 baseline (docker/ci/Dockerfile) - that generation builds
+# under Python 3.12 without error but produces a broken extension
+# module at import time ("SystemError: PyDescr_NewMember used with
+# Py_RELATIVE_OFFSET", a stricter-descriptor-API change). Needs a
+# current release; verified 2.2.8 imports and connects cleanly.
+# Building it under Python 3.12 also needs `pkg-config` on top of the
+# already-installed default-libmysqlclient-dev (see docker/py3/
+# Dockerfile) - without it, setup.py can't locate mysql_config/
+# mariadb_config at all ("Can not find valid pkg-config name").
+# See PORTING.md.
+
+mysqlclient>=2.2,<3.0

@@ -6,8 +6,11 @@
 
 FROM python:3.12-slim
 
+# pkg-config: needed to build mysqlclient>=2.2 (requirements/
+# _db_mysql_py3.txt) - without it, setup.py can't locate mysql_config/
+# mariadb_config at all. Phase 1 Python 3 port; see PORTING.md.
 RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
-      build-essential curl git \
+      build-essential curl git pkg-config \
       libxml2-dev libxslt-dev libjpeg62-turbo-dev libfreetype6-dev \
       liblcms2-dev libtiff5-dev libwebp-dev \
       default-libmysqlclient-dev libpq-dev \
@@ -38,8 +41,19 @@ RUN mkdir -p /wheels \
 # Mirrors docker/ci/Dockerfile's Python 2 baseline (see its own
 # comment); verified elasticsearch~=5.0 installs and imports cleanly
 # under Python 3.12. Phase 1 Python 3 port; see PORTING.md.
-COPY requirements/base.txt requirements/_es_5.txt requirements/
-RUN pip install --no-cache-dir -q -r requirements/base.txt -r requirements/_es_5.txt --find-links /wheels
+# _db_mysql_py3.txt / _db_postgresql_py3.txt: current-compatible pins
+# for the DB drivers, so this one image can run against sqlite,
+# postgres, or mariadb by just setting APP_DB_ENV (see
+# tests/settings.py) - see those files' own comments for why the
+# Python 2 baseline's requirements/_db_*.txt pins don't work under
+# Python 3.12. Phase 1 Python 3 port; see PORTING.md.
+COPY requirements/base.txt requirements/_es_5.txt requirements/_db_mysql_py3.txt requirements/_db_postgresql_py3.txt requirements/
+RUN pip install --no-cache-dir -q \
+         -r requirements/base.txt \
+         -r requirements/_es_5.txt \
+         -r requirements/_db_mysql_py3.txt \
+         -r requirements/_db_postgresql_py3.txt \
+         --find-links /wheels
 
 COPY docker/py3/patch-django-six.sh docker/py3/
 RUN bash docker/py3/patch-django-six.sh
@@ -70,3 +84,13 @@ RUN pip install --no-cache-dir -q -r requirements/tests_py3.txt
 RUN SITE_PACKAGES="$(python3 -c 'import site; print(site.getsitepackages()[0])')" \
     && cp docker/py3/sitecustomize.py "$SITE_PACKAGES/" \
     && cp pootle_py3_compat.py "$SITE_PACKAGES/"
+
+# Runs after the sitecustomize.py install above (not alongside the
+# other patch-*.sh steps earlier in this file): its self-check imports
+# django.db.backends.postgresql.utils, which imports django.utils.
+# timezone, which imports pytz - and pytz still does `from collections
+# import Mapping`, only satisfiable once the compat shim just installed
+# is in place. See the script's own comment for what it fixes.
+COPY docker/py3/patch-django-postgres-tz.sh docker/py3/patch-django-mysql-encoders.sh docker/py3/
+RUN bash docker/py3/patch-django-postgres-tz.sh \
+    && bash docker/py3/patch-django-mysql-encoders.sh

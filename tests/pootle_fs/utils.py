@@ -138,9 +138,11 @@ def test_fs_path_filter_path_regex(glob):
     # itself (see PathFilter.path_regex()'s comment) - kept in sync
     # with the same fix rather than independently re-deriving it.
     # Phase 1 Python 3 port; see PORTING.md.
-    assert (
-        PathFilter().path_regex(glob)
-        == translate(glob).replace(r"\Z", "$"))
+    expected = translate(glob).replace(r"\Z", "$")
+    if expected.startswith("(?s:") and expected.endswith(")$"):
+        expected = expected[len("(?s:"):-len(")$")] + "$"
+    expected = expected.replace("(?>", "(?:")
+    assert PathFilter().path_regex(glob) == expected
 
 
 @pytest.mark.django_db

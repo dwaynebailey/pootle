@@ -28,7 +28,36 @@ class PathFilter(object):
         # was always a no-op replace under Python 3, silently leaving
         # a stray mid-pattern "\Z" that made every match impossible.
         # Phase 1 Python 3 port; see PORTING.md.
-        return translate(path).replace(r"\Z", "$")
+        pattern = translate(path).replace(r"\Z", "$")
+        # These patterns get sent straight through to the database as
+        # a regex lookup (pootle_path__regex / path__regex), not run
+        # through Python's re module - and "(?s:...)" is Python re's
+        # own syntax for a scoped inline-flags group, not portable:
+        # MySQL/MariaDB's PCRE-based REGEXP accepts it, but
+        # PostgreSQL's regex engine doesn't support the
+        # "(?flags:pattern)" form at all and raises "invalid regular
+        # expression: quantifier operand invalid" on every query that
+        # uses one. None of these glob-derived patterns need DOTALL
+        # (paths don't contain newlines), so it's safe to just unwrap
+        # the group rather than translate it to each backend's own
+        # inline-flag syntax. Found running Phase 1's postgres
+        # validation pass. Phase 1 Python 3 port; see PORTING.md.
+        if pattern.startswith("(?s:") and pattern.endswith(")$"):
+            pattern = pattern[len("(?s:"):-len(")$")] + "$"
+        # Python 3.11+'s fnmatch.translate() also wraps runs of "*"
+        # in an atomic group, "(?>...)", to avoid catastrophic
+        # backtracking on adversarial input - another Perl/PCRE
+        # extension PostgreSQL's regex engine doesn't support (same
+        # "quantifier operand invalid" error as the (?s:...) case
+        # above, just from a group that can appear anywhere in the
+        # pattern rather than only wrapping the whole thing, so it
+        # can't be unwrapped the same way). Downgrading to a plain
+        # non-capturing group is semantically identical for matching
+        # purposes - only the backtracking-safety optimization is
+        # lost, which doesn't matter for these short, bounded,
+        # glob-derived patterns. Phase 1 Python 3 port; see PORTING.md.
+        pattern = pattern.replace("(?>", "(?:")
+        return pattern
 
 
 class StorePathFilter(PathFilter):

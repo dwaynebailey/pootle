@@ -708,18 +708,133 @@ literal pre-built output. It's already folded into the Python 2
 baseline's 123 failed / 94 error above. Not a Phase 1 target; goes away
 when Phase 4 (frontend rebuild) lands real bundles.
 
+## Validating against postgres and mariadb
+
+Phase 0 stream B checked all three DB backends; Phase 1's suite had
+only ever been run against sqlite until this pass. `docker-compose.
+py3.yml` and `docker/py3/Dockerfile` were extended with `postgres` and
+`mariadb` services (mirroring `docker-compose.ci.yml`'s Python 2
+control channel exactly - same images, same gotchas) and two new
+requirements files, `requirements/_db_mysql_py3.txt`
+(`mysqlclient>=2.2,<3.0`) and `requirements/_db_postgresql_py3.txt`
+(`psycopg2>=2.9,<3.0`): the Python 2 baseline's own DB driver pins
+don't work under Python 3.12 at all - `psycopg2>=2.7,<2.8` fails to
+build (`Py_TYPE()` became a read-only accessor macro), and
+`mysqlclient>=1.3.3,<=1.3.12` builds but produces a broken import
+(`SystemError: PyDescr_NewMember used with Py_RELATIVE_OFFSET`).
+Building the newer mysqlclient also needs `pkg-config` added to the
+image (without it, setup.py can't locate `mysql_config`/
+`mariadb_config` at all).
+
+Both DB backends then surfaced their own genuine Django-1.11-vs-
+modern-driver incompatibilities - not sqlite-reachable code paths, so
+Phase 1's sqlite-only runs never had a chance to find these:
+
+- **postgres, `AssertionError: database connection isn't set to UTC`
+  on every single test** (`django/db/backends/postgresql/utils.py`):
+  `utc_tzinfo_factory(offset): if offset != 0: raise ...`. psycopg2
+  2.7 (the Python 2 pin) passed `offset` as an int number of minutes,
+  so a UTC connection's `0` compared equal; psycopg2 2.8+ (this
+  port's pin) passes a `datetime.timedelta` instead, and
+  `timedelta(0) != 0` is `True` in Python (`timedelta.__eq__` returns
+  `NotImplemented` for a non-timedelta operand), so the assertion
+  fired even on a genuinely-UTC connection. Confirmed directly against
+  the running postgres container (`SHOW TIME ZONE` → `UTC`,
+  `SELECT now()` → `tzinfo=utc`) before concluding this was a type
+  mismatch, not an actual timezone misconfiguration. Fixed with
+  `docker/py3/patch-django-postgres-tz.sh`, a new image-build-time
+  patch script in the same style as `patch-django-six.sh` etc. -
+  compares against `datetime.timedelta(0)` instead, matching how
+  upstream Django itself fixed this once psycopg2 2.8 shipped.
+- **postgres, `django.db.utils.DataError: invalid regular expression:
+  quantifier operand invalid`**, on every query that filters by a
+  glob-derived regex (`pootle_fs`'s `PathFilter`, `virtualfolder`
+  rules, `pootle_format`'s filetype matching by path): `PathFilter.
+  path_regex()` builds these from `fnmatch.translate()`, whose output
+  format is Python-`re`-specific and gets passed straight through to
+  the database as a `__regex` lookup rather than run through Python's
+  `re` module. Two distinct Python-only constructs are involved, both
+  found via the same "postgres transport rejects it, sqlite's
+  Python-level regex engine doesn't care" pattern:
+  - Python 3.6+ wraps the whole pattern in a scoped inline-flags
+    group, `(?s:...)` - PostgreSQL's regex engine doesn't support the
+    `(?flags:pattern)` form at all. Safe to unwrap entirely (none of
+    these path patterns need DOTALL; paths don't contain newlines).
+  - Python 3.11+ *also* wraps runs of `*` in an atomic group,
+    `(?>...)`, to avoid catastrophic backtracking - another Perl/PCRE
+    extension postgres doesn't support, and one that can appear
+    anywhere inside the pattern rather than only as an outer wrapper.
+    Downgraded to a plain non-capturing group (`(?:...)`) instead:
+    semantically identical for matching, just without the
+    backtracking-safety optimization, which doesn't matter for these
+    short, bounded, glob-derived patterns.
+  Both fixed in `PathFilter.path_regex()` (`pootle/apps/pootle_fs/
+  utils.py`); `tests/pootle_fs/utils.py`'s own reference computation
+  (which independently re-derives the expected pattern, per the
+  established pattern from the earlier `\Z`/`\Z(?ms)` fix) updated to
+  match. `pootle_fs/finder.py` has its own, unrelated
+  `fnmatch.translate()` call - left untouched, since that one's result
+  is compiled with Python's own `re.compile()` and never reaches the
+  database.
+- **mariadb, `KeyError: <class 'str'>` on every single database
+  connection** (`django/db/backends/mysql/base.py`):
+  `get_new_connection()` unconditionally does `conn.encoders[SafeText]
+  = conn.encoders[six.text_type]` (`six.text_type` is `str` under
+  Python 3) to also register Django's safe-string subclass under the
+  driver's own encoder registry. mysqlclient 1.3.x (the Python 2 pin)
+  registered `str`/`bytes` as explicit keys in `conn.encoders`, so the
+  copy worked; mysqlclient 2.2+ (this port's pin - see
+  `requirements/_db_mysql_py3.txt` for why 1.3.x can't be used at all
+  under Python 3.12) dropped them as registered keys and handles
+  `str`/`bytes` (and any subclass, `SafeText`/`SafeBytes` included -
+  verified directly with a raw `MySQLdb` connection before concluding
+  the copy was actually unnecessary) via a built-in C-extension
+  fallback instead, so the very first line of every new connection
+  raised `KeyError`. Fixed with `docker/py3/patch-django-mysql-
+  encoders.sh`: guards both encoder copies behind a membership check,
+  so it's a safe no-op on a driver that already handles these types
+  without the registration, while staying correct for a driver that
+  still needs it.
+
+**Results after all three fixes**, `docker-compose -f docker-compose.
+py3.yml run --rm test` with `APP_DB_ENV` set per backend, full clean
+config (`filterwarnings = error` active, no `-p no:warnings`):
+
+| backend  | passed | failed | errors | skipped | xfailed |
+|----------|--------|--------|--------|---------|---------|
+| sqlite   | 2299   | 108    | 94     | 10      | 1       |
+| postgres | 2290   | 117    | 94     | 10      | 1       |
+| mariadb  | 2299   | 117    | 94     | 0       | 2       |
+
+All three totals reconcile to the same 2512 collected (117+2290+10+
+1+94 = 117+2299+0+2+94); the 10 postgres-only "skipped" simply run
+(and mostly pass, one xfails) under mariadb instead - a `skipif`
+branching on DB vendor somewhere, not a bug.
+
+Postgres's and mariadb's extra ~9 failures beyond the sqlite number
+are **the same failing tests on both backends** - not a new Python 3
+bug: every one of them (`tests/pootle_score/receivers.py`,
+`tests/pootle_score/updater.py`, `tests/pootle_translationproject/
+contextmanagers.py`, plus a few view tests) passes cleanly when run in
+isolation or as a small targeted selection, and only shows up as part
+of a full, all-2500-ish-tests run - the signature of inter-test state
+leakage that both real-DB backends' transaction-rollback-based test
+isolation exposes and sqlite's doesn't, rather than a genuine
+per-backend incompatibility. Same family as the sqlite baseline's one
+documented `test_model_user_last_event` flake. Not chased further this
+pass (the three fixes above were the ones actually blocking postgres/
+mariadb from running at all); worth a closer look if it recurs or
+grows, but not blocking. The rest of the delta, same as sqlite, is
+entirely the known `webassets.exceptions.BundleError` cluster.
+
 **Not yet done, still on the branch:**
 
 - Get sqlite failures down to Python 2 baseline parity (or document
   remaining deltas as pre-existing/out-of-scope, per the webassets
   case above).
-- Validate against postgres and mariadb too (Phase 0 stream B checked
-  all three; Phase 1 so far has only run sqlite).
-- The ad-hoc test dependencies (`pytest==7.4.4`, `pytest-django==4.8.0`,
-  `pytest-cov==4.1.0`, `factory-boy==3.3.0`, `pytest-mock`) are only
-  ever `pip install`-ed inline in `docker run` commands — not yet
-  persisted into a requirements file. `requirements/tests.txt` still
-  pins the Python 2-era versions (`pytest==3.3.0`, etc.) for the
-  Phase 0 control channel; Phase 1 needs its own pinned set.
+- Chase the small postgres/mariadb order-dependent failure set
+  (`pootle_score`/`pootle_translationproject` tests that fail only in
+  a full-suite run, not in isolation) if it recurs or grows - see
+  above.
 - Merge `python3-port` into `main` once the suite is at (or has a
   documented reason to be below) parity — not done yet.

@@ -6,14 +6,27 @@
 # network, the same purpose docker-compose.ci.yml serves for the
 # Phase 0 Python 2 control channel. See PORTING.md.
 #
-# Service names (redis, elasticsearch) are load-bearing: tests/settings.py
-# hardcodes these as cache/search-backend hostnames.
+# Service names (redis, elasticsearch, postgres, mariadb) are
+# load-bearing: tests/settings.py hardcodes these as cache/search-
+# backend/DB hostnames. Which DB backend sqlite/postgres/mariadb gets
+# used is selected the same way docker-compose.ci.yml's Python 2
+# control channel does it: the APP_DB_ENV env var (unset/empty means
+# sqlite), plus starting the one DB service that run actually needs -
+# postgres and mariadb aren't in `test`'s depends_on so a plain
+# `up -d redis elasticsearch` (the sqlite case) doesn't pull either
+# image needlessly.
 #
 # Usage (`docker compose` or the standalone `docker-compose` binary,
 # whichever this machine has):
 #   docker-compose -f docker-compose.py3.yml build test
 #   docker-compose -f docker-compose.py3.yml up -d redis elasticsearch
 #   docker-compose -f docker-compose.py3.yml run --rm test
+#   # postgres:
+#   docker-compose -f docker-compose.py3.yml up -d redis elasticsearch postgres
+#   APP_DB_ENV=postgres docker-compose -f docker-compose.py3.yml run --rm test
+#   # mariadb:
+#   docker-compose -f docker-compose.py3.yml up -d redis elasticsearch mariadb
+#   APP_DB_ENV=mariadb docker-compose -f docker-compose.py3.yml run --rm test
 #   docker-compose -f docker-compose.py3.yml down -v
 
 services:
@@ -21,6 +34,8 @@ services:
     build:
       context: .
       dockerfile: docker/py3/Dockerfile
+    environment:
+      - APP_DB_ENV=${APP_DB_ENV:-}
     depends_on:
       - redis
       - elasticsearch
@@ -31,6 +46,37 @@ services:
     # silently dropping the pip install a runtime-only command would
     # need.
     command: ["pytest", "tests", "-q"]
+
+  postgres:
+    image: postgres:9.4-alpine
+    environment:
+      - POSTGRES_USER=pootle
+      - POSTGRES_PASSWORD=CHANGEME
+      - POSTGRES_DB=pootledb
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  mariadb:
+    image: mariadb:10.3
+    # No --init-connect: this image's entrypoint mis-splits any
+    # multi-word option value into extra positional args and aborts
+    # ("Too many arguments") - same finding as docker-compose.ci.yml,
+    # which this config otherwise mirrors exactly. character-set-
+    # server/collation-server below cover what's needed; the app also
+    # sets its own sql_mode via DATABASES OPTIONS in tests/settings.py.
+    command:
+      - mysqld
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+      - --innodb-flush-log-at-trx-commit=0
+    environment:
+      # MARIADB_* not MYSQL_*, and CHANGEME not empty - see
+      # docker-compose.ci.yml's own comment for why (same image,
+      # same finding).
+      - MARIADB_ROOT_PASSWORD=CHANGEME
+      - MARIADB_DATABASE=pootledb
+    tmpfs:
+      - /var/lib/mysql
 
   redis:
     image: redis:7-alpine
