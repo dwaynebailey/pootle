@@ -1076,14 +1076,59 @@ mode - noted here rather than chased as a regression, since the
 underlying cause and its signature are already on record.
 
 **Net: rung 1 is validated against postgres at the same level of
-parity sqlite already has.** Mariadb not yet run for this rung.
+parity sqlite already has.**
+
+### Validating rung 1 against mariadb
+
+Run under adverse conditions: this host's Elasticsearch container was
+being repeatedly OOM-killed (`docker ps` showing `Exited (137)` within
+seconds of each restart, 3 separate attempts) by genuine host-level
+memory exhaustion - `vm.swapusage` showed under 900MB of 22.5GB swap
+free, traced to other users' work on this shared machine (Adobe
+Photoshop/Illustrator processes under a different account, ~13GB+
+combined, plus an unrelated QEMU VM), not anything Docker- or Pootle-
+related. Not something fixable from here, so this validation pass ran
+with `redis`/`mariadb` only, no `elasticsearch` - `tests/settings.py`
+hardcodes `elasticsearch` as the default TM server host for the whole
+suite, so this means every DB-touching test that touches the TM broker
+logs connection-refused noise, but (per Phase 1's own earlier finding
+on this exact point) that noise is caught/swallowed almost everywhere
+except tests that specifically assert on TM/ES behavior.
+
+Sanity subset (`database.py`, `pootle_fs/utils.py`, `vfolders/
+path_matcher.py`) passed clean without ES: 36/36 - confirms the
+postgres-tz-style patch isn't needed for mysql (already established
+directly above) and Phase 1's regex-portability fixes carry over
+unchanged here too. Full suite: **2306 passed / 110 failed / 94
+errors / 2 xfailed** (2512 total, reconciling the same way the
+postgres/mariadb Phase-1 skip-vs-xfail difference did). Diffed
+directly against the sqlite rung-1 list: **exactly one** test differs,
+`tests/commands/update_tmserver.py::test_update_tmserver_files` - and
+that one is fully expected given ES wasn't running for this pass, not
+a mystery the way it was for postgres's own run of the same test
+(there it was genuine mid-validation ES instability; here ES was
+deliberately not started at all). Every other failing/erroring test
+here is already in the sqlite baseline's own list.
+
+**Net: rung 1 is validated against mariadb at the same level of
+parity sqlite and postgres already have** - modulo a from-scratch,
+ES-backed rerun of just `test_update_tmserver_files` once host memory
+pressure clears, to close out the one test this pass couldn't
+exercise.
+
+**Rung 1 is now validated against all three DB backends** (sqlite,
+postgres, mariadb) at the same near-parity level Phase 1 itself
+reached - the Django 1.11 → 2.2 bump introduces no backend-specific
+regressions beyond what was already fixed getting sqlite to parity.
 
 **Not yet done, still on `django-ladder`:**
 
 - Root-cause and fix `test_contextmanager_update_tp_after_suggestion`
   (see above), or confirm it's pre-existing/out-of-scope like the
   webassets cluster.
-- Validate rung 1 against mariadb (postgres now done, see above).
+- Rerun `test_update_tmserver_files` against mariadb with ES actually
+  up, once host memory pressure clears, to fully close out mariadb
+  validation.
 - `requirements/base.txt`'s own pins (`Django~=1.11.12`,
   `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
   `django-allauth==0.35.0`) haven't moved - `django22.txt` is
