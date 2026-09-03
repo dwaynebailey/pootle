@@ -1212,18 +1212,21 @@ condition, not a reproducible gap - mariadb's clean ES-up run here
 gives every reason to expect postgres would be equally clean on a
 retry once host memory allows one).
 
-**Not yet done, still on `django-ladder`:**
-- `requirements/base.txt`'s own pins (`Django~=1.11.12`,
-  `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
-  `django-allauth==0.35.0`) haven't moved - `django22.txt` is
-  currently a bolt-on override, same pattern as Phase 1's `_db_*_py3.
-  txt` files. Whether to fold `django22.txt`'s pins into `base.txt`
-  directly (retiring the override + Phase 1's now-superseded pins
-  outright) or keep every rung's override file around for
-  reference is an open call - lean toward folding in once rung 1 is
-  fully done, since (unlike Phase 1's sqlite/postgres/mariadb split,
-  where all three backends are permanent, parallel targets) there's
-  only ever one "current" Django version on this branch at a time.
-- Merge rung 1 into `main` once it's at (or has a documented reason to
-  be below) parity - not done yet.
-- Rungs 2-4 (2.2 → 3.2 → 4.2 → 5.2) not started.
+**Requirements-file question above, resolved (not the way originally
+proposed):** folding `django22.txt`'s pins into `requirements/base.txt`
+directly turns out to be the wrong move, not just an open style
+question - `base.txt` isn't Phase 2-only, it's also read directly by
+`docker/ci/Dockerfile` (Phase 0's Python 2 control channel, still
+running on every push to `main`) and `docker/py3/Dockerfile` (Phase
+1's own Python 3/Django 1.11 validation image, also still on `main`).
+Bumping `Django~=1.11.12` there to 2.2 would break the Python 2
+channel outright (Django 2.2 doesn't support Python 2 at all) and
+silently move Phase 1's own already-validated reference stack out from
+under it - exactly the kind of drift the per-phase override pattern
+(`_db_mysql_py3.txt`, `_db_postgresql_py3.txt`, `tests_py3.txt`, and
+now `django22.txt`) exists to prevent. `django22.txt` staying a
+separate, explicit override *is* the correct, already-consistent
+design here, not a placeholder waiting to be merged away - no change
+needed.
+
+**Not yet done:** rungs 2-4 (2.2 → 3.2 → 4.2 → 5.2), not started.
