@@ -522,6 +522,15 @@ def test_apiview_get_multi_config(rf):
 
 @pytest.mark.django_db
 def test_widget_table_select_multiple_dict():
+    # Every hardcoded `<input .../>` expectation in this file dropped
+    # its trailing " /" - Django 2.0 rewrote form widget rendering
+    # from string formatting to templates and switched void elements
+    # from XHTML-style self-closing tags to plain HTML5 ones
+    # (TableSelectMultiple, pootle/core/views/widgets.py, delegates
+    # its checkbox rendering to Django's own CheckboxInput.render()).
+    # The new output is still correct, valid HTML - only these tests'
+    # own literal expected strings were stale. Phase 2 rung 1 (Django
+    # 1.11 -> 2.2); see PORTING.md.
     choices = (
         ("foo", dict(id="foo", title="Foo")),
         ("bar", dict(id="bar", title="Bar")),
@@ -531,7 +540,7 @@ def test_widget_table_select_multiple_dict():
     for i, (name, choice) in enumerate(choices):
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s" /></td>'
+             'name="a-field" value="%s"></td>'
              % name)
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -543,7 +552,7 @@ def test_widget_table_select_multiple_dict():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -555,7 +564,7 @@ def test_widget_table_select_multiple_dict():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td class="field-title">%s</td>' % choice["title"]) in rendered
@@ -582,7 +591,7 @@ def test_widget_table_select_multiple_objects():
         # this test is way too brittle
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s" /></td>'
+             'name="a-field" value="%s"></td>'
              % name)
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -595,7 +604,7 @@ def test_widget_table_select_multiple_objects():
         # this test is way too brittle
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -608,7 +617,7 @@ def test_widget_table_select_multiple_objects():
         # this test is way too brittle
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td class="field-title">%s</td>' % choice["title"]) in rendered
@@ -632,7 +641,7 @@ def test_widget_table_select_multiple_callable():
     for i, (name, choice) in enumerate(choices):
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s" /></td>'
+             'name="a-field" value="%s"></td>'
              % name)
             in rendered)
         assert ('<td class="field-get-id">xx%s</td>' % choice["id"]) in rendered
@@ -647,7 +656,7 @@ def test_widget_table_select_multiple_callable():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td class="field-get-id">xx%s</td>' % choice["id"]) in rendered
@@ -662,7 +671,7 @@ def test_widget_table_select_multiple_callable():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td class="field-get-id">xx%s</td>' % choice["id"]) in rendered
@@ -698,7 +707,7 @@ def test_widget_table_select_multiple_object_methods():
     for i, (name, choice) in enumerate(choices):
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s" /></td>'
+             'name="a-field" value="%s"></td>'
              % name)
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -710,7 +719,7 @@ def test_widget_table_select_multiple_object_methods():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td>%s</td>' % choice["title"]) not in rendered
@@ -722,7 +731,7 @@ def test_widget_table_select_multiple_object_methods():
             checked = ' checked'
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s"%s /></td>'
+             'name="a-field" value="%s"%s></td>'
              % (name, checked))
             in rendered)
         assert ('<td class="field-title">%s</td>' % choice["title"]) in rendered
@@ -739,7 +748,7 @@ def test_widget_table_select_id_attr():
     for i, (name, choice) in enumerate(choices):
         assert (
             ('<td class="row-select"><input type="checkbox" '
-             'name="a-field" value="%s" id="special-id_%s" /></td>'
+             'name="a-field" value="%s" id="special-id_%s"></td>'
              % (name, i))
             in rendered)
 

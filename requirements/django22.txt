@@ -1,0 +1,46 @@
+# Phase 2 rung 1: Django 1.11 -> 2.2.
+#
+# Installed *after* requirements/base.txt (which stays pinned to
+# Django~=1.11.12 - Phase 1's sqlite/postgres/mariadb stack still
+# depends on that pin) so this override wins. 2.2.28 is the final
+# 2.2.x release (2.2 was Django's last LTS before the 3.x series) -
+# taking the newest patch release within the rung rather than the
+# first 2.2.0, since there's no reason to start a rung on a version
+# with three more years of its own bugfixes already available.
+Django~=2.2.28
+
+# base.txt pins 1.7.3 (Django 1.11-era) - imports the long-removed
+# `django.core.urlresolvers` shim at module level
+# (django_comments/__init__.py), a hard ImportError under Django 2.0+
+# (deprecated-but-present through 1.x, actually removed at 2.0).
+# 2.2.0 is the first release requiring Django>=2.2 outright (declared
+# support through 4.0), so it's the natural pin for this rung. Found
+# running Phase 2 rung 1's first django.setup() probe. See PORTING.md.
+django-contrib-comments==2.2.0
+
+# base.txt pins 1.5.0 (Phase 1 only build-patched its setup.py for a
+# Python-3-packaging issue, see docker/py3/patch-sortedm2m.sh - never
+# touched for Django compatibility). Its SortedRelatedManager._add_items()
+# override doesn't accept `through_defaults`, a kwarg Django 2.2 itself
+# added to the M2M add()/create() API - every single `<sortedm2m
+# field>.add(...)` call (e.g. Project.filetypes, hit by literally the
+# first test in any run, via ProjectDBFactory) raised
+# "TypeError: ..._add_items() got an unexpected keyword argument
+# 'through_defaults'" as a result. 3.1.1 is the first release declaring
+# Django 2.2 support (through 3.2, so it covers this rung and the next
+# one too) and installs from a real wheel - Phase 1's UltraMagicString
+# build patch (docker/py3/patch-sortedm2m.sh) is specific to 1.5.0's
+# packaging and isn't needed for this version. Found running Phase 2
+# rung 1's first full-suite pass. See PORTING.md.
+django-sortedm2m==3.1.1
+
+# base.txt pins 0.35.0 (Phase 1's own pin) - its adapter.py calls
+# django.utils.http.is_safe_url(url) with one argument, but Django 2.1
+# made the second parameter required, so every login/logout view 500s.
+# 0.42.0 is the first release requiring Django>=2.0 with declared
+# support through 3.0 (covers this rung and headroom into the next).
+# Needs its own build-time patch (docker/django22/patch-allauth.sh,
+# a re-pointed copy of Phase 1's docker/py3/patch-allauth.sh - same
+# underlying setup.py issue, different version/wheel). Found running
+# Phase 2 rung 1's first full-suite pass. See PORTING.md.
+django-allauth==0.42.0

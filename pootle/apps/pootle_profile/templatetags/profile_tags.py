@@ -10,7 +10,7 @@ import urllib.parse as urllib
 
 from django import template
 from django.conf import settings
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from pootle.i18n.gettext import ugettext_lazy as _

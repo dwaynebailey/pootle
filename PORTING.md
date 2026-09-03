@@ -827,14 +827,406 @@ mariadb from running at all); worth a closer look if it recurs or
 grows, but not blocking. The rest of the delta, same as sqlite, is
 entirely the known `webassets.exceptions.BundleError` cluster.
 
-**Not yet done, still on the branch:**
+**Phase 1 status: done, merged.** `python3-port` merged into `main`
+with `--no-ff` (merge commit `09bff7d6d`, 174 files) and pushed to
+`origin/main` (`ddc832ab4..09bff7d6d`) on 2026-09-02. `main` is now the
+Python 3 port, validated at parity across sqlite/postgres/mariadb (see
+above). The postgres/mariadb order-dependent failure set
+(`pootle_score`/`pootle_translationproject` tests failing only in a
+full-suite run) is still open if it recurs or grows, but wasn't
+blocking enough to hold up the merge.
 
-- Get sqlite failures down to Python 2 baseline parity (or document
-  remaining deltas as pre-existing/out-of-scope, per the webassets
-  case above).
-- Chase the small postgres/mariadb order-dependent failure set
-  (`pootle_score`/`pootle_translationproject` tests that fail only in
-  a full-suite run, not in isolation) if it recurs or grows - see
-  above.
-- Merge `python3-port` into `main` once the suite is at (or has a
-  documented reason to be below) parity — not done yet.
+## Phase 2: Django upgrade ladder
+
+Ladder: 1.11 → 2.2 → 3.2 → 4.2 → 5.2, one rung at a time, each merged
+to `main` before the next starts (per the working-branch strategy).
+Work happens on `django-ladder`, branched from `main` post-Phase-1-
+merge. Same evidence-driven loop as Phase 1: bump the pin, run the
+suite, frequency-rank the failures, fix the highest-leverage cause,
+repeat - now against a whole framework major-version bump instead of
+a language port, so most fixes are "this exact API was removed/
+changed" rather than syntax.
+
+### Rung 1: Django 1.11 → 2.2
+
+New validation environment, `docker/django22/` + `docker-compose.
+django22.yml`, built directly on top of Phase 1's already-solved
+Python 3.12 problem (same base image, same apt packages, same
+allauth/sortedm2m Python-3-packaging build patches - none of that is
+Django-version-specific) with Django itself overridden to the 2.2 line
+via a new `requirements/django22.txt`, installed as its own separate,
+final `pip install` step rather than alongside `requirements/base.txt`
+in one command - passed together, pip's resolver sees
+`Django~=1.11.12` (`base.txt`, and transitively `pip install -e .`
+re-parsing it for `setup.py`'s own `install_requires`) and
+`Django~=2.2.28` as a real, unsatisfiable conflict in one solve and
+refuses outright. Installing everything else on the 1.11 pin first and
+overriding it afterward in a separate, independent `pip install`
+works fine - pip only *warns* about the now-stale "requires
+Django~=1.11.12" metadata (expected mid-ladder; `base.txt`'s own pin
+only moves once a rung is actually done, not before).
+
+**Eight real Django-1.11-vs-2.2 incompatibilities found and fixed,
+each a genuine "this API changed/was removed" issue, not a language
+port bug:**
+
+1. **`django.core.urlresolvers` fully removed** (deprecated-but-
+   present through 1.x, gone at 2.0): 4 of our own files (1 app file,
+   3 test files) still imported `reverse` from it - swept to
+   `django.urls.reverse`, same single-symbol import everywhere so a
+   uniform sweep was safe. (A same-shaped call inside `django-contact-
+   form==1.5`'s own `views.py` turned out to already be guarded by a
+   `try: from django.urls import reverse / except ImportError:` -
+   nothing to fix there.)
+2. **`django.utils.translation`'s internal `_trans` proxy dropped the
+   `u`-prefixed method names** (`ugettext`/`ungettext` - Django 2.0
+   unified these with `gettext`/`ngettext` once Python 2's str/
+   unicode split stopped existing): our own `pootle/i18n/gettext.py`
+   reaches into that internal proxy directly (not the public,
+   still-aliased `django.utils.translation.ugettext`, which still
+   works fine) - `_trans.ugettext(...)`/`_trans.ungettext(...)` calls
+   switched to `_trans.gettext(...)`/`_trans.ngettext(...)`, which
+   Python 3's always-unicode strings make a correct fix, not just a
+   workaround.
+3. **Django's vendored `django/utils/six.py`** is byte-identical to
+   1.11's copy, same break, same fix: `docker/py3/patch-django-six.sh`
+   reused as-is, just run after the `django22.txt` override (not
+   alongside the other patch steps) since that override reinstalls
+   Django itself and would silently revert the patched file otherwise.
+4. **`django-contrib-comments==1.7.3`** (`base.txt`'s pin) imports
+   `django.core.urlresolvers` at its own module level
+   (`django_comments/__init__.py`) - a third-party instance of (1)
+   above. Bumped to `2.2.0`, the first release requiring Django>=2.2
+   (declared support through 4.0 - deliberately not the narrowest
+   option that would only barely cover this rung).
+5. **`django-sortedm2m==1.5.0`** (`base.txt`'s pin)'s
+   `SortedRelatedManager._add_items()` override doesn't accept
+   `through_defaults`, a kwarg Django 2.2 itself added to the M2M
+   `add()`/`create()` API - the very first test to save a `Project`
+   (`Project.filetypes.add(...)`, hit by any DB-backed test via
+   `ProjectDBFactory`) raised `TypeError: ..._add_items() got an
+   unexpected keyword argument 'through_defaults'`, cascading into
+   2510 setup errors. Bumped to `3.1.1` (first release declaring 2.2
+   support, through 3.2 - covers this rung and the next one too);
+   installs from a real wheel, so Phase 1's `patch-sortedm2m.sh`
+   `UltraMagicString`-in-`setup.py` build patch (needed for 1.5.0
+   specifically) isn't needed for this version.
+6. **`django-overextends==0.4.3`** (abandoned upstream - last release
+   ever was 2015, no maintained fork exists) reimplements Django's
+   `find_template()` against the pre-1.9 loader API
+   (`loader.load_template_source(name, dirs)`), which Django's own
+   built-in loaders kept as a deprecated-but-working shim through 1.11
+   and dropped outright by 2.2. Only one template in this codebase
+   uses `{% overextends %}` (`import_export/templates/browser/
+   index.html`), but it's inherited by enough pages to affect ~40 test
+   cases, all surfacing as `AttributeError: 'Loader' object has no
+   attribute 'load_template_source'`. No version bump available (only
+   ever one release) - `docker/django22/patch-overextends.sh` ports
+   `find_template()` to the modern `get_template_sources()`/
+   `get_contents()`/`Origin`-object API instead, patching the
+   installed package directly (same style as the postgres-tz/mysql-
+   encoders patches from Phase 1's DB work) since there's nothing
+   wrong with the package's own *build*, only runtime code relying on
+   a since-removed API.
+7. **`dj.subcommand==0.0.3`** (also only ever one release, no
+   maintained fork) defines two `CommandParser` subclasses
+   (`SubcommandsParser`, `SubcommandsSubParser`) that never define
+   their own `__init__`, relying entirely on Django 1.11's
+   `CommandParser.__init__(self, cmd, **kwargs)` storing the command
+   instance as `self.cmd`. Django 2.1 made `CommandParser` keyword-
+   only with no `cmd` parameter at all, so the one subcommand-based
+   management command this codebase has (`pootle fs`, exercised by
+   ~70 test cases across it and its own sub-subcommands) started
+   raising `TypeError` from one class then the other in turn as each
+   got fixed. `docker/django22/patch-dj-subcommand.sh` gives both
+   classes back an `__init__` that accepts/stores `cmd` (positionally
+   for `SubcommandsParser`, via `**kwargs` for `SubcommandsSubParser` -
+   that's how argparse's own `add_subparsers()` machinery instantiates
+   it) and forwards the rest to Django's now-keyword-only
+   `CommandParser.__init__`. The same patch also adds a `--force-color`
+   argument to this package's own hand-rolled copy of Django's default
+   command arguments (frozen at whatever Django version it was written
+   against) - Django 2.2 added `--force-color` alongside `--no-color`,
+   and `BaseCommand.execute()` unconditionally reads
+   `options['force_color']`, `KeyError`-ing on any command whose parser
+   doesn't have it.
+8. **`django-allauth==0.35.0`** (`base.txt`'s pin - already flagged in
+   stream G's dependency audit as carrying 6 known advisories against
+   this exact pin, so overdue for a bump regardless)'s
+   `adapter.py` calls `django.utils.http.is_safe_url(url)` with one
+   argument, but Django 2.1 made the second parameter
+   (`allowed_hosts`) required - every login/logout request (the
+   redirect-safety check that adapter method backs runs on every
+   request through allauth) 500'd instead of redirecting. Bumped to
+   `0.42.0` (first release requiring Django>=2.0, declared support
+   through 3.0). Same `convert_path`-removed-from-setuptools build
+   issue as Phase 1's `0.35.0` patch (checked directly - byte-
+   identical `setup.py` line), needing its own re-pointed copy,
+   `docker/django22/patch-allauth.sh` (kept separate from `docker/
+   py3/patch-allauth.sh`, which still needs to keep building 0.35.0
+   for Phase 1's still-active image).
+
+**Two test-expectation fixes** (real, correct behavior changed;
+only the tests' own hardcoded expectations were stale):
+
+- **Form widget rendering dropped its self-closing tag.** Django 2.0
+  rewrote form widget rendering from string formatting to templates
+  and switched void elements from XHTML-style (`<input ... />`) to
+  plain HTML5 (`<input ...>`) - our `TableSelectMultiple` widget
+  (`pootle/core/views/widgets.py`) delegates its checkbox rendering to
+  Django's own `CheckboxInput.render()`, so its *output* correctly
+  changed too. 13 hardcoded `" /></td>"` expectations across 5 test
+  functions in `tests/core/views.py` updated to `"></td>"`.
+- **Every command's parsed options dict gained `force_color`** (see
+  finding 8's `--force-color` addition above) - two test files
+  (`tests/commands/refresh_scores.py`, `tests/commands/
+  update_stores.py`) hardcode a `DEFAULT_OPTIONS` dict they compare
+  the real parsed options against; both updated to include
+  `'force_color': False`.
+- **`django-allauth`'s `LogoutView` started routing AJAX POSTs through
+  the same `_ajax_response()`/adapter mechanism `LoginView` already
+  used**, sometime between 0.35.0 and 0.42.0 - previously logout
+  returned a genuine 302 redirect unconditionally regardless of the
+  `X-Requested-With` header; now an AJAX logout gets the same
+  JSON-with-`location` response our own `PootleAccountAdapter.
+  ajax_response()` override already gives AJAX logins (`tests/
+  accounts/views.py::test_accounts_login` already expected this
+  shape). `test_accounts_logout` updated to match - this is our own
+  adapter's intentional, existing behavior finally applying
+  consistently, not a new one.
+
+**Result after all of the above**, full clean config
+(`filterwarnings=error` active): **2298 passed / 109 failed / 94
+errors / 10 skipped / 1 xfailed**, essentially matching Phase 1's
+sqlite milestone (2299/108/94) - every failing/erroring test id here
+except one is already present in that same baseline list (diffed
+directly, not eyeballed), i.e. the same webassets cluster plus the
+same pre-existing gaps, not a new regression surface from the Django
+bump.
+
+**The one exception - since found and fixed:** `tests/
+pootle_translationproject/contextmanagers.py::
+test_contextmanager_update_tp_after_suggestion` failed reproducibly
+(not order-dependent - failed in isolation too, unlike the postgres/
+mariadb flake set above), with `assert 129 == 6` on
+`updated["store_data"]["max_unit_revision"] ==
+original["store_data"]["max_unit_revision"]` in the test's *second*
+of two sequential "add a suggestion" blocks - `original` (captured at
+the start of that second block) showed a stats snapshot from *before*
+the first block's own suggestion-accept had updated anything, despite
+that accept having already completed and its own assertions (checking
+the very same field) having already passed correctly.
+
+Root cause, once fully traced with targeted instrumentation (object
+identity, `id()`, and raw aggregate queries logged at each step - the
+"maybe it's a stale cache" theory needed to be proven, not assumed):
+`pytest_pootle/fixtures/signals.py`'s `UpdateUnitTest.__exit__` calls
+`self.unit.refresh_from_db()` before re-reading state. Django 1.11's
+`refresh_from_db()` only reloaded concrete field values and left any
+*cached related objects* (`self.unit.store`, etc.) untouched - Django
+2.0 changed this (ticket #27343) so a bare `refresh_from_db()` also
+clears cached forward-FK relations, treating the old behavior as a
+bug (returning stale related objects). This test's own `store0`/`tp0`
+fixtures are held onto for the whole test function, and `self.unit.
+store` is the *same object* as `store0` (Django's reverse-manager
+optimization caches the parent back onto rows fetched via `store0.
+units...`) - `store0`'s own `.data` (a cached `StoreData` instance)
+gets mutated in place across the whole test as the real, intentional
+mechanism by which later blocks see earlier blocks' changes (this
+codebase's own `pootle_data.utils.DataUpdater` reads/writes through
+exactly that cached object, by design). Under Django 2.2, the first
+block's own `self.unit.refresh_from_db()` call silently swapped `self.
+unit.store` for a disconnected, freshly-queried Store instance instead
+of leaving it pointed at `store0` - the two explicit follow-up
+`refresh_from_db()` calls (`self.unit.store.data.refresh_from_db()`
+etc.) then dutifully refreshed *that* throwaway object's `.data`,
+while `store0`'s own cached `.data` - the one every subsequent block
+actually reads - was left exactly as stale as it was when first
+populated. Confirmed directly (not inferred): `id(store0) ==
+id(unit.store)` before any refresh, `store0.data.max_unit_revision`
+still showing the pre-accept value immediately after the accept block
+had already exited and passed its own assertions on that same field.
+
+Fix: `self.unit.refresh_from_db(fields=["revision"])` instead of a
+bare call. Per Django's own `refresh_from_db()` implementation, the
+cached-relation-clearing step only runs for fields actually being
+reloaded - the test only ever reads `unit.revision` back from this
+refresh, so limiting it to that one field reloads what's needed
+without clearing `self.unit.store`'s identity at all, on any Django
+version (verified against both this rung's Django 2.2 image and
+Phase 1's Django 1.11 image - the fixture is shared code, and this
+had to not regress there). Minimal, one-line fix plus a comment;
+`pytest_pootle/fixtures/signals.py` is the only file touched. Rerunning
+the full suite confirms it: the test disappears from the failure list
+entirely, with no new failures introduced (diffed directly against
+the prior run - the only other change was `tests/commands/
+update_tmserver.py::test_update_tmserver_files` flipping in, which
+traces to the elasticsearch container being OOM-killed by host memory
+pressure *during this same run* - confirmed via `docker ps` showing
+`Exited (137)` - the same already-documented operational flakiness,
+not a new regression). Rung 1's sqlite results are now genuinely
+clean against the Python 2 baseline, not just "one known difference
+away" - the only non-passing tests left are the pre-existing webassets
+cluster and, this run, the one ES-host-contention flake.
+
+This bug shape - a test helper relying on Django leaving stale cached
+relations in place across a `refresh_from_db()` call - is worth
+remembering for the rest of the ladder: any test fixture or helper
+calling a bare `.refresh_from_db()` on an object whose *cached
+relations* (not just its own fields) matter to later code is a
+candidate for the same failure mode from here through Django 3.0+ (the
+behavior 2.0 introduced stays in effect going forward, so this won't
+un-happen on a later rung) - `fields=[...]` is the fix wherever only
+specific columns actually need reloading.
+
+### Validating rung 1 against postgres
+
+`docker/django22/Dockerfile` already installed the postgres/mysql
+drivers (Phase 1's `_db_postgresql_py3.txt`/`_db_mysql_py3.txt`) but
+was missing Phase 1's two Django-source patches for them
+(`patch-django-postgres-tz.sh`, `patch-django-mysql-encoders.sh`) -
+never added when this rung's Dockerfile was first written, since that
+work was all sqlite-only at the time. First postgres run: **725/725
+errors** in the `pootle_fs`/`vfolders`/`database.py` sanity subset,
+same `AssertionError: database connection isn't set to UTC` as Phase
+1's very first postgres attempt - Django 2.2's `django/db/backends/
+postgresql/utils.py` turns out to be byte-identical to 1.11's copy
+(checked directly), same `if offset != 0:` bug, same fix. Added
+`patch-django-postgres-tz.sh` to this Dockerfile (after the
+`django22.txt` override, same reason as the six.py patch). **Not**
+adding `patch-django-mysql-encoders.sh` though: Django 2.2's mysql
+backend `get_new_connection()` is just `return Database.connect(
+**conn_params)` (checked directly) - the whole `conn.encoders[
+SafeText] = ...` block that needed patching under 1.11 is gone
+entirely, so Django itself already fixed this between 1.11 and 2.2 and
+there's nothing left to patch for this rung.
+
+With that one patch added, the sanity subset (database.py,
+pootle_fs/, vfolders/path_matcher.py - the tests Phase 1's own regex-
+portability fixes in `pootle_fs/utils.py` target) passed clean: 725/
+725. Full suite: **2297 passed / 110 failed / 94 errors / 10 skipped /
+1 xfailed**, one worse each way than the sqlite rung-1 number (2298/
+109/94) - diffed directly against that same run's failure list (not
+eyeballed): every failing/erroring test here except one is already in
+it. The one exception, `tests/commands/update_tmserver.py::
+test_update_tmserver_files`, is **not a Django-2.2 or postgres bug** -
+traced to the elasticsearch container itself dying under host memory
+pressure mid-validation (`docker ps` showed `Exited (137)` - SIGKILL,
+consistent with an OOM kill - immediately after each restart attempt,
+correlating directly with `vm_stat` showing under 100MB free and
+`uptime` load averages of 13-14 at the time). Restarting ES and
+retrying twice reproduced the same crash both times rather than
+clearing it, so this is host-level contention exactly matching the
+"Operational note on Elasticsearch-under-emulation reliability"
+already documented in Phase 1's own section above, not a new failure
+mode - noted here rather than chased as a regression, since the
+underlying cause and its signature are already on record.
+
+**Net: rung 1 is validated against postgres at the same level of
+parity sqlite already has.**
+
+### Validating rung 1 against mariadb
+
+Run under adverse conditions: this host's Elasticsearch container was
+being repeatedly OOM-killed (`docker ps` showing `Exited (137)` within
+seconds of each restart, 3 separate attempts) by genuine host-level
+memory exhaustion - `vm.swapusage` showed under 900MB of 22.5GB swap
+free, traced to other users' work on this shared machine (Adobe
+Photoshop/Illustrator processes under a different account, ~13GB+
+combined, plus an unrelated QEMU VM), not anything Docker- or Pootle-
+related. Not something fixable from here, so this validation pass ran
+with `redis`/`mariadb` only, no `elasticsearch` - `tests/settings.py`
+hardcodes `elasticsearch` as the default TM server host for the whole
+suite, so this means every DB-touching test that touches the TM broker
+logs connection-refused noise, but (per Phase 1's own earlier finding
+on this exact point) that noise is caught/swallowed almost everywhere
+except tests that specifically assert on TM/ES behavior.
+
+Sanity subset (`database.py`, `pootle_fs/utils.py`, `vfolders/
+path_matcher.py`) passed clean without ES: 36/36 - confirms the
+postgres-tz-style patch isn't needed for mysql (already established
+directly above) and Phase 1's regex-portability fixes carry over
+unchanged here too. Full suite: **2306 passed / 110 failed / 94
+errors / 2 xfailed** (2512 total, reconciling the same way the
+postgres/mariadb Phase-1 skip-vs-xfail difference did). Diffed
+directly against the sqlite rung-1 list: **exactly one** test differs,
+`tests/commands/update_tmserver.py::test_update_tmserver_files` - and
+that one is fully expected given ES wasn't running for this pass, not
+a mystery the way it was for postgres's own run of the same test
+(there it was genuine mid-validation ES instability; here ES was
+deliberately not started at all). Every other failing/erroring test
+here is already in the sqlite baseline's own list.
+
+**Net: rung 1 is validated against mariadb at the same level of
+parity sqlite and postgres already have** - modulo a from-scratch,
+ES-backed rerun of just `test_update_tmserver_files` once host memory
+pressure clears, to close out the one test this pass couldn't
+exercise.
+
+**Rung 1 is now validated against all three DB backends** (sqlite,
+postgres, mariadb) at the same near-parity level Phase 1 itself
+reached - the Django 1.11 → 2.2 bump introduces no backend-specific
+regressions beyond what was already fixed getting sqlite to parity.
+
+**Postgres re-run with ES actually up (2026-09-03):** confirms the
+`test_contextmanager_update_tp_after_suggestion` fix directly -
+**109 failed / 2298 passed / 94 errors**, an exact match to the
+sqlite rung-1 numbers, diffed directly. The lone remaining difference
+is `test_update_tmserver_files` again - not a regression: ES came up
+successfully (confirmed ready via a health-check poll) but was
+OOM-killed ~35s into the run (`docker inspect` showing a 35-second
+lifetime, exit 137) by the same host memory contention documented
+above, so only this one ES-hard-dependent test was actually affected;
+everything else in the 3+ minute run tolerated ES's absence exactly
+as it always has. Tried mariadb the same way immediately after -
+freed up host memory first (stopped the now-unneeded postgres
+container) - but ES failed to even reach ready 3 times in a row (dying
+in 3-12s each attempt, `vm.swapusage` showing under 1.7GB of 21.5GB
+free throughout, unmoved by the cleanup); `top -o mem` traced it to
+the same other user's Photoshop/Illustrator processes (~10GB combined)
+still resident, not a transient spike. Not chased further at that
+point - this is squarely the same operational condition already on
+record (see the "Operational note on Elasticsearch-under-emulation
+reliability" section above), not a code issue, and retrying against
+genuine external memory pressure with no sign of clearing wasn't
+going to change the outcome.
+
+**Mariadb re-run with ES actually up (2026-09-03, host memory pressure
+cleared - the other user's session that was holding ~10GB in Adobe
+Photoshop/Illustrator processes had ended by this point, confirmed via
+`top -o mem` no longer showing them):** clean on the first attempt -
+ES came up in 15s and survived the whole ~2m18s run. **108 failed /
+2308 passed / 94 errors / 2 xfailed**, reconciling to the same 2512
+total. Diffed directly against the sqlite baseline: **zero new
+failures**, and the *only* difference is one fewer failure than that
+baseline list (`test_contextmanager_update_tp_after_suggestion`,
+already fixed - the baseline snapshot just predates the fix).
+`test_update_tmserver_files` doesn't appear in the failure list at
+all this time, confirming ES was genuinely up and answering queries
+throughout, not just running.
+
+**Rung 1's DB-backend validation is now fully closed out**: sqlite,
+postgres, and mariadb all confirmed clean (postgres modulo the one
+ES-availability caveat noted above, which is purely a one-off host
+condition, not a reproducible gap - mariadb's clean ES-up run here
+gives every reason to expect postgres would be equally clean on a
+retry once host memory allows one).
+
+**Requirements-file question above, resolved (not the way originally
+proposed):** folding `django22.txt`'s pins into `requirements/base.txt`
+directly turns out to be the wrong move, not just an open style
+question - `base.txt` isn't Phase 2-only, it's also read directly by
+`docker/ci/Dockerfile` (Phase 0's Python 2 control channel, still
+running on every push to `main`) and `docker/py3/Dockerfile` (Phase
+1's own Python 3/Django 1.11 validation image, also still on `main`).
+Bumping `Django~=1.11.12` there to 2.2 would break the Python 2
+channel outright (Django 2.2 doesn't support Python 2 at all) and
+silently move Phase 1's own already-validated reference stack out from
+under it - exactly the kind of drift the per-phase override pattern
+(`_db_mysql_py3.txt`, `_db_postgresql_py3.txt`, `tests_py3.txt`, and
+now `django22.txt`) exists to prevent. `django22.txt` staying a
+separate, explicit override *is* the correct, already-consistent
+design here, not a placeholder waiting to be merged away - no change
+needed.
+
+**Not yet done:** rungs 2-4 (2.2 → 3.2 → 4.2 → 5.2), not started.

@@ -27,7 +27,11 @@ DEFAULT_OPTIONS = {
     'no_rq': False,
     'atomic': 'tp',
     'noinput': False,
-    'no_color': False}
+    'no_color': False,
+    # Django 2.2 added --force-color alongside --no-color, so every
+    # command's parsed options dict carries it now too. Phase 2 rung 1
+    # (Django 1.11 -> 2.2); see PORTING.md.
+    'force_color': False}
 
 
 @pytest.mark.cmd
