@@ -25,7 +25,30 @@ class UpdateUnitTest(object):
         self.original = self._get_unit_data(self.unit)
 
     def __exit__(self, *args):
-        self.unit.refresh_from_db()
+        # Refreshing only the one concrete field this test actually
+        # reads back (revision), not the whole instance: Django 2.0+
+        # made a bare refresh_from_db() also clear an instance's
+        # cached forward-FK relations as a side effect (ticket #27343
+        # - 1.11 left them stale on purpose, which this whole flow
+        # implicitly relied on). self.unit.store is cached back onto
+        # this unit by the related manager that originally fetched it
+        # (store0.units...), so it's literally the store0/tp0 fixture
+        # objects the rest of the test keeps reading and mutating in
+        # place via their own .data caches - a bare refresh_from_db()
+        # here would silently swap self.unit.store for a disconnected,
+        # freshly-queried Store instance instead, and the two explicit
+        # refresh_from_db() calls below would then update *that*
+        # object's .data rather than store0's/tp0's, leaving the ones
+        # everything else reads stale for the rest of the test. Passing
+        # fields=["revision"] limits refresh_from_db() to reloading
+        # that one column, which - per Django's own implementation -
+        # skips the cached-relation-clearing step entirely (it only
+        # runs for fields actually being refreshed), keeping
+        # self.unit.store's identity intact on any Django version.
+        # Found running Phase 2 rung 1 - test_contextmanager_update_tp_
+        # after_suggestion started failing under Django 2.2 with this
+        # exact symptom. See PORTING.md.
+        self.unit.refresh_from_db(fields=["revision"])
         self.unit.store.data.refresh_from_db()
         self.unit.store.translation_project.data.refresh_from_db()
         self._test(

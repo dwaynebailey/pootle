@@ -1004,33 +1004,80 @@ directly, not eyeballed), i.e. the same webassets cluster plus the
 same pre-existing gaps, not a new regression surface from the Django
 bump.
 
-**The one exception, still open:** `tests/pootle_translationproject/
-contextmanagers.py::test_contextmanager_update_tp_after_suggestion`
-fails reproducibly (not order-dependent - fails in isolation too,
-unlike the postgres/mariadb flake set above), with a revision-counter
-assertion off by a large margin (`assert 129 == 6`, i.e. `updated
-["unit_revision"] == original["unit_revision"]`). Traced as far as:
-`pootle_translationproject/contextmanagers.py`'s `_callback_handler`
-suppresses individual `update_revisions` signals during a bulk update
-(via `pootle/core/contextmanagers.py`'s `keep_data`/`suppress_signal`,
-which monkey-patches `Signal.send`/`.connect` per-instance to reroute
-suppressed calls to a throwaway `Signal()`) and batches them into one
-final `update_revisions.send(Directory, paths=updated.revisions,
-keys=["stats", "checks"])` call. Verified directly that
-`suppress_signal`/`keep_data` itself still works correctly in
-isolation under Django 2.2 (a standalone repro: 5 sent, 5 captured
-during suppression, 1 real send after - exactly as expected), which
-rules out the monkey-patch trick itself breaking. That leaves the
-`updated.revisions` *set* ending up with far more distinct store/
-directory paths in it than expected as the likely real cause - i.e.
-something now marks a much wider swath of the tree dirty during a
-single suggestion-accept than it used to, not that the suppression
-mechanism leaks. Not yet root-caused past that point; worth a closer
-look with `pootle_data`'s bulk recalculation path as the next place to
-check (does its scoping still land on just the affected store/
-directory chain under Django 2.2's ORM, or has something made it
-touch siblings too), but not chased further this pass. One test,
-reproducible, isolated - not blocking the rung.
+**The one exception - since found and fixed:** `tests/
+pootle_translationproject/contextmanagers.py::
+test_contextmanager_update_tp_after_suggestion` failed reproducibly
+(not order-dependent - failed in isolation too, unlike the postgres/
+mariadb flake set above), with `assert 129 == 6` on
+`updated["store_data"]["max_unit_revision"] ==
+original["store_data"]["max_unit_revision"]` in the test's *second*
+of two sequential "add a suggestion" blocks - `original` (captured at
+the start of that second block) showed a stats snapshot from *before*
+the first block's own suggestion-accept had updated anything, despite
+that accept having already completed and its own assertions (checking
+the very same field) having already passed correctly.
+
+Root cause, once fully traced with targeted instrumentation (object
+identity, `id()`, and raw aggregate queries logged at each step - the
+"maybe it's a stale cache" theory needed to be proven, not assumed):
+`pytest_pootle/fixtures/signals.py`'s `UpdateUnitTest.__exit__` calls
+`self.unit.refresh_from_db()` before re-reading state. Django 1.11's
+`refresh_from_db()` only reloaded concrete field values and left any
+*cached related objects* (`self.unit.store`, etc.) untouched - Django
+2.0 changed this (ticket #27343) so a bare `refresh_from_db()` also
+clears cached forward-FK relations, treating the old behavior as a
+bug (returning stale related objects). This test's own `store0`/`tp0`
+fixtures are held onto for the whole test function, and `self.unit.
+store` is the *same object* as `store0` (Django's reverse-manager
+optimization caches the parent back onto rows fetched via `store0.
+units...`) - `store0`'s own `.data` (a cached `StoreData` instance)
+gets mutated in place across the whole test as the real, intentional
+mechanism by which later blocks see earlier blocks' changes (this
+codebase's own `pootle_data.utils.DataUpdater` reads/writes through
+exactly that cached object, by design). Under Django 2.2, the first
+block's own `self.unit.refresh_from_db()` call silently swapped `self.
+unit.store` for a disconnected, freshly-queried Store instance instead
+of leaving it pointed at `store0` - the two explicit follow-up
+`refresh_from_db()` calls (`self.unit.store.data.refresh_from_db()`
+etc.) then dutifully refreshed *that* throwaway object's `.data`,
+while `store0`'s own cached `.data` - the one every subsequent block
+actually reads - was left exactly as stale as it was when first
+populated. Confirmed directly (not inferred): `id(store0) ==
+id(unit.store)` before any refresh, `store0.data.max_unit_revision`
+still showing the pre-accept value immediately after the accept block
+had already exited and passed its own assertions on that same field.
+
+Fix: `self.unit.refresh_from_db(fields=["revision"])` instead of a
+bare call. Per Django's own `refresh_from_db()` implementation, the
+cached-relation-clearing step only runs for fields actually being
+reloaded - the test only ever reads `unit.revision` back from this
+refresh, so limiting it to that one field reloads what's needed
+without clearing `self.unit.store`'s identity at all, on any Django
+version (verified against both this rung's Django 2.2 image and
+Phase 1's Django 1.11 image - the fixture is shared code, and this
+had to not regress there). Minimal, one-line fix plus a comment;
+`pytest_pootle/fixtures/signals.py` is the only file touched. Rerunning
+the full suite confirms it: the test disappears from the failure list
+entirely, with no new failures introduced (diffed directly against
+the prior run - the only other change was `tests/commands/
+update_tmserver.py::test_update_tmserver_files` flipping in, which
+traces to the elasticsearch container being OOM-killed by host memory
+pressure *during this same run* - confirmed via `docker ps` showing
+`Exited (137)` - the same already-documented operational flakiness,
+not a new regression). Rung 1's sqlite results are now genuinely
+clean against the Python 2 baseline, not just "one known difference
+away" - the only non-passing tests left are the pre-existing webassets
+cluster and, this run, the one ES-host-contention flake.
+
+This bug shape - a test helper relying on Django leaving stale cached
+relations in place across a `refresh_from_db()` call - is worth
+remembering for the rest of the ladder: any test fixture or helper
+calling a bare `.refresh_from_db()` on an object whose *cached
+relations* (not just its own fields) matter to later code is a
+candidate for the same failure mode from here through Django 3.0+ (the
+behavior 2.0 introduced stays in effect going forward, so this won't
+un-happen on a later rung) - `fields=[...]` is the fix wherever only
+specific columns actually need reloading.
 
 ### Validating rung 1 against postgres
 
@@ -1123,12 +1170,12 @@ regressions beyond what was already fixed getting sqlite to parity.
 
 **Not yet done, still on `django-ladder`:**
 
-- Root-cause and fix `test_contextmanager_update_tp_after_suggestion`
-  (see above), or confirm it's pre-existing/out-of-scope like the
-  webassets cluster.
-- Rerun `test_update_tmserver_files` against mariadb with ES actually
-  up, once host memory pressure clears, to fully close out mariadb
-  validation.
+- Rerun `test_update_tmserver_files` against mariadb (and, per the
+  postgres section above, postgres too) with ES actually up, once
+  host memory pressure clears, to fully close out those validation
+  passes - `test_contextmanager_update_tp_after_suggestion` itself is
+  fixed now (see above), so both backends should be clean once ES
+  cooperates.
 - `requirements/base.txt`'s own pins (`Django~=1.11.12`,
   `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
   `django-allauth==0.35.0`) haven't moved - `django22.txt` is
