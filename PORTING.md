@@ -1370,5 +1370,20 @@ update_tmserver.py::test_update_tmserver_files`, the same pre-existing
 network/timing-dependent flake documented in rung 1's own postgres/
 mariadb sections - it simply passed this particular run).
 
-**Not yet done:** rung 2's postgres/mariadb validation, and rungs 3-4
-(3.2 → 4.2 → 5.2), not started.
+### Validating rung 2 against postgres and mariadb
+
+Both run the same way rung 1's validation was, `APP_DB_ENV=postgresql`/
+`APP_DB_ENV=mysql` against the same image. **Postgres: 2299 passed /
+108 failed / 94 errors** - failure-id list diffed byte-for-byte
+identical to the sqlite run above, no exceptions at all. **Mariadb:
+2298 passed / 109 failed / 94 errors** - diffed directly, exactly one
+difference from the sqlite list: `test_update_tmserver_files` present
+here but not there, the same known ES-availability-dependent flake
+already covered above, not a new regression.
+
+**Rung 2 is validated against all three DB backends at full parity with
+rung 1** - the Django 2.2 → 3.2 bump introduces no backend-specific
+regressions, and no regressions at all against rung 1's own
+already-validated clean-config baseline.
+
+**Not yet done:** rungs 3-4 (3.2 → 4.2 → 5.2), not started.
