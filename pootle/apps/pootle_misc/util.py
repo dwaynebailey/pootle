@@ -48,7 +48,12 @@ def ajax_required(f):
     """
     @wraps(f)
     def wrapper(request, *args, **kwargs):
-        if not settings.DEBUG and not request.is_ajax():
+        # request.is_ajax() is deprecated as of Django 3.1, removed in
+        # 4.0; Django's own docs recommend this header check as the
+        # direct replacement. Phase 2 rung 2 (Django 2.2 -> 3.2); see
+        # PORTING.md.
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if not settings.DEBUG and not is_ajax:
             return HttpResponseBadRequest("This must be an AJAX request.")
         return f(request, *args, **kwargs)
 

@@ -17,7 +17,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.delegate import (
     config, response as pootle_response, revision, state as pootle_state)

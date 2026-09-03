@@ -9,7 +9,7 @@
 import pytest
 
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 
 DUMMY_RESPONSE_MAP = dict(

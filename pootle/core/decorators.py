@@ -41,7 +41,12 @@ def get_path_obj(func):
 
     @wraps(func)
     def wrapped(request, *args, **kwargs):
-        if request.is_ajax():
+        # request.is_ajax() is deprecated as of Django 3.1, removed in
+        # 4.0; Django's own docs recommend this header check as the
+        # direct replacement (used throughout this function). Phase 2
+        # rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if is_ajax:
             pootle_path = request.GET.get('path', None)
             if pootle_path is None:
                 raise Http400(_('Arguments missing.'))
@@ -72,7 +77,7 @@ def get_path_obj(func):
                 path_obj = None
 
             if path_obj is None:
-                if not request.is_ajax():
+                if not is_ajax:
                     # Explicit selection via the UI: redirect either to
                     # ``/language_code/`` or ``/projects/project_code/``
                     user_choice = request.COOKIES.get('user-choice', None)

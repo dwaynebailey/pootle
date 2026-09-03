@@ -13,7 +13,7 @@ from translate.filters.decorators import Category
 from translate.lang import data
 
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.bulk import BulkCRUD
 from pootle.core.contextmanagers import bulk_operations

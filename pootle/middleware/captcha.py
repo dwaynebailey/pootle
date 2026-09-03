@@ -94,8 +94,13 @@ class CaptchaMiddleware(MiddlewareMixin):
             'post_data': request.POST,
         }
 
-        if (request.is_ajax() and ('sfn' in request.POST and
-                                   'efn' in request.POST)):
+        # request.is_ajax() is deprecated as of Django 3.1, removed in
+        # 4.0; Django's own docs recommend this header check as the
+        # direct replacement. Phase 2 rung 2 (Django 2.2 -> 3.2); see
+        # PORTING.md.
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
+        if (is_ajax and ('sfn' in request.POST and
+                          'efn' in request.POST)):
             template_name = 'core/xhr_captcha.html'
 
         response = render(request, template_name, ctx)

@@ -11,7 +11,7 @@ from copy import copy
 
 from django.db.models import Q
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.state import ItemState, State
 from pootle_store.constants import POOTLE_WINS, SOURCE_WINS

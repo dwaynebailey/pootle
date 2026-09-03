@@ -1229,4 +1229,146 @@ separate, explicit override *is* the correct, already-consistent
 design here, not a placeholder waiting to be merged away - no change
 needed.
 
-**Not yet done:** rungs 2-4 (2.2 → 3.2 → 4.2 → 5.2), not started.
+### Rung 2: Django 2.2 → 3.2
+
+New validation environment, `docker/django32/` + `docker-compose.
+django32.yml`, built the same way rung 1's was: on top of Phase 1's
+already-solved Python 3.12 problem (same base image, apt packages,
+Python-3-packaging build patches), Django itself overridden to the 3.2
+line via `requirements/django32.txt` (3.2.25, the final 3.2.x release -
+Django's next LTS after 2.2), installed as its own final, separate
+`pip install` step for the same resolver-conflict reason as rung 1's
+`django22.txt`. Convergence was notably faster than rung 1 needed - most
+of the deep Python-3/Django-2.x-era compatibility work was already done
+in Phase 1 and rung 1, so this rung mostly hit genuinely-new Django-3.x
+API removals rather than rediscovering old ones.
+
+**Dependency bumps** (each with its own comment in `requirements/
+django32.txt`, not repeated in full here):
+
+- **`django-allauth`** 0.42.0 (rung 1's pin, support only through 3.0) →
+  **0.48.0** (through 4.0). Needs its own build-time patch,
+  `docker/django32/patch-allauth.sh` - same `convert_path`-removed-
+  from-setuptools `setup.py` issue as every prior allauth pin, just
+  re-pointed at 0.48.0's sdist.
+- **`django-rq`** 2.1.0 (`base.txt`'s pin, deliberately held back by
+  Phase 1 to avoid dragging Django forward) → **2.2.0**: 2.1.0's
+  `decorators.py` does `from django.utils import six`, a hard
+  `ImportError` under Django 3.0+ (not just broken content, like rung
+  1's six problem - the whole module is gone). 2.2.0 is the first
+  release to drop that import and still only requires `rq>=1.0`,
+  matching the existing `rq==1.0` pin exactly - no cascading bump.
+  Found running this rung's first `django.setup()` probe.
+- **`django-statici18n`** 1.7.0 (`base.txt`'s pin) → **2.3.0**: its
+  `templatetags/statici18n.py` imports `django.contrib.staticfiles.
+  templatetags.staticfiles`, removed outright in Django 3.1 (folded
+  into `django.templatetags.static` since 2.1). Django's template
+  engine eagerly imports every installed app's templatetags modules to
+  build its `{% load %}` registry, so this broke *all* template
+  rendering, not just pages using statici18n directly. Found running
+  this rung's first full-suite pass.
+- `django-contrib-comments` (2.2.0) and `django-sortedm2m` (3.1.1),
+  both rung 1 pins, already declare support through this rung - no
+  bump needed for either.
+
+**`django.utils.six` removed outright** (rung 1 only had to fix its
+broken *content* - Django 2.2 still shipped the file; Django 3.0
+deletes it). Two dependencies still did `from django.utils import six`:
+`django-rq` (fixed by the bump above) and `jsonfield` (no newer PyPI
+release exists - 2.0.2 is its last). `docker/django32/patch-django-six.
+sh` *creates* `django/utils/six.py` from scratch (rung 1's script
+overwrote an existing file; this one has nothing to overwrite), copying
+real `six`'s source plus the same "Additional customizations for
+Django" block rung 1 added. Has to run after the `django32.txt`
+override, same reasoning as every other Django-source patch on this
+rung - installing Django 3.2 itself would otherwise just remove the
+file again.
+
+**`dj.subcommand` and `django-overextends` patches carried over
+unchanged from rung 1** (`docker/django22/patch-dj-subcommand.sh`,
+`docker/django22/patch-overextends.sh`, `COPY`'d directly rather than
+duplicated) - checked directly that the exact code each targets
+(`CommandParser.__init__`, `find_template()`'s loader API) is
+byte-identical between Django 2.2 and 3.2, so there was nothing
+rung-specific to change.
+
+**Six real Django-2.2-vs-3.2 API removals found and fixed in our own
+code, each a genuine "this API changed/was removed" issue:**
+
+1. **`Field.from_db_value()`'s `context` parameter**, deprecated in 2.0
+   and no longer passed at all by 3.0: `pootle/apps/pootle_store/
+   fields.py`'s `MultiStringField.from_db_value()` still declared it as
+   a required positional argument - `TypeError: ...from_db_value()
+   missing 1 required positional argument: 'context'` on every read of
+   that field. Dropped the unused parameter.
+2. **`django.utils.lru_cache` removed** (a Python-2-era compatibility
+   shim for `functools.lru_cache`, which has always been available in
+   Python 3): 12 files still imported from it, one of them
+   (`pootle/core/utils/version.py`) via a `try/except ImportError`
+   fallback to a no-op, non-caching stub - meaning that fallback had
+   been silently active the whole time under Django 3.2 rather than
+   raising. All 12 swept to `from functools import lru_cache`.
+3. **`force_text` deprecated in 3.0, and this project's own
+   `filterwarnings = error` policy promotes its `RemovedInDjango40Warning`
+   to a hard failure** whenever it fires inside a test's own execution
+   window (not just at collection time) - `force_text()` is hit by
+   common request/serialization code paths, not just import time, so
+   this alone accounted for **2510 errors** on the first real
+   (non-`-p no:warnings`) full-suite run. 4 files swept to `force_str`
+   (its exact replacement, same signature) - both import lines and call
+   sites, the latter needing a second pass after a first sed attempt
+   using a `\b` word-boundary anchor silently matched nothing on this
+   host's BSD/macOS `sed`.
+4. **`Signal(providing_args=...)` deprecated in 3.0**, no functional
+   replacement - Django's own guidance is to move the arg names into a
+   comment. Same "fires inside a test body → hard failure" shape as
+   `force_text` above, this time surfacing as **450 failed / 291
+   errors** after the force_text fix (confirmed via a single trivial
+   test: warnings firing at module-collection time only warn, the same
+   construction inside a test function's own body fails). Swept across
+   11 `Signal(...)` definitions, 7 `Getter(...)`/`Provider(...)` call
+   sites, and 20 test-only `Getter(providing_args=[...])`/
+   `Provider(providing_args=[...])` constructions, converting each
+   dropped arg-name list into a `# provides: ...` comment.
+5. **`django.conf.urls.url()` deprecated in 3.1**, removed in 4.0;
+   `django.urls.re_path()` is its exact successor (`url()` only ever
+   accepted regex patterns). 16 `urls.py` files swept to import
+   `re_path as url` instead of renaming every call site.
+6. **`requires_system_checks` as a bare `bool` deprecated in 3.1**,
+   removed in 4.1 (`RemovedInDjango41Warning`, promoted to a failure the
+   same way as findings 3-4 above): Django wants `'__all__'` (for
+   `True`) or `[]` (for `False`) instead. This project's own management
+   commands only ever used the `False` form, in 4 files (`pootle_fs/
+   management/commands/__init__.py`'s `BaseSubCommand`, `pootle_app/
+   management/commands/{contributors,webpack,schema}.py`) - all 4
+   switched to `requires_system_checks = []`.
+7. **`request.is_ajax()` deprecated in 3.1**, removed in 4.0
+   (`RemovedInDjango40Warning`, same failure shape again) - its own
+   deprecation warning fires as the *first* line of the method, so
+   every AJAX-detecting code path raised before doing anything useful;
+   the resulting 500 then rendered a debug error page that itself hit
+   an unrelated `webassets.exceptions.BundleError` (assets aren't built
+   in this test image), which is what made this finding hard to
+   isolate - the visible failures were mostly a **second-order**
+   webassets-shaped symptom (233 vs. rung 1's baseline 90 `ERROR
+   tests/views/...` entries) rather than the real cause. 9 call sites
+   across 5 files (`pootle/middleware/captcha.py`, `pootle/middleware/
+   errorpages.py`, `pootle/core/decorators.py`, `pootle/apps/
+   staticpages/views.py`, `pootle/apps/pootle_misc/util.py`) swept to
+   Django's own documented replacement, `request.headers.get(
+   'x-requested-with') == 'XMLHttpRequest'`.
+
+**Result after all of the above**, full clean config
+(`filterwarnings = error` active): **2299 passed / 108 failed / 94
+errors / 10 skipped / 1 xfailed** - an *exact* match to rung 1's own
+clean-config sqlite milestone (2298/109/94, modulo the
+`test_contextmanager_update_tp_after_suggestion` fix rung 1 already
+landed). Diffed directly (not eyeballed) against rung 1's own
+clean-config failure-id list: **zero new failures or errors**, and one
+test resolved that wasn't expected to be (`tests/commands/
+update_tmserver.py::test_update_tmserver_files`, the same pre-existing
+network/timing-dependent flake documented in rung 1's own postgres/
+mariadb sections - it simply passed this particular run).
+
+**Not yet done:** rung 2's postgres/mariadb validation, and rungs 3-4
+(3.2 → 4.2 → 5.2), not started.

@@ -12,7 +12,7 @@ import re
 
 from django.core.exceptions import ValidationError
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.decorators import persistent_property
 

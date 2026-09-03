@@ -38,7 +38,10 @@ def get_aware_datetime(dt_string, tz=None):
 
 class Command(PootleCommand):
     help = "Print a list of contributors."
-    requires_system_checks = False
+    # requires_system_checks as a bool is deprecated as of Django 3.1,
+    # removed in 4.1: use '__all__' (was True) or [] (was False).
+    # Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         super(Command, self).add_arguments(parser)

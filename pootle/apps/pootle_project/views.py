@@ -17,7 +17,7 @@ from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.functional import cached_property
 from django.utils.html import escape
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 from django.utils.safestring import mark_safe
 
 from pootle.core.browser import (

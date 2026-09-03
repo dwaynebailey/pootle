@@ -10,7 +10,7 @@ import logging
 from collections import OrderedDict
 
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle_config.utils import SiteConfig
 from pootle_language.models import Language

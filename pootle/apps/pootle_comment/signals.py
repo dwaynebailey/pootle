@@ -9,4 +9,7 @@
 from django.dispatch import Signal
 
 
-comment_was_saved = Signal(providing_args=["comment"], use_caching=True)
+# `providing_args` dropped - see pootle/core/signals.py's own comment
+# for why. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+# provides: comment
+comment_was_saved = Signal(use_caching=True)

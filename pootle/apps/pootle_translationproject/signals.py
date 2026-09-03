@@ -8,10 +8,9 @@
 
 from django.dispatch import Signal
 
-
-tp_inited_async = Signal(
-    providing_args=["instance", "response_url", ],
-    use_caching=True)
-tp_init_failed_async = Signal(
-    providing_args=["instance", ],
-    use_caching=True)
+# `providing_args` dropped - see pootle/core/signals.py's own comment
+# for why. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+# provides: instance, response_url
+tp_inited_async = Signal(use_caching=True)
+# provides: instance
+tp_init_failed_async = Signal(use_caching=True)

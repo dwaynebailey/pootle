@@ -11,7 +11,7 @@ import os
 from fnmatch import fnmatch
 
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.delegate import lang_mapper
 from pootle.core.url_helpers import split_pootle_path

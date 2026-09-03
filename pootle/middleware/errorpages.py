@@ -18,7 +18,7 @@ from django.http import Http404, HttpResponseForbidden, HttpResponseServerError
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.deprecation import MiddlewareMixin
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 try:
     from raven.contrib.django.models import sentry_exception_handler
@@ -66,9 +66,13 @@ def handle_exception(request, exception, template_name):
 
     log_exception(request, exception, tb)
 
-    msg = force_text(exception)
+    msg = force_str(exception)
 
-    if request.is_ajax():
+    # request.is_ajax() is deprecated as of Django 3.1, removed in
+    # 4.0; Django's own docs recommend this header check as the
+    # direct replacement (used throughout this file). Phase 2 rung 2
+    # (Django 2.2 -> 3.2); see PORTING.md.
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         return JsonResponseServerError({'msg': msg})
 
     ctx = {
@@ -92,15 +96,16 @@ class ErrorPagesMiddleware(MiddlewareMixin):
     """Friendlier error pages."""
 
     def process_exception(self, request, exception):
-        msg = force_text(exception)
+        msg = force_str(exception)
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest'
         if isinstance(exception, Http404):
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponseNotFound({'msg': msg})
         elif isinstance(exception, Http400):
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponseBadRequest({'msg': msg})
         elif isinstance(exception, PermissionDenied):
-            if request.is_ajax():
+            if is_ajax:
                 return JsonResponseForbidden({'msg': msg})
 
             ctx = {

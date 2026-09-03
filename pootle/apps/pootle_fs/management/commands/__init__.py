@@ -7,7 +7,7 @@
 # AUTHORS file for copyright and authorship information.
 
 from django.core.management.base import BaseCommand, CommandError
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 
 from pootle.core.exceptions import MissingPluginError, NotConfiguredError
 from pootle_fs.display import ResponseDisplay
@@ -22,7 +22,10 @@ RESPONSE_COLORMAP = dict(
 
 
 class BaseSubCommand(BaseCommand):
-    requires_system_checks = False
+    # requires_system_checks as a bool is deprecated as of Django 3.1,
+    # removed in 4.1: use '__all__' (was True) or [] (was False).
+    # Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+    requires_system_checks = []
 
 
 class ProjectSubCommand(BaseSubCommand):

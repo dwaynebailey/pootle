@@ -19,7 +19,7 @@ from django.http import Http404, QueryDict
 from django.shortcuts import get_object_or_404, redirect
 from django.template import loader
 from django.utils.functional import cached_property
-from django.utils.lru_cache import lru_cache
+from functools import lru_cache
 from django.utils.translation import to_locale
 from django.utils.translation.trans_real import parse_accept_lang_header
 from django.views.decorators.http import require_http_methods

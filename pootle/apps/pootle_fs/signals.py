@@ -8,9 +8,11 @@
 
 from django.dispatch import Signal
 
+# `providing_args` dropped - see pootle/core/signals.py's own comment
+# for why. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+# provides: plugin
+fs_pre_push = Signal(use_caching=True)
+fs_post_push = Signal(use_caching=True)
 
-fs_pre_push = Signal(providing_args=["plugin"], use_caching=True)
-fs_post_push = Signal(providing_args=["plugin"], use_caching=True)
-
-fs_pre_pull = Signal(providing_args=["plugin"], use_caching=True)
-fs_post_pull = Signal(providing_args=["plugin"], use_caching=True)
+fs_pre_pull = Signal(use_caching=True)
+fs_post_pull = Signal(use_caching=True)
