@@ -1168,14 +1168,36 @@ postgres, mariadb) at the same near-parity level Phase 1 itself
 reached - the Django 1.11 → 2.2 bump introduces no backend-specific
 regressions beyond what was already fixed getting sqlite to parity.
 
+**Postgres re-run with ES actually up (2026-09-03):** confirms the
+`test_contextmanager_update_tp_after_suggestion` fix directly -
+**109 failed / 2298 passed / 94 errors**, an exact match to the
+sqlite rung-1 numbers, diffed directly. The lone remaining difference
+is `test_update_tmserver_files` again - not a regression: ES came up
+successfully (confirmed ready via a health-check poll) but was
+OOM-killed ~35s into the run (`docker inspect` showing a 35-second
+lifetime, exit 137) by the same host memory contention documented
+above, so only this one ES-hard-dependent test was actually affected;
+everything else in the 3+ minute run tolerated ES's absence exactly
+as it always has. Tried mariadb the same way immediately after -
+freed up host memory first (stopped the now-unneeded postgres
+container) - but ES failed to even reach ready 3 times in a row (dying
+in 3-12s each attempt, `vm.swapusage` showing under 1.7GB of 21.5GB
+free throughout, unmoved by the cleanup); `top -o mem` traced it to
+the same other user's Photoshop/Illustrator processes (~10GB combined)
+still resident, not a transient spike. Not chased further at that
+point - this is squarely the same operational condition already on
+record (see the "Operational note on Elasticsearch-under-emulation
+reliability" section above), not a code issue, and retrying against
+genuine external memory pressure with no sign of clearing wasn't
+going to change the outcome.
+
 **Not yet done, still on `django-ladder`:**
 
-- Rerun `test_update_tmserver_files` against mariadb (and, per the
-  postgres section above, postgres too) with ES actually up, once
-  host memory pressure clears, to fully close out those validation
-  passes - `test_contextmanager_update_tp_after_suggestion` itself is
-  fixed now (see above), so both backends should be clean once ES
-  cooperates.
+- Rerun `test_update_tmserver_files` against mariadb with ES actually
+  up, once host memory pressure genuinely clears (postgres is now
+  confirmed clean this way - see just above). This is the last
+  concrete open item before rung 1's postgres/mariadb validation
+  passes are fully closed out.
 - `requirements/base.txt`'s own pins (`Django~=1.11.12`,
   `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
   `django-allauth==0.35.0`) haven't moved - `django22.txt` is
