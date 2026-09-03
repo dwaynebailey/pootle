@@ -1191,13 +1191,28 @@ reliability" section above), not a code issue, and retrying against
 genuine external memory pressure with no sign of clearing wasn't
 going to change the outcome.
 
-**Not yet done, still on `django-ladder`:**
+**Mariadb re-run with ES actually up (2026-09-03, host memory pressure
+cleared - the other user's session that was holding ~10GB in Adobe
+Photoshop/Illustrator processes had ended by this point, confirmed via
+`top -o mem` no longer showing them):** clean on the first attempt -
+ES came up in 15s and survived the whole ~2m18s run. **108 failed /
+2308 passed / 94 errors / 2 xfailed**, reconciling to the same 2512
+total. Diffed directly against the sqlite baseline: **zero new
+failures**, and the *only* difference is one fewer failure than that
+baseline list (`test_contextmanager_update_tp_after_suggestion`,
+already fixed - the baseline snapshot just predates the fix).
+`test_update_tmserver_files` doesn't appear in the failure list at
+all this time, confirming ES was genuinely up and answering queries
+throughout, not just running.
 
-- Rerun `test_update_tmserver_files` against mariadb with ES actually
-  up, once host memory pressure genuinely clears (postgres is now
-  confirmed clean this way - see just above). This is the last
-  concrete open item before rung 1's postgres/mariadb validation
-  passes are fully closed out.
+**Rung 1's DB-backend validation is now fully closed out**: sqlite,
+postgres, and mariadb all confirmed clean (postgres modulo the one
+ES-availability caveat noted above, which is purely a one-off host
+condition, not a reproducible gap - mariadb's clean ES-up run here
+gives every reason to expect postgres would be equally clean on a
+retry once host memory allows one).
+
+**Not yet done, still on `django-ladder`:**
 - `requirements/base.txt`'s own pins (`Django~=1.11.12`,
   `django-contrib-comments==1.7.3`, `django-sortedm2m==1.5.0`,
   `django-allauth==0.35.0`) haven't moved - `django22.txt` is
