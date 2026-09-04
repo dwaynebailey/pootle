@@ -1613,5 +1613,23 @@ understood, none a real regression:
   chased further, same category as rung 1's own documented
   inter-test-state-leakage flakes.
 
-**Not yet done:** rung 3's postgres/mariadb validation, and rung 4
-(4.2 → 5.2), not started.
+### Validating rung 3 against postgres and mariadb
+
+Same `APP_DB_ENV=postgresql`/`APP_DB_ENV=mysql` pattern as every prior
+rung. Both needed the two backend-gated fixes above (`chunk_size`,
+`index_together`'s scoped filter) before they'd even get past the
+2510-error systemic-cascade stage - once those landed, both came back
+**byte-for-byte identical** to the sqlite failure-id list, no
+exceptions at all, on the first clean run of each: **2291 passed / 110
+failed / 100 errors** on both postgres and mariadb.
+
+**Rung 3 is validated against all three DB backends at full parity
+with rung 2** - the Django 3.2 → 4.2 bump introduces no backend-
+specific regressions beyond the two now-fixed warning-promotion
+cascades, and no regressions at all against rung 2's own
+already-validated clean-config baseline.
+
+**Not yet done:** rung 4 (4.2 → 5.2), not started - including properly
+migrating `index_together` → `Meta.indexes` (deferred from this rung,
+see above), which that rung will need to do regardless since Django
+5.1 removes `index_together` outright.
