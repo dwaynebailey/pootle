@@ -83,7 +83,18 @@ class SubmissionQuerySet(models.QuerySet):
             "Cannot change a query once a slice has been taken."
         obj = self._clone()
         obj.query.set_limits(high=1)
-        obj.query.clear_ordering(force_empty=True)
+        # Query.clear_ordering()'s sole bool param was renamed from
+        # force_empty to force in Django 4.0 (same clear-regardless-of-
+        # slicing/distinct semantics - checked directly against both
+        # this rung's Django 4.2 and rung 2's own Django 3.2, which
+        # still has the old name). This file is shared across every
+        # rung's still-active reference image, so the call stays
+        # positional here rather than picking one keyword name -
+        # correct and unambiguous either way, since both signatures
+        # take the same single bool as their first positional
+        # parameter. Phase 2 rung 3 (Django 3.2 -> 4.2); see
+        # PORTING.md.
+        obj.query.clear_ordering(True)
         # add pk as secondary ordering for Submissions
         obj.query.add_ordering('%s%s' % (direction, order_by),
                                '%s%s' % (direction, "pk"))

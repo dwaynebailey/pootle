@@ -21,7 +21,10 @@ from .mixins import PootleJSONMixin
 class PootlePathsJSON(PootleJSONMixin, FormView):
     form_class = PathsSearchForm
 
-    @never_cache
+    # See pootle/core/views/base.py's own comment on this exact
+    # pattern (PootleJSON.dispatch) - same fix, same reasoning. Phase
+    # 2 rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+    @method_decorator(never_cache)
     @method_decorator(ajax_required)
     @set_permissions
     @requires_permission("view")

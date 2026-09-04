@@ -13,9 +13,21 @@ import os
 from translate.lang import data
 
 from django.utils import translation
-from django.utils.translation import LANGUAGE_SESSION_KEY, trans_real
+from django.utils.translation import trans_real
 
 from pootle.i18n import gettext
+
+
+# django.utils.translation.LANGUAGE_SESSION_KEY was removed outright in
+# Django 4.1 (its own LocaleMiddleware stopped reading the session for
+# a language preference long before that - this was only ever a
+# leftover string constant kept around for third-party code like this
+# module, and it's finally gone). The value itself ('_language') isn't
+# Django-version-dependent - it's just the session key name this
+# module has always stored/read the user's language preference under -
+# so it's safe to define locally rather than depend on Django
+# exporting it. Phase 2 rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+LANGUAGE_SESSION_KEY = '_language'
 
 
 def find_languages(locale_path):

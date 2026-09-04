@@ -125,7 +125,16 @@ class PootleDetailView(GatherContextMixin, DetailView):
 
 class PootleJSON(PootleJSONMixin, PootleDetailView):
 
-    @never_cache
+    # never_cache decorates plain function-based views (its first
+    # positional arg is assumed to be the request) - it was always
+    # technically wrong, if harmless, to apply it bare to a *method*
+    # like dispatch() (whose real first positional arg is self, not
+    # request). Django 4.1 added a runtime check that turns this into
+    # a hard TypeError instead of silently doing nothing useful;
+    # method_decorator() is the correct, existing tool for this exact
+    # situation (already used one line below, for ajax_required).
+    # Phase 2 rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+    @method_decorator(never_cache)
     @method_decorator(ajax_required)
     @set_permissions
     @requires_permission("view")

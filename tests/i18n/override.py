@@ -9,9 +9,12 @@
 import pytest
 
 from django.conf import settings
-from django.utils.translation import LANGUAGE_SESSION_KEY
 
-from pootle.i18n.override import (get_lang_from_cookie,
+# django.utils.translation.LANGUAGE_SESSION_KEY was removed in Django
+# 4.1 - pootle.i18n.override now defines this itself (same value,
+# '_language'). Phase 2 rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+from pootle.i18n.override import (LANGUAGE_SESSION_KEY,
+                                  get_lang_from_cookie,
                                   get_lang_from_http_header,
                                   get_language_from_request,
                                   get_lang_from_session, supported_langs)

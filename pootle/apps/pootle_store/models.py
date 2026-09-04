@@ -19,7 +19,12 @@ from django.template.defaultfilters import truncatechars
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.functional import cached_property
-from django.utils.http import urlquote
+# django.utils.http.urlquote (deprecated in 3.0) was removed outright
+# in Django 4.0 - it was always just a thin wrapper around
+# urllib.parse.quote(url, safe='/'), Django's own docs recommend
+# calling that directly. Phase 2 rung 3 (Django 3.2 -> 4.2); see
+# PORTING.md.
+from urllib.parse import quote as urlquote
 
 from pootle.core.delegate import (
     data_tool, format_syncers, format_updaters, frozen, states,

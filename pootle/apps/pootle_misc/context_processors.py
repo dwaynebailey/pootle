@@ -35,8 +35,23 @@ def _get_social_auth_providers(request):
         return []
 
     from allauth.socialaccount import providers
+    # allauth 0.56+ renamed ProviderRegistry.get_list(request) to
+    # get_class_list() - and changed what it returns, provider
+    # *classes* rather than already-request-bound instances (checked
+    # directly: 0.48.0's own get_list() was just `[provider_cls(
+    # request) for provider_cls in self.provider_map.values()]`, i.e.
+    # exactly what the fallback below reconstructs). Duck-typed rather
+    # than version-gated since this file is shared across every rung's
+    # still-active reference image, several of which still pin allauth
+    # versions with the old API. Phase 2 rung 3 (Django 3.2 -> 4.2);
+    # see PORTING.md.
+    if hasattr(providers.registry, 'get_class_list'):
+        provider_list = [provider_cls(request)
+                         for provider_cls in providers.registry.get_class_list()]
+    else:
+        provider_list = providers.registry.get_list(request)
     return [{'name': provider.name, 'url': provider.get_login_url(request)}
-            for provider in providers.registry.get_list()]
+            for provider in provider_list]
 
 
 def pootle_context(request):

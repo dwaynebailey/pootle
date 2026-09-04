@@ -1,0 +1,83 @@
+# Phase 2 rung 3: Django 3.2 -> 4.2.
+#
+# Installed *after* requirements/base.txt (which stays pinned to
+# Django~=1.11.12 - Phase 0/1's still-active control channels depend
+# on that pin, see PORTING.md's note on why this can never move) so
+# this override wins. 4.2.30 is the final 4.2.x release (4.2 is
+# Django's next LTS after 3.2) - same "take the newest patch release
+# within the rung" reasoning as rungs 1 and 2.
+Django~=4.2.30
+
+# rung 2's pin (2.2.0) only ever declared support through 4.0. No
+# newer release exists on PyPI (2.2.0 is django-contrib-comments'
+# last), but its own requires_dist is a bare `Django (>=2.2)` with no
+# upper bound, and this package is small enough (a single comments
+# app, no Django-internals-reaching code) that the classifier lagging
+# behind is expected, not a real risk - confirmed by the full suite
+# passing. See PORTING.md.
+django-contrib-comments==2.2.0
+
+# rung 2's pin (3.1.1) only ever declared support through 3.2 (its own
+# classifiers stop there). 4.0.0 is the first release declaring 4.2
+# support (checked directly: PyPI classifiers list 4.2/5.0/5.1, and it
+# ships a real wheel - Phase 1's patch-sortedm2m.sh build patch, needed
+# for the old 1.5.0 pin, isn't needed here either, same as rung 2).
+# See PORTING.md.
+django-sortedm2m==4.0.0
+
+# rung 2's pin (0.48.0) only declares support through Django 4.0.
+# 0.61.0 is the first release in the same pre-headless-API-rewrite
+# generation (0.5x/0.6x) whose classifiers list support through 5.0 -
+# picked deliberately over the current latest (65.x, a major rewrite
+# around a new "headless" API surface) to keep this bump evolutionary
+# rather than risk unrelated breakage. Its setup.py no longer imports
+# setuptools' removed `convert_path` at all (checked directly - real
+# metadata now lives in pyproject.toml, setup.py is a one-line shim),
+# so unlike every prior allauth pin this rung needs no build-time
+# patch. See PORTING.md.
+django-allauth==0.61.0
+
+# rung 2's pin (2.2.0) fixed the django.utils.six ImportError under
+# Django 3.0+ and still only needs rq>=1.0. Left unchanged here as the
+# starting point for this rung - bump only if the full suite surfaces
+# an actual Django-4.2-specific incompatibility (its own classifiers
+# don't declare a Django ceiling at all). See PORTING.md.
+django-rq==2.2.0
+
+# rung 2's pin (2.3.0) fixed the removed staticfiles-templatetags
+# ImportError under Django 3.1+. Left unchanged here as the starting
+# point for this rung - bump only if the full suite surfaces an actual
+# Django-4.2-specific incompatibility. See PORTING.md.
+django-statici18n==2.3.0
+
+# base.txt pins 4.10.0. Its own client/default.py does `from django.
+# utils.encoding import smart_text` at module level - smart_text
+# (deprecated in favour of smart_str since 2.0) was removed outright
+# in Django 4.0, a hard ImportError the moment anything touches the
+# cache (pootle/core/models/revision.py imports it at its own module
+# level, hit by the very first django.setup()). 5.2.0 is the first
+# release declaring Django 4.0 support and still only needs
+# `redis>=3`, matching the existing transitive `redis==3.5.3` pin
+# exactly - deliberately not 6.0.0 (the latest, declaring support all
+# the way to 5.2 - full ladder headroom) since that needs `redis>=
+# 4.0.2`, a cascading bump this rung doesn't otherwise need. Found
+# running this rung's first full-suite pass. See PORTING.md.
+django-redis==5.2.0
+
+# base.txt pins 1.5. Its own forms.py does `from django.utils.
+# translation import ugettext_lazy as _` at module level - removed
+# outright in Django 4.0, same u-prefix-unification story as
+# pootle.i18n.gettext's own rung-1 fix. 1.9 is the last release still
+# importable as `contact_form` (this codebase's own contact/forms.py
+# does `from contact_form.forms import ContactForm`) - 2.0 renamed the
+# whole package to `django_contact_form`, which would mean updating
+# our own import path too for no functional benefit, so deliberately
+# not bumped past the rename. Checked directly: 1.9's own forms.py
+# already uses `gettext_lazy`, not `ugettext_lazy` - fixes this
+# exactly. Its classifiers only declare support through 3.2 (same
+# "classifiers lag behind actual compatibility" situation as rung 3's
+# own django-contrib-comments pin), but there's no other Django-
+# version-gated code in this small package - confirmed by the full
+# suite passing. Found running this rung's first full-suite pass. See
+# PORTING.md.
+django-contact-form==1.9

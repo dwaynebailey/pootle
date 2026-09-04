@@ -48,7 +48,15 @@ def test_make_aware_default_tz(settings):
 
     # Not comparing `tzinfo` directly because that depends on the combination of
     # actual date+times
-    assert datetime_aware.tzinfo.zone == timezone.get_default_timezone().zone
+    #
+    # Not comparing `.zone` either: Django 4.0+ defaults to stdlib
+    # zoneinfo.ZoneInfo instead of pytz (USE_DEPRECATED_PYTZ defaults
+    # to False) - ZoneInfo has no `.zone` attribute, only `.key`. str()
+    # gives the zone name either way (pytz's own __str__ returns the
+    # same thing its `.zone` attribute does), so it works across every
+    # rung regardless of which one the running Django uses. Phase 2
+    # rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+    assert str(datetime_aware.tzinfo) == str(timezone.get_default_timezone())
 
 
 @pytest.mark.django_db
@@ -135,7 +143,8 @@ def test_aware_datetime(settings):
     """Tests the creation of a timezone-aware datetime."""
     datetime_object = aware_datetime(2016, 1, 2, 21, 52, 25)
     assert timezone.is_aware(datetime_object)
-    assert datetime_object.tzinfo.zone == settings.TIME_ZONE
+    # See test_make_aware_default_tz's own comment on str() vs .zone.
+    assert str(datetime_object.tzinfo) == settings.TIME_ZONE
 
 
 def test_aware_datetime_explicit_tz():
