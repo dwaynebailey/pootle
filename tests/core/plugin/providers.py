@@ -12,9 +12,12 @@ from pootle.core.plugin.exceptions import StopProviding
 from pootle.core.plugin.results import GatheredDict, GatheredList
 
 
+# Every Provider() below used to pass providing_args=["foo"] - dropped
+# throughout this file, same reason as pootle/core/signals.py's own
+# comment. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
 def test_provider():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     @provider(provider_test)
     def provider_for_test(*args, **kwargs):
@@ -27,7 +30,7 @@ def test_provider():
 
 def test_no_providers():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     results = provider_test.gather()
     assert isinstance(results, GatheredDict)
@@ -36,7 +39,7 @@ def test_no_providers():
 
 def test_provider_with_arg():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     @provider(provider_test)
     def provider_for_test(*args, **kwargs):
@@ -49,7 +52,7 @@ def test_provider_with_arg():
 
 def test_provider_with_sender():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     @provider(provider_test, sender=str)
     def provider_for_test(sender, *args, **kwargs):
@@ -62,7 +65,7 @@ def test_provider_with_sender():
 
 def test_provider_with_sender_int():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     @provider(provider_test)
     def provider_for_test(*args, **kwargs):
@@ -75,7 +78,7 @@ def test_provider_with_sender_int():
 
 def test_provider_with_sender_multi():
 
-    provider_test = Provider(providing_args=["foo"])
+    provider_test = Provider()
 
     @provider(provider_test)
     def provider_for_test(sender, *args, **kwargs):
@@ -94,8 +97,8 @@ def test_provider_with_sender_multi():
 
 def test_provider_handle_multi_decorators():
 
-    provider_test = Provider(providing_args=["foo"])
-    provider_test_2 = Provider(providing_args=["foo"])
+    provider_test = Provider()
+    provider_test_2 = Provider()
 
     @provider([provider_test, provider_test_2], sender=str)
     def provider_for_test(sender, *args, **kwargs):

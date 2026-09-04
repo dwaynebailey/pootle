@@ -6,8 +6,14 @@
 # or later license. See the LICENSE file for a copy of the license and the
 # AUTHORS file for copyright and authorship information.
 
+# django.conf.urls.url() (and this whole codebase's urls.py files
+# import it the same way) is deprecated as of Django 3.1, removed in
+# 4.0; django.urls.re_path() is its exact successor (url() always
+# only ever accepted regex patterns, same as re_path()). Aliasing the
+# import rather than renaming every url(...) call site across ~16
+# files. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
 from django.conf import settings
-from django.conf.urls import include, url
+from django.urls import include, re_path as url
 from django.views.generic import TemplateView
 
 from pootle.core.delegate import url_patterns

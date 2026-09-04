@@ -9,5 +9,8 @@
 from pootle.core.plugin.delegate import Getter
 
 
-config_should_not_be_set = Getter(providing_args=["instance", "key", "value"])
-config_should_not_be_appended = Getter(providing_args=["instance", "key", "value"])
+# `providing_args` dropped - see pootle/core/signals.py's own comment
+# for why. Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+# provides: instance, key, value
+config_should_not_be_set = Getter()
+config_should_not_be_appended = Getter()

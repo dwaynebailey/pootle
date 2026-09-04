@@ -1,0 +1,64 @@
+# Phase 2, rung 2: Django 2.2 -> 3.2 validation stack. Not a
+# deployment file - see docker-compose.yml for that. Same shape as
+# docker-compose.django22.yml (rung 1's own validation stack); see
+# that file's own comments for the reasoning behind each service -
+# repeated here only where this rung differs.
+#
+# Usage:
+#   docker-compose -f docker-compose.django32.yml build test
+#   docker-compose -f docker-compose.django32.yml up -d redis elasticsearch
+#   docker-compose -f docker-compose.django32.yml run --rm test
+#   docker-compose -f docker-compose.django32.yml down -v
+
+services:
+  test:
+    # Explicit image name - see docker-compose.django22.yml's own
+    # comment on this: without one, compose derives it from
+    # <project>-<service>, colliding with every other rung's `test`
+    # service in this same directory.
+    image: pootle-django32-test
+    build:
+      context: .
+      dockerfile: docker/django32/Dockerfile
+    environment:
+      - APP_DB_ENV=${APP_DB_ENV:-}
+    depends_on:
+      - redis
+      - elasticsearch
+    command: ["pytest", "tests", "-q"]
+
+  postgres:
+    image: postgres:9.4-alpine
+    environment:
+      - POSTGRES_USER=pootle
+      - POSTGRES_PASSWORD=CHANGEME
+      - POSTGRES_DB=pootledb
+    tmpfs:
+      - /var/lib/postgresql/data
+
+  mariadb:
+    image: mariadb:10.3
+    command:
+      - mysqld
+      - --character-set-server=utf8
+      - --collation-server=utf8_general_ci
+      - --innodb-flush-log-at-trx-commit=0
+    environment:
+      - MARIADB_ROOT_PASSWORD=CHANGEME
+      - MARIADB_DATABASE=pootledb
+    tmpfs:
+      - /var/lib/mysql
+
+  redis:
+    image: redis:7-alpine
+    tmpfs:
+      - /data
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch-oss:6.2.3
+    platform: linux/amd64
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms256m -Xmx256m -Djava.security.egd=file:/dev/./urandom
+    tmpfs:
+      - /usr/share/elasticsearch/data

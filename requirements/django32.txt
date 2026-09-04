@@ -1,0 +1,54 @@
+# Phase 2 rung 2: Django 2.2 -> 3.2.
+#
+# Installed *after* requirements/base.txt (which stays pinned to
+# Django~=1.11.12 - Phase 0/1's still-active control channels depend
+# on that pin, see PORTING.md's note on why this can never move) so
+# this override wins. 3.2.25 is the final 3.2.x release (3.2 was
+# Django's next LTS after 2.2) - same "take the newest patch release
+# within the rung" reasoning as rung 1's django22.txt.
+Django~=3.2.25
+
+# rung 1's pin (2.2.0) declares support through 4.0 - still fine here,
+# no bump needed for this rung.
+django-contrib-comments==2.2.0
+
+# rung 1's pin (3.1.1) declares support through 3.2 - still fine here,
+# no bump needed for this rung.
+django-sortedm2m==3.1.1
+
+# rung 1's pin (0.42.0) only declares support through Django 3.0 -
+# 0.46.0 is the first release declaring 3.2 support; 0.48.0 (through
+# 4.0, covering this rung and headroom into the next) needs its own
+# build-time patch (docker/django32/patch-allauth.sh - same
+# convert_path-removed-from-setuptools issue as rung 1's own allauth
+# patches, re-pointed at this version's sdist). See PORTING.md.
+django-allauth==0.48.0
+
+# base.txt pins 2.1.0, deliberately - Phase 1's own comment there notes
+# it's the last release still declaring `django>=1.8.0` (2.2.0+
+# requires `django>=2.0`), chosen specifically so it wouldn't drag
+# Django forward while Phase 1 needed to stay on 1.11. That constraint
+# is gone now that this rung is deliberately moving Django forward
+# itself - and 2.1.0's own `decorators.py` does `from django.utils
+# import six`, which is a hard ImportError under Django 3.0+ (`six`
+# isn't just broken there like rung 1's Django-vendored-six problem,
+# the whole `django.utils.six` module was removed outright). 2.2.0 is
+# the first release to drop that import (checked directly against
+# every django-rq release's source between 2.1.0 and 2.2.0) and still
+# only requires `rq>=1.0`, matching base.txt's existing `rq==1.0` pin
+# exactly - no cascading rq bump needed. Found running Phase 2 rung
+# 2's first django.setup() probe. See PORTING.md.
+django-rq==2.2.0
+
+# base.txt pins 1.7.0. Its own templatetags/statici18n.py imports
+# `django.contrib.staticfiles.templatetags.staticfiles`, a module
+# Django removed outright in 3.1 (folded into `django.templatetags.
+# static` back in 2.1, kept around only as a deprecated alias through
+# 3.0) - Django's own template engine eagerly imports every app's
+# templatetags modules to build its `{% load %}` name registry, so
+# this broke literally any template render, not just pages using
+# statici18n directly. 2.3.0 is the first release that no longer hits
+# this (verified directly - the old ImportError is gone, confirmed
+# against real settings via the full test suite). Found running
+# Phase 2 rung 2's first full-suite pass. See PORTING.md.
+django-statici18n==2.3.0

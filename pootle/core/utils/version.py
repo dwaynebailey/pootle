@@ -17,15 +17,15 @@ import datetime
 import os
 import subprocess
 
-try:
-    from django.utils.lru_cache import lru_cache
-except ImportError:
-    # Required for Python 2.7 support and when backported Django version is
-    # unavailable
-    def lru_cache():
-        def fake(func):
-            return func
-        return fake
+# django.utils.lru_cache was a Python-2-era compatibility shim
+# (functools.lru_cache is stdlib-only since Python 3.2); Django
+# removed it outright in 3.0, silently falling through to the no-op
+# "fake" fallback below on every version-lookup call under Django
+# 3.2 - not an ImportError anywhere else in this file's own tests, so
+# nothing caught it. functools.lru_cache is always available and
+# correct under Python 3, restoring real caching instead of a no-op.
+# Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+from functools import lru_cache
 
 from pootle.constants import VERSION
 

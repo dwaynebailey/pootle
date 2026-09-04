@@ -88,7 +88,15 @@ class MultiStringField(models.Field):
     def to_python(self, value):
         return to_python(value)
 
-    def from_db_value(self, value, expression, connection, context):
+    # Django's own from_db_value() call site dropped the `context`
+    # argument in 2.0 (deprecated) and stopped passing it at all in
+    # 3.0 - this override still declared it as required, so every
+    # query touching a MultiStringField field (i.e. any query
+    # touching Unit.source/target) raised "from_db_value() missing 1
+    # required positional argument: 'context'" under Django 3.2. Never
+    # used in the body anyway. Phase 2 rung 2 (Django 2.2 -> 3.2); see
+    # PORTING.md.
+    def from_db_value(self, value, expression, connection):
         return to_python(value)
 
     def get_prep_value(self, value):

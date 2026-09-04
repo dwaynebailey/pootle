@@ -10,9 +10,14 @@ from pootle.core.plugin import getter
 from pootle.core.plugin.delegate import Getter
 
 
+# Every Getter() below used to pass providing_args=["foo"] - dropped
+# throughout this file, same reason as pootle/core/signals.py's own
+# comment (the arg name was never meaningful here anyway, just
+# exercising the Getter/Provider mechanism itself). Phase 2 rung 2
+# (Django 2.2 -> 3.2); see PORTING.md.
 def test_getter():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(*args, **kwargs):
@@ -23,14 +28,14 @@ def test_getter():
 
 def test_no_getter():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     assert get_test.get() is None
 
 
 def test_getter_with_arg():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(*args, **kwargs):
@@ -41,7 +46,7 @@ def test_getter_with_arg():
 
 def test_getter_with_with_sender():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test, sender=str)
     def getter_for_get_test(sender, *args, **kwargs):
@@ -52,7 +57,7 @@ def test_getter_with_with_sender():
 
 def test_getter_with_with_sender_int():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test, sender=int)
     def getter_for_get_test(sender, *args, **kwargs):
@@ -63,7 +68,7 @@ def test_getter_with_with_sender_int():
 
 def test_getter_with_with_sender_multi():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(sender, *args, **kwargs):
@@ -77,8 +82,8 @@ def test_getter_with_with_sender_multi():
 
 def test_getter_handle_multi():
 
-    get_test = Getter(providing_args=["foo"])
-    get_test_2 = Getter(providing_args=["foo"])
+    get_test = Getter()
+    get_test_2 = Getter()
 
     @getter([get_test, get_test_2])
     def getter_for_get_test(sender, *args, **kwargs):
@@ -89,7 +94,7 @@ def test_getter_handle_multi():
 
 
 def test_getter_multi_sender():
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test, sender=(str, int))
     def getter_for_get_test(sender, *args, **kwargs):
@@ -101,7 +106,7 @@ def test_getter_multi_sender():
 
 def test_getter_handle_order():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(sender, *args, **kwargs):
@@ -116,7 +121,7 @@ def test_getter_handle_order():
 
 def test_getter_handle_order_2():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(sender, *args, **kwargs):
@@ -131,7 +136,7 @@ def test_getter_handle_order_2():
 
 def test_getter_handle_order_3():
 
-    get_test = Getter(providing_args=["foo"])
+    get_test = Getter()
 
     @getter(get_test)
     def getter_for_get_test(sender, *args, **kwargs):

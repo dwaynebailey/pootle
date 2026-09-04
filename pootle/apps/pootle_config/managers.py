@@ -9,7 +9,7 @@
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.db.models.base import ModelBase
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 
 from pootle.core.signals import config_updated
 
@@ -75,7 +75,7 @@ class ConfigQuerySet(models.QuerySet):
         ct = ContentType.objects.get_for_model(model)
         kwargs = dict(content_type=ct)
         if isinstance(model, models.Model):
-            kwargs["object_pk"] = force_text(model._get_pk_val())
+            kwargs["object_pk"] = force_str(model._get_pk_val())
         return kwargs
 
     def get_query_model(self, model=None):

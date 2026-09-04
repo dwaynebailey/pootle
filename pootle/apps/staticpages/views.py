@@ -188,7 +188,11 @@ def display_page(request, virtual_path):
         return redirect(page.url)
 
     template_name = 'staticpages/page_display.html'
-    if request.is_ajax():
+    # request.is_ajax() is deprecated as of Django 3.1, removed in
+    # 4.0; Django's own docs recommend this header check as the
+    # direct replacement. Phase 2 rung 2 (Django 2.2 -> 3.2); see
+    # PORTING.md.
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
         template_name = 'staticpages/_body.html'
 
     ctx = {

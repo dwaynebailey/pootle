@@ -12,7 +12,7 @@ import json
 
 from django.conf import settings
 from django.core.serializers.json import DjangoJSONEncoder
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.functional import Promise
 
 from ..markup import Markup
@@ -21,14 +21,14 @@ from ..markup import Markup
 class PootleJSONEncoder(DjangoJSONEncoder):
     """Custom JSON encoder for Pootle.
 
-    This is mostly implemented to avoid calling `force_text` all the time on
+    This is mostly implemented to avoid calling `force_str` all the time on
     certain types of objects.
     https://docs.djangoproject.com/en/1.10/topics/serialization/#djangojsonencoder
     """
 
     def default(self, obj):
         if isinstance(obj, (Promise, Markup)):
-            return force_text(obj)
+            return force_str(obj)
 
         return super(PootleJSONEncoder, self).default(obj)
 

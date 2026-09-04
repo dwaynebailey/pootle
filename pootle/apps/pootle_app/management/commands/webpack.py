@@ -19,7 +19,10 @@ from pootle_misc.baseurl import link
 
 class Command(BaseCommand):
     help = 'Builds and bundles static assets using webpack'
-    requires_system_checks = False
+    # requires_system_checks as a bool is deprecated as of Django 3.1,
+    # removed in 4.1: use '__all__' (was True) or [] (was False).
+    # Phase 2 rung 2 (Django 2.2 -> 3.2); see PORTING.md.
+    requires_system_checks = []
 
     def add_arguments(self, parser):
         parser.add_argument(
