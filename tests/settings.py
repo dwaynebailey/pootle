@@ -51,6 +51,26 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
+# django-allauth 0.56+ requires allauth.account.middleware.
+# AccountMiddleware to be listed in MIDDLEWARE explicitly - see
+# pootle/settings/50-project.conf's own copy of this same comment for
+# the full story (this file keeps its own separate, hardcoded copy of
+# MIDDLEWARE rather than inheriting it). Phase 2 rung 3 (Django 3.2 ->
+# 4.2); see PORTING.md.
+from importlib.metadata import PackageNotFoundError, version as _pkg_version
+try:
+    _allauth_version = tuple(
+        int(part) for part in _pkg_version('django-allauth').split('.')[:2]
+    )
+except (PackageNotFoundError, ValueError):
+    _allauth_version = (0, 0)
+if _allauth_version >= (0, 56):
+    MIDDLEWARE.insert(
+        MIDDLEWARE.index('pootle.middleware.auth.AuthenticationMiddleware') + 1,
+        'allauth.account.middleware.AccountMiddleware',
+    )
+del _allauth_version, _pkg_version, PackageNotFoundError
+
 # Using the only Redis DB for testing
 CACHES = {
     # Must set up entries for persistent stores here because we have a check in

@@ -12,7 +12,13 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db import transaction
-from django.utils.translation import ugettext_noop as _
+# ugettext_noop (the u-prefixed alias) was removed in Django 4.0, same
+# "u-prefix unified away" story as pootle.i18n.gettext's own
+# ugettext/ungettext (see that module's rung-1 comment) - unlike those,
+# though, gettext_noop itself was never deprecated or renamed, so no
+# wrapper is needed here, just the plain import. Phase 2 rung 3
+# (Django 3.2 -> 4.2); see PORTING.md.
+from django.utils.translation import gettext_noop as _
 
 from pootle.core.contextmanagers import keep_data
 from pootle.core.models import Revision

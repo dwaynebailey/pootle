@@ -1386,4 +1386,232 @@ rung 1** - the Django 2.2 → 3.2 bump introduces no backend-specific
 regressions, and no regressions at all against rung 1's own
 already-validated clean-config baseline.
 
-**Not yet done:** rungs 3-4 (3.2 → 4.2 → 5.2), not started.
+### Rung 3: Django 3.2 → 4.2
+
+New validation environment, `docker/django42/` + `docker-compose.
+django42.yml`, built the same way as rungs 1-2: Phase 1's Python 3.12
+base image, Django overridden to 4.2.30 (the final 4.2.x release,
+Django's next LTS after 3.2) via `requirements/django42.txt`, installed
+as its own final, separate `pip install` step. Convergence was the
+fastest of the ladder so far - most fixes were genuinely new
+Django-4.x API removals rather than rediscovered older ones, and two
+dependency bumps (`django-allauth`, `django-sortedm2m`) needed no
+build-time patch at all: both now ship real wheels or a `pyproject.
+toml`-based `setup.py` with no `convert_path` import to patch around.
+
+**Dependency bumps** (each with its own comment in `requirements/
+django42.txt`):
+
+- **`django-allauth`** 0.48.0 (rung 2's pin, support only through 4.0)
+  → **0.61.0** (through 5.0) - deliberately the last release in the
+  pre-"headless"-API-rewrite generation (0.5x/0.6x), not the current
+  latest (65.x, a major rewrite), to keep the bump evolutionary. No
+  build patch needed (checked directly: its `setup.py` is now a
+  one-line `setup()` shim, real metadata lives in `pyproject.toml`).
+- **`django-sortedm2m`** 3.1.1 (rung 2's pin, support only through 3.2)
+  → **4.0.0** (through 5.1) - ships a real wheel, no patch needed.
+- **`django-redis`** 4.10.0 (`base.txt`'s pin) → **5.2.0**: its own
+  `client/default.py` does `from django.utils.encoding import
+  force_text` at module level, removed outright in Django 4.0 - a hard
+  `ImportError` on the very first cache access (`pootle/core/models/
+  revision.py` imports it at its own module level). 5.2.0 is the first
+  release declaring Django 4.0 support and still only needs `redis>=
+  3`, matching the existing transitive `redis==3.5.3` pin - not 6.0.0
+  (full ladder headroom through 5.2), which needs `redis>=4.0.2`, a
+  cascading bump this rung doesn't otherwise need.
+- **`django-contact-form`** 1.5 (`base.txt`'s pin) → **1.9**: its own
+  `forms.py` does `from django.utils.translation import
+  ugettext_lazy`, removed outright in Django 4.0. 1.9 is the *last*
+  release still importable as `contact_form` (this codebase's own
+  `contact/forms.py` does `from contact_form.forms import
+  ContactForm`) - 2.0 renamed the whole package to `django_contact_
+  form`, which would mean updating our own import path for no
+  functional benefit, so deliberately not bumped past the rename.
+  Checked directly: 1.9's own `forms.py` already uses `gettext_lazy`.
+
+**`django.utils.six` stays removed under 4.2 too** (gone outright since
+3.0 - see rung 2's own finding). `docker/django32/patch-django-six.sh`
+reused unchanged, still needed for `jsonfield`'s own `from django.
+utils import six`.
+
+**`jsonfield==2.0.2` needed two of its own removed-API imports
+patched** (no newer PyPI release exists, same as rung 2's six.py
+finding for this package) - `docker/django42/patch-jsonfield.sh`,
+patching the installed package directly:
+1. `fields.py`'s `from django.utils.translation import ugettext_lazy`
+   → `gettext_lazy` (removed in 4.0, same u-prefix-unification story
+   as `pootle.i18n.gettext`'s own rung-1 fix).
+2. `encoder.py`'s `from django.utils.encoding import force_text` →
+   `force_str` (removed in 4.0, same story as rung 2's own force_text
+   sweep) - found immediately after fixing (1), same module-import-
+   time shape, one call site (`return force_text(obj)` inside
+   `JSONEncoder.default()`).
+
+**`dj.subcommand` and `django-overextends` patches carried over
+unchanged from rung 1** (`docker/django22/patch-dj-subcommand.sh`,
+`docker/django22/patch-overextends.sh`) - checked directly that the
+exact code each targets is byte-identical across Django 2.2, 3.2, and
+4.2.
+
+**Seven real Django-3.2-vs-4.2 API removals/behavior changes found and
+fixed in our own code, each a genuine "this API changed/was removed"
+issue, not a language port bug:**
+
+1. **`django.utils.translation.LANGUAGE_SESSION_KEY` removed
+   outright** (a leftover string constant Django kept around for
+   third-party code long after its own `LocaleMiddleware` stopped
+   using it - finally removed in 4.1): `pootle/i18n/override.py`'s
+   `get_lang_from_session()` imported it directly. The value itself
+   (`'_language'`) isn't Django-version-dependent, so it's now defined
+   locally in that same module instead of imported. `tests/i18n/
+   override.py` updated to import it from there instead of Django.
+2. **`django.utils.translation.ugettext_noop` removed** (the u-prefixed
+   alias - `gettext_noop` itself was never deprecated or renamed):
+   `pootle/core/initdb.py` was the one remaining direct importer -
+   swept to `gettext_noop`.
+3. **`django.utils.http.urlquote` removed** (deprecated in 3.0; always
+   just a thin wrapper around `urllib.parse.quote(url, safe='/')`,
+   which is also `quote()`'s own default `safe` value): `pootle_store/
+   models.py`'s one call site swept to `urllib.parse.quote`, aliased
+   as `urlquote` so the call site itself needs no change.
+4. **`allauth.account.middleware.AccountMiddleware` became a hard
+   requirement** (allauth 0.56+ raises `ImproperlyConfigured` from
+   `AccountConfig.ready()` if it's missing from `MIDDLEWARE` - older
+   versions wired the equivalent behaviour in automatically and don't
+   even ship this module). Added to both `pootle/settings/50-project.
+   conf`'s and `tests/settings.py`'s own `MIDDLEWARE` lists - but only
+   *conditionally*, keyed off the actually-installed allauth version
+   via `importlib.metadata`, since both files are shared across every
+   still-active rung's reference image and rungs 1-2's allauth pins
+   don't have this module at all. Verified directly against rung 2's
+   image that the conditional correctly stays inert there.
+5. **`Query.clear_ordering()`'s sole bool parameter renamed** from
+   `force_empty` to `force` (a private ORM API, so no deprecation
+   warning at all - straight to a `TypeError`, silent between
+   versions): `pootle_statistics/models.py`'s `SubmissionQuerySet.
+   _earliest_or_latest()` override (added for deterministic pk-based
+   tie-breaking on `earliest()`/`latest()`) called it with the old
+   keyword name. Fixed by passing positionally (`clear_ordering(True)`)
+   instead of by keyword - correct and unambiguous under both the old
+   and new signatures, since both take the same single bool as their
+   first positional parameter, keeping this shared file working
+   across every rung.
+6. **`never_cache` decorating `dispatch()` bare (not through
+   `method_decorator()`) started raising `TypeError`**: harmless but
+   technically wrong under every prior Django version (the decorator's
+   first positional arg is `self`, not `request`, when applied to an
+   unbound method this way) - Django 4.1 added a runtime check that
+   turns this into a hard error instead of silently no-op'ing.
+   `PootleJSON.dispatch()` (`pootle/core/views/base.py`) and
+   `PootlePathsJSON.dispatch()` (`pootle/core/views/paths.py`) both
+   swept to `@method_decorator(never_cache)`, the same tool already
+   used one line below for `ajax_required` on both.
+7. **`allauth.socialaccount.providers.ProviderRegistry.get_list()`
+   renamed and reshaped**: 0.56+ replaced it with `get_class_list()`,
+   which returns provider *classes* rather than already-request-bound
+   instances (checked directly against 0.48.0's own source: the old
+   `get_list()` was exactly `[provider_cls(request) for provider_cls
+   in ...]`, precisely what the fallback below reconstructs).
+   `pootle_misc/context_processors.py`'s `_get_social_auth_providers()`
+   duck-types on `hasattr(providers.registry, 'get_class_list')`
+   rather than a hardcoded version check, since this file is shared
+   across every rung's reference image too.
+
+**Two `filterwarnings=error`-promoted deprecations, both hit only
+under real DB backends (postgres/mariadb), not sqlite** - found via the
+same "runs clean standalone, fails inside the full suite" shape as
+rung 2's `providing_args`/`requires_system_checks` findings, this time
+gated by *which DB backend* triggers the warning inside a captured
+test window rather than by warning-vs-test timing alone:
+
+- **`QuerySet.iterator()` after `prefetch_related()` without an
+  explicit `chunk_size`, deprecated in Django 4.1** (`RemovedInDjango
+  50Warning` - prefetching already has to load full result sets, so
+  `iterator()`'s usual memory-saving chunking needs a conscious size
+  instead of silently not chunking): `pootle/core/views/api.py`'s
+  `APIView.handle_multiple()` hit this on every m2m-serializing API
+  request. Fixed with an explicit `chunk_size=2000` (Django's own
+  documented default value) - a systemic single-cause cascade (2510
+  errors on the first real postgres run) exactly like rung 2's
+  `providing_args` finding, just gated by DB backend instead of
+  collection-vs-execution timing.
+- **`Meta.index_together`, deprecated in Django 4.2, actually removed
+  in 5.1** (`RemovedInDjango51Warning`): six of our own models
+  (`pootle_revision`, `pootle_app.Directory`, `pootle_statistics.
+  Submission`, `pootle_data`, `pootle_config`, `pootle_store`) still
+  declare it. Properly migrating this away (`index_together` →
+  `Meta.indexes`, each needing a real schema migration) is deferred to
+  rung 4 rather than done piecemeal now, since Django 5.1 is where the
+  ladder actually has to fix it regardless - `setup.cfg` gained a
+  scoped `default:` filter for this one warning instead (verified
+  directly it stays inert - no matching category even exists - under
+  rungs 1-2's older Django images). Only fires as a hard failure under
+  postgres/mariadb (their test-DB setup runs Django's app-registry
+  validation inside pytest's per-test warning-capture window; sqlite's
+  doesn't), the same backend-gated shape as the `iterator()` finding
+  above - 2510 errors on the first real postgres run, same systemic
+  single-cause signature.
+
+**Two test-only fixes**, real behavior changed correctly, only the
+tests' own expectations were stale:
+
+- **`timezone.get_default_timezone()` (and any Django-supplied tzinfo)
+  returns `zoneinfo.ZoneInfo` instead of `pytz`'s timezone objects**
+  as of Django 4.0 (`USE_DEPRECATED_PYTZ` defaults to `False` - a
+  deliberate switch to the stdlib implementation). `ZoneInfo` has no
+  `.zone` attribute, only `.key` - `tests/core/utils/timezone.py`'s
+  two assertions comparing `.zone` on a Django-supplied tzinfo (not an
+  explicitly-`pytz`-constructed one, which are unaffected and still
+  pass) switched to `str(tzinfo)`, which returns the zone name under
+  both pytz and zoneinfo, working across every rung regardless of
+  which implementation the running Django uses.
+- **`View.as_view()` stopped copying `__name__`/`__qualname__` onto its
+  returned callable** (Django 4.1 - its own release notes point at
+  `.view_class` as the robust way to identify a resolved view's class
+  instead). `tests/views/vf.py::test_view_vf_xhr_units_resolve`'s
+  `resolve(...).func.__name__` swept to `resolve(...).func.view_class.
+  __name__`, which has worked unchanged since long before this rung.
+
+**One upstream API-naming collision, exposed (not caused) by Django
+4.1's form-rendering overhaul:** `django-contact-form`'s `ContactForm.
+get_context()` - meant only to build the *email* context for
+`message()`/`subject()`, and unconditionally raising `ValueError` if
+the form hasn't already passed `is_valid()` - happens to share its
+name with Django's own `Form.get_context()`, a *different* method
+(added by Django 4.1's form-rendering rework, used to build the
+*template* context for `{{ form.as_p }}` etc.) that every unbound,
+just-displayed contact/report-error form now also needs. Under 3.2
+and earlier, Django's `as_p()` never called `get_context()` at all
+(pure string concatenation), so this naming collision was latent but
+harmless; 4.1 made every GET-request render of these forms 500.
+`pootle/apps/contact/forms.py`'s `ContactForm`/`ReportForm` renamed
+their own email-context override to `get_email_context()`, overrode
+`message()`/`subject()` to call that renamed method instead of `self.
+get_context()`, and left `get_context()` itself delegating straight to
+Django's real rendering implementation (`forms.Form.get_context(self)`,
+bypassing `OriginalContactForm`'s colliding override in the MRO).
+
+**Result after all of the above**, full clean config
+(`filterwarnings = error` active): **2291 passed / 110 failed / 100
+errors / 10 skipped / 1 xfailed** - essentially exact parity with rung
+2's own clean-config sqlite milestone (2299/108/94). Diffed directly
+against rung 2's failure-id list: only 8 differences, all already
+understood, none a real regression:
+- 6 are the same long-standing, Phase-4-deferred `js/vendor.bundle.js`
+  webassets gap (see stream D/E), now also reached by a handful of
+  additional bad-path URL variants (e.g. `/foo/bar` without a trailing
+  slash) that resolve differently against Django 4.2's URL resolver
+  than 3.2's - same root cause already on record throughout this
+  project, not a new one.
+- `tests/commands/update_tmserver.py::test_update_tmserver_files` - the
+  same pre-existing ES-availability-dependent flake documented
+  throughout rungs 1-2.
+- `tests/pootle_score/updater.py::test_score_user_updater_refresh` -
+  confirmed order-dependent (passes standalone and in small batches,
+  fails only inside the full-suite run) and confirmed *not*
+  Django-version-specific (same behavior seen when isolating it) - not
+  chased further, same category as rung 1's own documented
+  inter-test-state-leakage flakes.
+
+**Not yet done:** rung 3's postgres/mariadb validation, and rung 4
+(4.2 → 5.2), not started.

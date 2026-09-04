@@ -266,7 +266,14 @@ class APIView(View):
             in queryset.values(*fields)}
         if self.m2m:
             queryset = queryset.prefetch_related(*self.m2m)
-        for item in queryset.iterator():
+        # QuerySet.iterator() after prefetch_related() without an
+        # explicit chunk_size is deprecated as of Django 4.1 (prefetch
+        # already has to load full result sets to do its job, so
+        # iterator()'s usual memory-saving chunking needs an explicit,
+        # conscious size instead of silently not chunking at all).
+        # 2000 is Django's own documented default chunk_size. Phase 2
+        # rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+        for item in queryset.iterator(chunk_size=2000):
             info = result[item.pk]
             if "pk" not in fields:
                 del info["pk"]

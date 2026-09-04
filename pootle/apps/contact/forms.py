@@ -8,6 +8,7 @@
 
 from django import forms
 from django.conf import settings
+from django.template import loader
 
 from contact_form.forms import ContactForm as OriginalContactForm
 
@@ -48,7 +49,22 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
             del self.fields['captcha_answer']
             del self.fields['captcha_token']
 
-    def get_context(self):
+    # Renamed from get_context() (which is what this overrode from
+    # OriginalContactForm, itself an override of Django's own
+    # forms.Form.get_context()): Django 4.1's form-rendering overhaul
+    # gave Form.get_context() a second, unrelated meaning - the
+    # context used to render {{ form.as_p }} etc. - and
+    # OriginalContactForm.get_context() unconditionally raises
+    # ValueError unless the form has already passed is_valid(), which
+    # broke every GET-request (unbound-form) render of a contact page.
+    # get_context() itself is now left alone below, delegating
+    # straight to Django's own rendering implementation instead of
+    # OriginalContactForm's colliding one; message()/subject() (which
+    # OriginalContactForm's own base class calls with self.
+    # get_context()) are overridden to call this renamed method
+    # instead, so email generation keeps working exactly as before.
+    # Phase 2 rung 3 (Django 3.2 -> 4.2); see PORTING.md.
+    def get_email_context(self):
         """Get context to render the templates for email subject and body."""
         ctx = super(ContactForm, self).get_context()
         ctx['server_name'] = settings.POOTLE_TITLE
@@ -56,6 +72,30 @@ class ContactForm(MathCaptchaForm, OriginalContactForm):
             self.request.META.get('HTTP_X_FORWARDED_FOR',
                                   self.request.META.get('REMOTE_ADDR')))
         return ctx
+
+    def get_context(self):
+        """Get context to render this form's own widgets/template.
+
+        Bypasses OriginalContactForm.get_context() (see
+        get_email_context()'s own comment) and goes straight to
+        Django's real form-rendering implementation.
+        """
+        return forms.Form.get_context(self)
+
+    def message(self):
+        template_name = (
+            self.template_name() if callable(self.template_name)
+            else self.template_name)
+        return loader.render_to_string(
+            template_name, self.get_email_context(), request=self.request)
+
+    def subject(self):
+        template_name = (
+            self.subject_template_name() if callable(self.subject_template_name)
+            else self.subject_template_name)
+        subject = loader.render_to_string(
+            template_name, self.get_email_context(), request=self.request)
+        return ''.join(subject.splitlines())
 
     def recipient_list(self):
         return [settings.POOTLE_CONTACT_EMAIL]
@@ -97,9 +137,9 @@ class ReportForm(ContactForm):
 
         del self.fields['email_subject']
 
-    def get_context(self):
+    def get_email_context(self):
         """Get context to render the templates for email subject and body."""
-        ctx = super(ReportForm, self).get_context()
+        ctx = super(ReportForm, self).get_email_context()
 
         unit_pk = None
         language_code = None

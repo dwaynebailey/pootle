@@ -126,8 +126,15 @@ def test_view_vf_xhr_units():
 
 @pytest.mark.django_db
 def test_view_vf_xhr_units_resolve():
+    # Django 4.1 stopped copying the view class's __name__/__qualname__
+    # onto the callable View.as_view() returns (its own release notes
+    # call this out: `view_class` is the robust way to get the class
+    # back from a resolved view now) - `.func.view_class` works
+    # unchanged all the way back, so use that instead of relying on
+    # `__name__` reflecting it. Phase 2 rung 3 (Django 3.2 -> 4.2); see
+    # PORTING.md.
     assert (
-        resolve("/++vfolder/VF_NAME/xhr/units/12345/edit").func.__name__
+        resolve("/++vfolder/VF_NAME/xhr/units/12345/edit").func.view_class.__name__
         == "UnitEditJSON")
 
 
